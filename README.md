@@ -1,3 +1,3 @@
 # mujoco_ros
 
-Wrapper for using ROS with the MuJoCo simulator.
+Wrapper, tools for using ROS with the MuJoCo simulator.

@@ -1,0 +1,19 @@
+settings:
+  ubuntu:
+    version: xenial
+  ros:
+    release: kinetic
+  docker:
+    image: shadowrobot/build-tools
+    tag: xenial-kinetic-mongodb-openrave
+  toolset:
+    template_job_name: template_unit_tests_and_code_coverage
+    modules:
+      - check_cache
+      - code_coverage
+
+trunks:
+  - name: kinetic-devel
+
+branch:
+  parent: kinetic-devel

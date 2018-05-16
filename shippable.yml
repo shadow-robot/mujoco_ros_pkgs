@@ -1,0 +1,26 @@
+language: python
+python:
+  - 2.7
+
+# codecov token and slack web hook URL (encrypted)
+env:
+  - secure: EqEpHqAismOsNFDqTqkCRKoapJDOFms+IaYoyQaNfk1QRU72NVAP3kpQS2UXWSwfizZtKInw332eh+0fanPr/Xdozp9xDKwAXx5ugj3znP7ffC1F15r79QvL+wpelfmkI0xThUBnkvqR+6x4DKqoPNh0C9GfF8RRvlv1xhrrNYZKHfq8n8/YOE2MBCnnF5y3oX1+qOwuns4vqRomgM1jUhPBIhAd7SQgDAG0QNLFfHZGOe1Dlo2nS3BgQDFrIeqIWDyjfXqxMTfbV6e+sqtiKp5uphkyxWg5HGw7O+AhQy7FD1Pe4UVd6xZ65S+PCwWBg0Y66tQuYzfFXUCGOU4/IA==
+
+build:
+  pre_ci_boot:
+    image_name: shadowrobot/ubuntu-ros-indigo-build-tools
+    image_tag: latest
+    pull: true
+
+    options: "-e HOME=/root"
+
+  ci:
+    - sudo apt-get update
+    - sudo apt-get install curl -y
+    - export toolset_branch="master"
+    - export server_type="shippable"
+    - export used_modules="build_pr_only,check_cache,code_coverage"
+    - export remote_shell_script="https://raw.githubusercontent.com/shadow-robot/sr-build-tools/$toolset_branch/bin/sr-run-ci-build.sh"
+    - curl -s "$( echo "$remote_shell_script" | sed 's/#/%23/g' )" | bash /dev/stdin "$toolset_branch" $server_type $used_modules
+  on_failure:
+    - curl -X POST --data-urlencode "payload={\"channel\":\"#bots\", \"username\":\"shippable\", \"text\":\"[$SHIPPABLE_REPO_SLUG branch $BRANCH] <$BUILD_URL|Build $SHIPPABLE_BUILD_NUMBER> failed\", \"icon_emoji\":\":monkey_face:\"}" $SLACK_WEB_HOOK_URL
