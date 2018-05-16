@@ -12,7 +12,7 @@
 namespace mujoco_ros_control
 {
 
-bool RobotHWSim::initSim(
+bool RobotHWSim::init_sim(
   const std::string& robot_namespace,
   ros::NodeHandle model_nh,
   const urdf::Model *const urdf_model,
@@ -29,12 +29,12 @@ bool RobotHWSim::initSim(
 
 void RobotHWSim::read(const ros::Time& time, const ros::Duration& period)
 {
-
+  // fill up joint_positions vector with current position to update joint state controller
 }
 
 void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
 {
-
+  // write the control signals d->ctrl (how to pass the d? -> we may need re-implementation)
 }
 
 } // namespace

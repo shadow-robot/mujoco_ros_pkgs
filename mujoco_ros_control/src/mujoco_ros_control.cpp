@@ -31,20 +31,30 @@ void MujocoRosControl::init()
     // get urdf, load robotHwSim and load controller manager
 
     // activation license mujoco
-    // mj_activate(".txt")
+    //mj_activate(".txt")
 
     // create mjModel 
     //m = mj_loadModel(".xml")
     
     // create mjData corresponding to mjModel
-    //d = mj_makeData(m) 
+    //d = mj_makeData(m)
+
+    // create robot node handle
+    robot_node_handle = ros::NodeHandle("fino_babbeo");
+
+    // Create the controller manager
+    //ROS_DEBUG_STREAM_NAMED("ros_control_plugin","Loading controller_manager");
+    controller_manager_.reset
+      (new controller_manager::ControllerManager(robot_hw_sim_.get(), robot_node_handle));
+
 }
 
 void MujocoRosControl::update(const ros::Time& time, const ros::Duration& period)
 {
-    // send control signals
+    // read current state
+    // robot_hw_sim_->read(m, d)
     //mj_step1(m, d)
-    // call write from RobotHWSim
+    // robot_hw_sim_->write(m, d)
     //mj_step2(m, d)
 }
 

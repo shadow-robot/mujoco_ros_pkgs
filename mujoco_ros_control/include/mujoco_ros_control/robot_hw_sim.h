@@ -37,7 +37,7 @@ public:
   
   virtual ~RobotHWSim() { }
 
-  virtual bool initSim(
+  virtual bool init_sim(
     const std::string& robot_namespace,
     ros::NodeHandle model_nh,
     const urdf::Model *const urdf_model,
