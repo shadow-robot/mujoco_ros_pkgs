@@ -40,6 +40,7 @@ public:
   virtual bool init_sim(
     const std::string& robot_namespace,
     ros::NodeHandle model_nh,
+    //mjModel &m, //mjData &d,
     const urdf::Model *const urdf_model,
     std::vector<transmission_interface::TransmissionInfo> transmissions);
 
@@ -48,7 +49,7 @@ public:
   virtual void write(const ros::Time& time, const ros::Duration& period);
 
 protected:
-  
+
   // hardware interfaces
   hardware_interface::JointStateInterface    js_interface_;
   hardware_interface::EffortJointInterface   ej_interface_;
@@ -70,6 +71,8 @@ protected:
   std::vector<double> joint_velocity_command_;
 
   //mujoco elements
+  //mjModel* m;
+  //mjData* d;
 
 };
 

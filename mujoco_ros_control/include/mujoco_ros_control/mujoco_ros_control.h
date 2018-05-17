@@ -43,8 +43,6 @@ public:
   // step update function
   void update(const ros::Time& time, const ros::Duration& period);
 
-  // load URDF
-  std::string load_URDF(std::string param_name) const;
 
 protected:
 

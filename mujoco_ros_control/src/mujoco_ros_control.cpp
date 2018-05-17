@@ -51,17 +51,17 @@ void MujocoRosControl::init()
 
 void MujocoRosControl::update(const ros::Time& time, const ros::Duration& period)
 {
-    // read current state
-    // robot_hw_sim_->read(m, d)
-    //mj_step1(m, d)
-    // robot_hw_sim_->write(m, d)
-    //mj_step2(m, d)
+    //while(time)
+    {
+        // read current state
+        // robot_hw_sim_->read(m, d)
+        //mj_step1(m, d)
+        // robot_hw_sim_->write(m, d)
+        //mj_step2(m, d)
+    }
+    
 }
 
-std::string MujocoRosControl::load_URDF(std::string urdf_file_name) const
-{
-    // search the URDF file by name and load it in Mujoco
-}
 } // namespace
 
 int main(int argc, char** argv) 
@@ -69,6 +69,8 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "mujoco_ros_control");
 
     mujoco_ros_control::MujocoRosControl MujocoRosControl();
+
+    // init openGL window
 
     ros::spin();
     return 0;
