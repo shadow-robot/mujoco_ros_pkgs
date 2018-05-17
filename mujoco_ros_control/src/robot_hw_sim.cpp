@@ -12,6 +12,10 @@
 namespace mujoco_ros_control
 {
 
+RobotHWSim::RobotHWSim()
+{
+}
+
 bool RobotHWSim::init_sim(
   const std::string& robot_namespace,
   ros::NodeHandle model_nh,
@@ -37,4 +41,6 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
   // write the control signals d->ctrl (how to pass the d? -> we may need re-implementation)
 }
 
-} // namespace
+}
+
+PLUGINLIB_EXPORT_CLASS( mujoco_ros_control::RobotHWSim, hardware_interface::RobotHW)

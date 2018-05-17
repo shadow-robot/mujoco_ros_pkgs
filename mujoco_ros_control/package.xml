@@ -19,8 +19,8 @@
   <depend>joint_limits_interface</depend>
   <depend>urdf</depend>
 
-  <!-- export>
+  <export>
     <mujoco_ros_control plugin="${prefix}/robot_hw_sim_plugin.xml"/>
-  </export -->
+  </export>
 </package>
 

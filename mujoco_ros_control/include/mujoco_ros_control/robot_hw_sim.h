@@ -34,8 +34,8 @@ namespace mujoco_ros_control
 class RobotHWSim : public hardware_interface::RobotHW
 {
 public:
-  
-  virtual ~RobotHWSim() { }
+  RobotHWSim();
+  virtual ~RobotHWSim(){};
 
   virtual bool init_sim(
     const std::string& robot_namespace,
