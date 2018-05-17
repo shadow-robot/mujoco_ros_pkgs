@@ -19,9 +19,9 @@
 #include <std_msgs/Bool.h>
 
 // Mujoco dependencies
-//#include "mujoco.h"
-//#include "mjdata.h"
-//#include "mjmodel.h"
+#include "/home/user/mjpro150/include/mujoco.h"
+#include "/home/user/mjpro150/include/mjdata.h"
+#include "/home/user/mjpro150/include/mjmodel.h"
 
 // ros_control
 #include <mujoco_ros_control/robot_hw_sim.h>
@@ -43,6 +43,11 @@ public:
   // step update function
   void update(const ros::Time& time, const ros::Duration& period);
 
+  // get the URDF XML from the parameter server
+  std::string get_urdf(std::string param_name) const;
+
+  // parse transmissions from URDF
+  bool parse_transmissions(const std::string& urdf_string);
 
 protected:
 
@@ -50,24 +55,27 @@ protected:
   ros::NodeHandle robot_node_handle; //namespaces to the robot name
 
   // pointer to the mujoco model
-  //mjModel* m;
-  //mjData* d;
+  mjModel* mujoco_model;
+  mjData* mujoco_data;
 
   // interface loader
   boost::shared_ptr<pluginlib::ClassLoader<mujoco_ros_control::RobotHWSim> > robot_hw_sim_loader_;
 
-  // Strings
+  // strings
   std::string robot_namespace_;
   std::string robot_description_;
 
-  // Robot simulator interface
+  // transmissions in this plugin's scope
+  std::vector<transmission_interface::TransmissionInfo> transmissions_;
+
+  // robot simulator interface
   std::string robot_hw_sim_type_str_;
   boost::shared_ptr<mujoco_ros_control::RobotHWSim> robot_hw_sim_;
 
-  // Controller manager
+  // controller manager
   boost::shared_ptr<controller_manager::ControllerManager> controller_manager_;
 
-  // Timing
+  // timing
   ros::Duration control_period_;
   ros::Time last_update_sim_time_ros_;
   ros::Time last_write_sim_time_ros_;
