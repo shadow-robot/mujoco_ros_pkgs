@@ -112,6 +112,7 @@ bool RobotHWSim::init_sim(
     const std::string& hardware_interface = joint_interfaces.front();
 
     // Debug
+    // Debug
     ROS_DEBUG_STREAM_NAMED("default_robot_hw_sim","Loading joint '" << joint_names_[j]
       << "' of type '" << hardware_interface << "'");
 

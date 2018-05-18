@@ -11,18 +11,23 @@
 #include <mujoco_ros_control/mujoco_ros_control.h>
 #include <urdf/model.h>
 
+// openGL stuff
+#include <GLFW/glfw3.h>
+
 namespace mujoco_ros_control
 {
 
 MujocoRosControl::~MujocoRosControl()
 {
-  // disconnect from mujoco events
-
   // deallocate existing mjModel
-  //mj_deleteModel(m);
+  mj_deleteModel(mujoco_model);
 
   // deallocate existing mjData
-  //mj_deleteData(d);
+  mj_deleteData(mujoco_data);
+
+  mjr_freeContext(&con);
+  mjv_freeScene(&scn);
+  mj_deactivate();
 }
 
 void MujocoRosControl::init()
@@ -35,7 +40,6 @@ void MujocoRosControl::init()
         return;
     }
     
-
     // activation license mujoco
     //mj_activate(".txt")
 
@@ -45,6 +49,18 @@ void MujocoRosControl::init()
     // create mjData corresponding to mjModel
     mujoco_data = mj_makeData(mujoco_model);
 
+    // initialize MuJoCo visualization
+    mjv_makeScene(&scn, 1000);
+    mjv_defaultCamera(&cam);
+    mjv_defaultOption(&opt);
+    mjr_defaultContext(&con);
+    mjr_makeContext(m, &con, 200);
+
+    // center and scale view
+    cam.lookat[0] = m->stat.center[0];
+    cam.lookat[1] = m->stat.center[1];
+    cam.lookat[2] = m->stat.center[2];
+    cam.distance = 1.5 * m->stat.extent;
 
     // get the Mujoco simulation period
     ros::Duration mujoco_period(mujoco_model->opt.timestep);
@@ -99,7 +115,7 @@ void MujocoRosControl::init()
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 }
 
-void MujocoRosControl::update(const ros::Time& time, const ros::Duration& period)
+void MujocoRosControl::update()
 {
   // get simulation time and period
   ros::Time sim_time_ros(mujoco_data->time, mujoco_data->time); 
@@ -175,9 +191,31 @@ int main(int argc, char** argv)
 
     mujoco_ros_control::MujocoRosControl MujocoRosControl();
 
-    MujocoRosControl().init();
-    // init openGL window
+    // init GLFW
+    if( !glfwInit() )
+        mju_error("Could not initialize GLFW");
 
+    // create window, make OpenGL context current, request v-sync
+    GLFWwindow* window = glfwCreateWindow(1200, 900, "Demo", NULL, NULL);
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);
+
+    //initialize mujoco stuff
+    MujocoRosControl().init();
+
+    // run main loop, target real-time simulation and 60 fps rendering
+    while( !glfwWindowShouldClose(window) )
+    {
+        // advance interactive simulation for 1/60 sec
+        //  Assuming MuJoCo can simulate faster than real-time, which it usually can,
+        //  this loop will finish on time for the next frame to be rendered at 60 fps.
+        mjtNum simstart = MujocoRosControl().mujoco_data->time;
+        while( MujocoRosControl().mujoco_data->time - simstart < 1.0/60.0 && ros::ok() )
+        {
+            MujocoRosControl().update();
+        }
+
+    }
 
     ros::spin();
     return 0;

@@ -41,13 +41,19 @@ public:
   void init();
 
   // step update function
-  void update(const ros::Time& time, const ros::Duration& period);
+  void update();
 
   // get the URDF XML from the parameter server
   std::string get_urdf(std::string param_name) const;
 
   // parse transmissions from URDF
   bool parse_transmissions(const std::string& urdf_string);
+
+  // MuJoCo visualization
+  mjvScene scn;
+  mjvCamera cam;
+  mjvOption opt;
+  mjrContext con;
 
 protected:
 
