@@ -45,8 +45,17 @@ void MujocoRosControl::init()
     // create mjData corresponding to mjModel
     mujoco_data = mj_makeData(mujoco_model);
 
+
+    // get the Mujoco simulation period
+    ros::Duration mujoco_period(mujoco_model->opt.timestep);
+
+    // set control period as mujoco_period
+    control_period_ = mujoco_period;
+    ROS_DEBUG_STREAM_NAMED("gazebo_ros_control","Control period not found in URDF/SDF, defaulting to Gazebo period of "
+      << control_period_);
+      
     // create robot node handle
-    robot_node_handle = ros::NodeHandle("robot_namespace");
+    robot_node_handle = ros::NodeHandle("/");
 
     ROS_INFO_NAMED("mujoco_ros_control", "Starting mujoco_ros_control node in namespace: %s", robot_namespace_.c_str());
 
@@ -68,7 +77,7 @@ void MujocoRosControl::init()
         (new pluginlib::ClassLoader<mujoco_ros_control::RobotHWSim>
           ("mujoco_ros_control", "mujoco_ros_control::RobotHWSim"));
 
-    robot_hw_sim_ = robot_hw_sim_loader_->createInstance(robot_hw_sim_type_str_);
+    robot_hw_sim_ = robot_hw_sim_loader_->createInstance("mujoco_ros_control/RobotHwSim");
     urdf::Model urdf_model;
     const urdf::Model *const urdf_model_ptr = urdf_model.initString(urdf_string) ? &urdf_model : NULL;
 
@@ -86,20 +95,38 @@ void MujocoRosControl::init()
     {
       ROS_FATAL_STREAM_NAMED("mujoco_ros_control","Failed to create robot simulation interface loader: "<<ex.what());
     }
-
+\
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 }
 
 void MujocoRosControl::update(const ros::Time& time, const ros::Duration& period)
 {
-    //while(time)
-    //{
-        // read current state
-        //mj_step1(m, d)
-        // robot_hw_sim_->read(m, d)
-        // robot_hw_sim_->write(m, d)
-        //mj_step2(m, d)
-    //}
+  // get simulation time and period
+  ros::Time sim_time_ros(mujoco_data->time, mujoco_data->time); 
+
+  ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
+
+  // check if we should update the controllers
+  if(sim_period >= control_period_) {
+    // store simulation time
+    last_update_sim_time_ros_ = sim_time_ros;
+    
+    // call first step of simulation without control signals
+    mj_step1(mujoco_model, mujoco_data);
+
+    // update the robot simulation with the state of the mujoco model
+    robot_hw_sim_->read(sim_time_ros, sim_period);
+
+    bool reset_ctrls = false;
+
+    // compute the controller commands
+    controller_manager_->update(sim_time_ros, sim_period, reset_ctrls);
+  }
+
+  // update the mujoco model with the result of the controller
+  robot_hw_sim_->write(sim_time_ros, sim_time_ros - last_write_sim_time_ros_);
+  last_write_sim_time_ros_ = sim_time_ros;
+  mj_step2(mujoco_model, mujoco_data);
 }
 
 // Get the URDF XML from the parameter server
@@ -113,14 +140,14 @@ std::string MujocoRosControl::get_urdf(std::string param_name) const
     std::string search_param_name;
     if (robot_node_handle.searchParam(param_name, search_param_name))
     {
-      ROS_INFO_ONCE_NAMED("gazebo_ros_control", "gazebo_ros_control plugin is waiting for model"
+      ROS_INFO_ONCE_NAMED("mujoco_ros_control", "mujoco_ros_control plugin is waiting for model"
         " URDF in parameter [%s] on the ROS param server.", search_param_name.c_str());
 
       robot_node_handle.getParam(search_param_name, urdf_string);
     }
     else
     {
-      ROS_INFO_ONCE_NAMED("gazebo_ros_control", "gazebo_ros_control plugin is waiting for model"
+      ROS_INFO_ONCE_NAMED("mujoco_ros_control", "mujoco_ros_control plugin is waiting for model"
         " URDF in parameter [%s] on the ROS param server.", robot_description_.c_str());
 
       robot_node_handle.getParam(param_name, urdf_string);
@@ -128,7 +155,7 @@ std::string MujocoRosControl::get_urdf(std::string param_name) const
 
     usleep(100000);
   }
-  ROS_DEBUG_STREAM_NAMED("gazebo_ros_control", "Recieved urdf from param server, parsing...");
+  ROS_DEBUG_STREAM_NAMED("mujoco_ros_control", "Received urdf from param server, parsing...");
 
   return urdf_string;
 }

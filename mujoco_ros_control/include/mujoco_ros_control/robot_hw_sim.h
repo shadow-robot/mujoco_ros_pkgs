@@ -76,6 +76,14 @@ protected:
   hardware_interface::PositionJointInterface pj_interface_;
   hardware_interface::VelocityJointInterface vj_interface_;
 
+  // joint limit interfaces
+  joint_limits_interface::EffortJointSaturationInterface   ej_sat_interface_;
+  joint_limits_interface::EffortJointSoftLimitsInterface   ej_limits_interface_;
+  joint_limits_interface::PositionJointSaturationInterface pj_sat_interface_;
+  joint_limits_interface::PositionJointSoftLimitsInterface pj_limits_interface_;
+  joint_limits_interface::VelocityJointSaturationInterface vj_sat_interface_;
+  joint_limits_interface::VelocityJointSoftLimitsInterface vj_limits_interface_;
+
   // vectors
   std::vector<std::string> joint_names_;
   std::vector<int> joint_types_;

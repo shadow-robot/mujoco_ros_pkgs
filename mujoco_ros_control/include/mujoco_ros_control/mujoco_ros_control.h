@@ -69,7 +69,6 @@ protected:
   std::vector<transmission_interface::TransmissionInfo> transmissions_;
 
   // robot simulator interface
-  std::string robot_hw_sim_type_str_;
   boost::shared_ptr<mujoco_ros_control::RobotHWSim> robot_hw_sim_;
 
   // controller manager

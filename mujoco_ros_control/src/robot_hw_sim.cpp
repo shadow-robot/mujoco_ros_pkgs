@@ -9,6 +9,16 @@
 #include <mujoco_ros_control/robot_hw_sim.h>
 #include <urdf/model.h>
 
+namespace
+{
+
+double clamp(const double val, const double min_val, const double max_val)
+{
+  return std::min(std::max(val, min_val), max_val);
+}
+
+}
+
 namespace mujoco_ros_control
 {
 
@@ -146,6 +156,11 @@ bool RobotHWSim::init_sim(
       ROS_WARN_STREAM("Deprecated syntax, please prepend 'hardware_interface/' to '" << hardware_interface << "' within the <hardwareInterface> tag in joint '" << joint_names_[j] << "'.");
     }
 
+  register_joint_limits(joint_names_[j], joint_handle, joint_control_methods_[j],
+                        joint_limit_nh, urdf_model,
+                        &joint_types_[j], &joint_lower_limits_[j], &joint_upper_limits_[j],
+                        &joint_effort_limits_[j]);
+
   // Register interfaces
   registerInterface(&js_interface_);
   registerInterface(&ej_interface_);
@@ -181,7 +196,189 @@ void RobotHWSim::read(const ros::Time& time, const ros::Duration& period)
 
 void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
 {
-  // write the control signals d->ctrl (how to pass the d? -> we may need re-implementation)
+  // write the control signals to mujoco data
+  ej_sat_interface_.enforceLimits(period);
+  ej_limits_interface_.enforceLimits(period);
+  pj_sat_interface_.enforceLimits(period);
+  pj_limits_interface_.enforceLimits(period);
+  vj_sat_interface_.enforceLimits(period);
+  vj_limits_interface_.enforceLimits(period);
+
+  for(unsigned int j=0; j < n_dof_; j++)
+  {
+    switch (joint_control_methods_[j])
+    {
+      case EFFORT:
+        mujoco_data_->ctrl[j] = joint_effort_command_[j]; // Set force
+        break;
+
+      case POSITION:
+        mujoco_data_->ctrl[j] = joint_position_command_[j]; // Set position
+        break;
+
+      case POSITION_PID:
+        {
+          double error;
+          switch (joint_types_[j])
+          {
+            case urdf::Joint::REVOLUTE:
+              angles::shortest_angular_distance_with_limits(joint_position_[j],
+                                                            joint_position_command_[j],
+                                                            joint_lower_limits_[j],
+                                                            joint_upper_limits_[j],
+                                                            error);
+              break;
+            case urdf::Joint::CONTINUOUS:
+              error = angles::shortest_angular_distance(joint_position_[j],
+                                                        joint_position_command_[j]);
+              break;
+            default:
+              error = joint_position_command_[j] - joint_position_[j];
+          }
+
+          const double effort_limit = joint_effort_limits_[j];
+          const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
+                                      -effort_limit, effort_limit);
+          mujoco_data_->ctrl[j] = effort; // Set force
+        }
+        break;
+
+      case VELOCITY:
+        mujoco_data_->ctrl[j] = joint_velocity_command_[j]; // Set velocity
+        break;
+
+      case VELOCITY_PID:
+        double error;
+        error = joint_velocity_command_[j] - joint_velocity_[j];
+        const double effort_limit = joint_effort_limits_[j];
+        const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
+                                    -effort_limit, effort_limit);
+        mujoco_data_->ctrl[j] = effort; // Set force
+        break;
+    }
+  }
+}
+
+// Register the limits of the joint specified by joint_name and joint_handle. The limits are
+// retrieved from joint_limit_nh. If urdf_model is not NULL, limits are retrieved from it also.
+// Return the joint's type, lower position limit, upper position limit, and effort limit.
+void RobotHWSim::register_joint_limits(const std::string& joint_name,
+                           const hardware_interface::JointHandle& joint_handle,
+                           const ControlMethod ctrl_method,
+                           const ros::NodeHandle& joint_limit_nh,
+                           const urdf::Model *const urdf_model,
+                           int *const joint_type, double *const lower_limit,
+                           double *const upper_limit, double *const effort_limit)
+{
+  *joint_type = urdf::Joint::UNKNOWN;
+  *lower_limit = -std::numeric_limits<double>::max();
+  *upper_limit = std::numeric_limits<double>::max();
+  *effort_limit = std::numeric_limits<double>::max();
+
+  joint_limits_interface::JointLimits limits;
+  bool has_limits = false;
+  joint_limits_interface::SoftJointLimits soft_limits;
+  bool has_soft_limits = false;
+
+  if (urdf_model != NULL)
+  {
+    const urdf::JointConstSharedPtr urdf_joint = urdf_model->getJoint(joint_name);
+    if (urdf_joint != NULL)
+    {
+      *joint_type = urdf_joint->type;
+      // Get limits from the URDF file.
+      if (joint_limits_interface::getJointLimits(urdf_joint, limits))
+        has_limits = true;
+      if (joint_limits_interface::getSoftJointLimits(urdf_joint, soft_limits))
+        has_soft_limits = true;
+    }
+  }
+  // Get limits from the parameter server.
+  if (joint_limits_interface::getJointLimits(joint_name, joint_limit_nh, limits))
+    has_limits = true;
+
+  if (!has_limits)
+    return;
+
+  if (*joint_type == urdf::Joint::UNKNOWN)
+  {
+    // Infer the joint type.
+
+    if (limits.has_position_limits)
+    {
+      *joint_type = urdf::Joint::REVOLUTE;
+    }
+    else
+    {
+      if (limits.angle_wraparound)
+        *joint_type = urdf::Joint::CONTINUOUS;
+      else
+        *joint_type = urdf::Joint::PRISMATIC;
+    }
+  }
+
+  if (limits.has_position_limits)
+  {
+    *lower_limit = limits.min_position;
+    *upper_limit = limits.max_position;
+  }
+  if (limits.has_effort_limits)
+    *effort_limit = limits.max_effort;
+
+  if (has_soft_limits)
+  {
+    switch (ctrl_method)
+    {
+      case EFFORT:
+        {
+          const joint_limits_interface::EffortJointSoftLimitsHandle
+            limits_handle(joint_handle, limits, soft_limits);
+          ej_limits_interface_.registerHandle(limits_handle);
+        }
+        break;
+      case POSITION:
+        {
+          const joint_limits_interface::PositionJointSoftLimitsHandle
+            limits_handle(joint_handle, limits, soft_limits);
+          pj_limits_interface_.registerHandle(limits_handle);
+        }
+        break;
+      case VELOCITY:
+        {
+          const joint_limits_interface::VelocityJointSoftLimitsHandle
+            limits_handle(joint_handle, limits, soft_limits);
+          vj_limits_interface_.registerHandle(limits_handle);
+        }
+        break;
+    }
+  }
+  else
+  {
+    switch (ctrl_method)
+    {
+      case EFFORT:
+        {
+          const joint_limits_interface::EffortJointSaturationHandle
+            sat_handle(joint_handle, limits);
+          ej_sat_interface_.registerHandle(sat_handle);
+        }
+        break;
+      case POSITION:
+        {
+          const joint_limits_interface::PositionJointSaturationHandle
+            sat_handle(joint_handle, limits);
+          pj_sat_interface_.registerHandle(sat_handle);
+        }
+        break;
+      case VELOCITY:
+        {
+          const joint_limits_interface::VelocityJointSaturationHandle
+            sat_handle(joint_handle, limits);
+          vj_sat_interface_.registerHandle(sat_handle);
+        }
+        break;
+    }
+  }
 }
 
 }
