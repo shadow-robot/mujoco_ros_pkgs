@@ -88,7 +88,8 @@ void MujocoRosControl::init()
     urdf::Model urdf_model;
     const urdf::Model *const urdf_model_ptr = urdf_model.initString(urdf_string) ? &urdf_model : NULL;
 
-    if(!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model, mujoco_data, urdf_model_ptr, transmissions_))
+    if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
+                                 mujoco_data, urdf_model_ptr, transmissions_))
     {
       ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot simulation interface");
       return;
@@ -100,7 +101,7 @@ void MujocoRosControl::init()
     }
     catch(pluginlib::LibraryLoadException &ex)
     {
-      ROS_FATAL_STREAM_NAMED("mujoco_ros_control" ,"Failed to create robot simulation interface loader: "<<ex.what());
+      ROS_FATAL_STREAM_NAMED("mujoco_ros_control" , "Failed to create robot simulation interface loader: " << ex.what());
     }
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 }
@@ -114,10 +115,10 @@ void MujocoRosControl::update()
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
   // check if we should update the controllers
-  if(sim_period >= control_period_) {
+  if (sim_period >= control_period_) {
     // store simulation time
     last_update_sim_time_ros_ = sim_time_ros;
-    
+
     // call first step of simulation without control signals
     mj_step1(mujoco_model, mujoco_data);
 
@@ -174,9 +175,9 @@ bool MujocoRosControl::parse_transmissions(const std::string& urdf_string)
   return true;
 }
 
-}
+}  // namespace mujoco_ros_control
 
-int main(int argc, char** argv) 
+int main(int argc, char** argv)
 {
     ros::init(argc, argv, "mujoco_ros_control");
 
@@ -192,7 +193,7 @@ int main(int argc, char** argv)
     mjrContext con;
 
     // init GLFW
-    if( !glfwInit() )
+    if ( !glfwInit() )
       mju_error("Could not initialize GLFW");
 
     // create window, make OpenGL context current, request v-sync
@@ -217,23 +218,23 @@ int main(int argc, char** argv)
     cam.distance = 1.5 * MujocoRosControl.mujoco_model->stat.extent;
 
     // run main loop, target real-time simulation and 60 fps rendering
-    while( !glfwWindowShouldClose(window) )
+    while ( !glfwWindowShouldClose(window) )
     {
         // advance interactive simulation for 1/60 sec
         // Assuming MuJoCo can simulate faster than real-time, which it usually can,
         // this loop will finish on time for the next frame to be rendered at 60 fps.
         mjtNum sim_start = MujocoRosControl.mujoco_data->time;
-        while( MujocoRosControl.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
+        while ( MujocoRosControl.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
         {
             MujocoRosControl.update();
         }
-        
         // get framebuffer viewport
         mjrRect viewport = {0, 0, 0, 0};
         glfwGetFramebufferSize(window, &viewport.width, &viewport.height);
 
         // update scene and render
-        mjv_updateScene( MujocoRosControl.mujoco_model,  MujocoRosControl.mujoco_data, &opt, NULL, &cam, mjCAT_ALL, &scn);
+        mjv_updateScene(MujocoRosControl.mujoco_model,  MujocoRosControl.mujoco_data, &opt,
+                        NULL, &cam, mjCAT_ALL, &scn);
         mjr_render(viewport, &scn, &con);
 
         // swap OpenGL buffers (blocking call due to v-sync)
@@ -250,5 +251,4 @@ int main(int argc, char** argv)
 
     ros::spin();
     return 0;
-} 
-
+}

@@ -6,8 +6,8 @@
  * @brief  Node to allow ros_control hardware interfaces to be plugged into mujoco
  **/
 
-#ifndef MUJOCO_ROS_CONTROL___MUJOCO_ROS_CONTROL_H
-#define MUJOCO_ROS_CONTROL___MUJOCO_ROS_CONTROL_H
+#ifndef MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H
+#define MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H
 
 // Boost
 #include <boost/shared_ptr.hpp>

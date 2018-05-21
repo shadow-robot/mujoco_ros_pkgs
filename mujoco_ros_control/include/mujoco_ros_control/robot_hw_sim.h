@@ -42,7 +42,7 @@ class RobotHWSim : public hardware_interface::RobotHW
 {
 public:
   RobotHWSim();
-  virtual ~RobotHWSim(){}
+  virtual ~RobotHWSim() {}
 
   virtual bool init_sim(
     const std::string& robot_namespace,
@@ -105,9 +105,8 @@ protected:
   // mujoco elements
   mjModel* mujoco_model_;
   mjData* mujoco_data_;
-
 };
 typedef boost::shared_ptr<RobotHWSim> RobotHWSimPtr;
-}
+}  // namespece mujoco_ros_control
 
-#endif //MUJOCO_ROS_CONTROL_ROBOT_HW_SIM_H
+#endif  // MUJOCO_ROS_CONTROL_ROBOT_HW_SIM_H

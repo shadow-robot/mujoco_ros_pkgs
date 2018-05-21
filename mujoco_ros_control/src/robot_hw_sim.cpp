@@ -8,6 +8,9 @@
 
 #include <mujoco_ros_control/robot_hw_sim.h>
 #include <urdf/model.h>
+#include <string>
+#include <algorithm>
+#include <vector>
 
 namespace
 {
@@ -56,16 +59,16 @@ bool RobotHWSim::init_sim(
   joint_velocity_command_.resize(n_dof_);
 
   // Initialize values
-  for(unsigned int j=0; j < n_dof_; j++)
+  for (unsigned int j = 0; j < n_dof_; j++)
   {
     // Check that this transmission has one joint
-    if(transmissions[j].joints_.size() == 0)
+    if (transmissions[j].joints_.size() == 0)
     {
       ROS_WARN_STREAM_NAMED("default_robot_hw_sim", "Transmission " << transmissions[j].name_
         << " has no associated joints.");
       continue;
     }
-    else if(transmissions[j].joints_.size() > 1)
+    else if (transmissions[j].joints_.size() > 1)
     {
       ROS_WARN_STREAM_NAMED("default_robot_hw_sim", "Transmission " << transmissions[j].name_
         << " has more than one joint. Currently the default robot hardware simulation "
@@ -96,7 +99,6 @@ bool RobotHWSim::init_sim(
       ROS_WARN_STREAM_NAMED("default_robot_hw_sim", "Joint " << transmissions[j].joints_[0].name_ <<
         " of transmission " << transmissions[j].name_ << " specifies multiple hardware interfaces. " <<
         "Currently the default robot hardware simulation interface only supports one. Using the first entry");
-      //continue;
     }
 
     // Add data from transmission
@@ -120,7 +122,7 @@ bool RobotHWSim::init_sim(
 
     // Decide what kind of command interface this actuator/joint has
     hardware_interface::JointHandle joint_handle;
-    if(hardware_interface == "EffortJointInterface" || hardware_interface == "hardware_interface/EffortJointInterface")
+    if (hardware_interface == "EffortJointInterface" || hardware_interface == "hardware_interface/EffortJointInterface")
     {
       // Create effort joint interface
       joint_control_methods_[j] = EFFORT;
@@ -128,7 +130,8 @@ bool RobotHWSim::init_sim(
                                                      &joint_effort_command_[j]);
       ej_interface_.registerHandle(joint_handle);
     }
-    else if(hardware_interface == "PositionJointInterface" || hardware_interface == "hardware_interface/PositionJointInterface")
+    else if (hardware_interface == "PositionJointInterface" ||
+             hardware_interface == "hardware_interface/PositionJointInterface")
     {
       // Create position joint interface
       joint_control_methods_[j] = POSITION;
@@ -136,7 +139,8 @@ bool RobotHWSim::init_sim(
                                                      &joint_position_command_[j]);
       pj_interface_.registerHandle(joint_handle);
     }
-    else if(hardware_interface == "VelocityJointInterface" || hardware_interface == "hardware_interface/VelocityJointInterface")
+    else if (hardware_interface == "VelocityJointInterface" ||
+             hardware_interface == "hardware_interface/VelocityJointInterface")
     {
       // Create velocity joint interface
       joint_control_methods_[j] = VELOCITY;
@@ -151,8 +155,11 @@ bool RobotHWSim::init_sim(
       return false;
     }
 
-    if(hardware_interface == "EffortJointInterface" || hardware_interface == "PositionJointInterface" || hardware_interface == "VelocityJointInterface") {
-      ROS_WARN_STREAM("Deprecated syntax, please prepend 'hardware_interface/' to '" << hardware_interface << "' within the <hardwareInterface> tag in joint '" << joint_names_[j] << "'.");
+    if (hardware_interface == "EffortJointInterface" || hardware_interface == "PositionJointInterface" ||
+        hardware_interface == "VelocityJointInterface") {
+      ROS_WARN_STREAM("Deprecated syntax, please prepend 'hardware_interface/' to '" << 
+                      hardware_interface << "' within the <hardwareInterface> tag in joint '" <<
+                      joint_names_[j] << "'.");
     }
 
   register_joint_limits(joint_names_[j], joint_handle, joint_control_methods_[j],
@@ -174,7 +181,7 @@ void RobotHWSim::read(const ros::Time& time, const ros::Duration& period)
 {
   // fill up joint_positions vector with current position to update joint state controller
   // get current state of simulation
-  for(unsigned int j=0; j < n_dof_; j++)
+  for (unsigned int j = 0; j < n_dof_; j++)
   {
     double position;
     position = mujoco_data_->qpos[j];
@@ -203,16 +210,16 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
   vj_sat_interface_.enforceLimits(period);
   vj_limits_interface_.enforceLimits(period);
 
-  for(unsigned int j=0; j < n_dof_; j++)
+  for (unsigned int j = 0; j < n_dof_; j++)
   {
     switch (joint_control_methods_[j])
     {
       case EFFORT:
-        mujoco_data_->ctrl[j] = joint_effort_command_[j]; // Set force
+        mujoco_data_->ctrl[j] = joint_effort_command_[j];
         break;
 
       case POSITION:
-        mujoco_data_->ctrl[j] = joint_position_command_[j]; // Set position
+        mujoco_data_->ctrl[j] = joint_position_command_[j];
         break;
 
       case POSITION_PID:
@@ -238,12 +245,12 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
           const double effort_limit = joint_effort_limits_[j];
           const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
                                       -effort_limit, effort_limit);
-          mujoco_data_->ctrl[j] = effort; // Set force
+          mujoco_data_->ctrl[j] = effort;
         }
         break;
 
       case VELOCITY:
-        mujoco_data_->ctrl[j] = joint_velocity_command_[j]; // Set velocity
+        mujoco_data_->ctrl[j] = joint_velocity_command_[j];
         break;
 
       case VELOCITY_PID:
@@ -252,7 +259,7 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
         const double effort_limit = joint_effort_limits_[j];
         const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
                                     -effort_limit, effort_limit);
-        mujoco_data_->ctrl[j] = effort; // Set force
+        mujoco_data_->ctrl[j] = effort;
         break;
     }
   }
@@ -379,7 +386,6 @@ void RobotHWSim::register_joint_limits(const std::string& joint_name,
     }
   }
 }
-
-}
+}  // namespace mujoco_ros_control
 
 PLUGINLIB_EXPORT_CLASS( mujoco_ros_control::RobotHWSim, hardware_interface::RobotHW)
