@@ -87,4 +87,4 @@ protected:
   ros::Time last_write_sim_time_ros_;
 };
 }  // namespace mujoco_ros_control
-#endif // MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H
+#endif  // MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H

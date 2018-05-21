@@ -107,6 +107,6 @@ protected:
   mjData* mujoco_data_;
 };
 typedef boost::shared_ptr<RobotHWSim> RobotHWSimPtr;
-}  // namespece mujoco_ros_control
+}  // namespace mujoco_ros_control
 
 #endif  // MUJOCO_ROS_CONTROL_ROBOT_HW_SIM_H

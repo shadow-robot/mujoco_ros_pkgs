@@ -11,6 +11,7 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <limits>
 
 namespace
 {
@@ -151,13 +152,13 @@ bool RobotHWSim::init_sim(
     else
     {
       ROS_FATAL_STREAM_NAMED("default_robot_hw_sim", "No matching hardware interface found for '"
-        << hardware_interface << "' while loading interfaces for " << joint_names_[j] );
+        << hardware_interface << "' while loading interfaces for " << joint_names_[j]);
       return false;
     }
 
     if (hardware_interface == "EffortJointInterface" || hardware_interface == "PositionJointInterface" ||
         hardware_interface == "VelocityJointInterface") {
-      ROS_WARN_STREAM("Deprecated syntax, please prepend 'hardware_interface/' to '" << 
+      ROS_WARN_STREAM("Deprecated syntax, please prepend 'hardware_interface/' to '" <<
                       hardware_interface << "' within the <hardwareInterface> tag in joint '" <<
                       joint_names_[j] << "'.");
     }
@@ -174,7 +175,7 @@ bool RobotHWSim::init_sim(
   registerInterface(&vj_interface_);
 
   return true;
-  } 
+  }
 }
 
 void RobotHWSim::read(const ros::Time& time, const ros::Duration& period)
@@ -185,7 +186,7 @@ void RobotHWSim::read(const ros::Time& time, const ros::Duration& period)
   {
     double position;
     position = mujoco_data_->qpos[j];
-   
+
     if (joint_types_[j] == urdf::Joint::PRISMATIC)
     {
       joint_position_[j] = position;
@@ -388,4 +389,4 @@ void RobotHWSim::register_joint_limits(const std::string& joint_name,
 }
 }  // namespace mujoco_ros_control
 
-PLUGINLIB_EXPORT_CLASS( mujoco_ros_control::RobotHWSim, hardware_interface::RobotHW)
+PLUGINLIB_EXPORT_CLASS(mujoco_ros_control::RobotHWSim, hardware_interface::RobotHW)

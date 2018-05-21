@@ -10,6 +10,7 @@
 #include <boost/bind.hpp>
 #include <mujoco_ros_control/mujoco_ros_control.h>
 #include <urdf/model.h>
+#include <string>
 
 namespace mujoco_ros_control
 {
@@ -89,7 +90,7 @@ void MujocoRosControl::init()
     if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
                                  mujoco_data, urdf_model_ptr, transmissions_))
     {
-      ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot simulation interface");
+      ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot sim interface");
       return;
     }
 
@@ -99,7 +100,8 @@ void MujocoRosControl::init()
     }
     catch(pluginlib::LibraryLoadException &ex)
     {
-      ROS_FATAL_STREAM_NAMED("mujoco_ros_control" , "Failed to create robot simulation interface loader: " << ex.what());
+      ROS_FATAL_STREAM_NAMED("mujoco_ros_control" , "Failed to create robot sim interface loader: "
+                             << ex.what());
     }
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 }
@@ -108,7 +110,7 @@ void MujocoRosControl::update()
 {
   // get simulation time and period
   long int nanosec_time = (mujoco_data->time) * 1e9;
-  ros::Time sim_time_ros(mujoco_data->time, nanosec_time); 
+  ros::Time sim_time_ros(mujoco_data->time, nanosec_time);
 
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
