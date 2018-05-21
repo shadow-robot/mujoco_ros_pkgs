@@ -28,6 +28,9 @@
 #include <controller_manager/controller_manager.h>
 #include <transmission_interface/transmission_parser.h>
 
+// openGL stuff
+#include <GLFW/glfw3.h>
+
 namespace mujoco_ros_control
 {
 
@@ -43,26 +46,23 @@ public:
   // step update function
   void update();
 
+  // initialize glfw function
+  void init_glfw();
+
   // get the URDF XML from the parameter server
   std::string get_urdf(std::string param_name) const;
 
   // parse transmissions from URDF
   bool parse_transmissions(const std::string& urdf_string);
 
-  // MuJoCo visualization
-  mjvScene scn;
-  mjvCamera cam;
-  mjvOption opt;
-  mjrContext con;
+  // pointer to the mujoco model
+  mjModel* mujoco_model;
+  mjData* mujoco_data;
 
 protected:
 
   // node handles
   ros::NodeHandle robot_node_handle; //namespaces to the robot name
-
-  // pointer to the mujoco model
-  mjModel* mujoco_model;
-  mjData* mujoco_data;
 
   // interface loader
   boost::shared_ptr<pluginlib::ClassLoader<mujoco_ros_control::RobotHWSim> > robot_hw_sim_loader_;

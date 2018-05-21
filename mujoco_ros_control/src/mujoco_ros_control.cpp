@@ -11,9 +11,6 @@
 #include <mujoco_ros_control/mujoco_ros_control.h>
 #include <urdf/model.h>
 
-// openGL stuff
-#include <GLFW/glfw3.h>
-
 namespace mujoco_ros_control
 {
 
@@ -25,9 +22,7 @@ MujocoRosControl::~MujocoRosControl()
   // deallocate existing mjData
   mj_deleteData(mujoco_data);
 
-  mjr_freeContext(&con);
-  mjv_freeScene(&scn);
-  mj_deactivate();
+  //mj_deactivate();
 }
 
 void MujocoRosControl::init()
@@ -43,24 +38,14 @@ void MujocoRosControl::init()
     // activation license mujoco
     //mj_activate(".txt")
 
+    // initialize GL stuff
+    init_glfw();
+
     // create mjModel
     mujoco_model = mj_loadModel("/home/user/projects/shadow_robot/base/src/mujoco_ros_pkgs/mujoco_ros_control/config/test_urdf.xml", NULL);
 
     // create mjData corresponding to mjModel
     mujoco_data = mj_makeData(mujoco_model);
-
-    // initialize MuJoCo visualization
-    mjv_makeScene(&scn, 1000);
-    mjv_defaultCamera(&cam);
-    mjv_defaultOption(&opt);
-    mjr_defaultContext(&con);
-    mjr_makeContext(m, &con, 200);
-
-    // center and scale view
-    cam.lookat[0] = m->stat.center[0];
-    cam.lookat[1] = m->stat.center[1];
-    cam.lookat[2] = m->stat.center[2];
-    cam.distance = 1.5 * m->stat.extent;
 
     // get the Mujoco simulation period
     ros::Duration mujoco_period(mujoco_model->opt.timestep);
@@ -145,7 +130,14 @@ void MujocoRosControl::update()
   mj_step2(mujoco_model, mujoco_data);
 }
 
-// Get the URDF XML from the parameter server
+// initialize openGL stuff for visualization
+void MujocoRosControl::init_glfw()
+{
+
+
+}
+
+// get the URDF XML from the parameter server
 std::string MujocoRosControl::get_urdf(std::string param_name) const
 {
   std::string urdf_string;
@@ -191,17 +183,39 @@ int main(int argc, char** argv)
 
     mujoco_ros_control::MujocoRosControl MujocoRosControl();
 
+    //initialize mujoco stuff
+    MujocoRosControl().init();
+
+    // MuJoCo visualization
+    mjvScene scn;
+    mjvCamera cam;
+    mjvOption opt;
+    mjrContext con;
+
     // init GLFW
     if( !glfwInit() )
-        mju_error("Could not initialize GLFW");
+      mju_error("Could not initialize GLFW");
 
     // create window, make OpenGL context current, request v-sync
     GLFWwindow* window = glfwCreateWindow(1200, 900, "Demo", NULL, NULL);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 
-    //initialize mujoco stuff
-    MujocoRosControl().init();
+    // make context current
+    glfwMakeContextCurrent(window);
+
+    // initialize MuJoCo visualization
+    mjv_makeScene(&scn, 1000);
+    mjv_defaultCamera(&cam);
+    mjv_defaultOption(&opt);
+    mjr_defaultContext(&con);
+    mjr_makeContext(MujocoRosControl().mujoco_model, &con, 200);
+
+    // center and scale view
+    cam.lookat[0] = MujocoRosControl().mujoco_model->stat.center[0];
+    cam.lookat[1] = MujocoRosControl().mujoco_model->stat.center[1];
+    cam.lookat[2] = MujocoRosControl().mujoco_model->stat.center[2];
+    cam.distance = 1.5 * MujocoRosControl().mujoco_model->stat.extent;
 
     // run main loop, target real-time simulation and 60 fps rendering
     while( !glfwWindowShouldClose(window) )
@@ -209,13 +223,31 @@ int main(int argc, char** argv)
         // advance interactive simulation for 1/60 sec
         //  Assuming MuJoCo can simulate faster than real-time, which it usually can,
         //  this loop will finish on time for the next frame to be rendered at 60 fps.
-        mjtNum simstart = MujocoRosControl().mujoco_data->time;
-        while( MujocoRosControl().mujoco_data->time - simstart < 1.0/60.0 && ros::ok() )
+        mjtNum sim_start = MujocoRosControl().mujoco_data->time;
+        while( MujocoRosControl().mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
         {
             MujocoRosControl().update();
         }
+        
+        // get framebuffer viewport
+        mjrRect viewport = {0, 0, 0, 0};
+        glfwGetFramebufferSize(window, &viewport.width, &viewport.height);
 
+        // update scene and render
+        mjv_updateScene( MujocoRosControl().mujoco_model,  MujocoRosControl().mujoco_data, &opt, NULL, &cam, mjCAT_ALL, &scn);
+        mjr_render(viewport, &scn, &con);
+
+        // swap OpenGL buffers (blocking call due to v-sync)
+        glfwSwapBuffers(window);
+
+        // process pending GUI events, call GLFW callbacks
+        glfwPollEvents();
     }
+
+    // free scene and terminate glfw
+    mjr_freeContext(&con);
+    mjv_freeScene(&scn);
+    glfwTerminate();
 
     ros::spin();
     return 0;
