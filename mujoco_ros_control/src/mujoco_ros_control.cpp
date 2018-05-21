@@ -23,7 +23,7 @@ MujocoRosControl::~MujocoRosControl()
   // deallocate existing mjData
   mj_deleteData(mujoco_data);
 
-  // mj_deactivate();
+  mj_deactivate();
 }
 
 void MujocoRosControl::init()
@@ -36,7 +36,7 @@ void MujocoRosControl::init()
     }
 
     // activation license mujoco
-    // mj_activate(".txt")
+    mj_activate("/home/user/mjpro150/bin/mjkey.txt");
 
     // create robot node handle
     robot_node_handle = ros::NodeHandle("/");
