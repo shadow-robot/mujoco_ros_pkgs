@@ -54,12 +54,19 @@ void MujocoRosControl::init()
       return;
     }
 
-    // convert string to char because mujoco loadModel wants it like that
-    char *urdf_string_char = new char[urdf_string.length() + 1];
-    std::strcpy(urdf_string_char, urdf_string.c_str());
+    // write xml to file
+    std::ofstream out("/home/user/projects/shadow_robot/base/src/mujoco_ros_pkgs/mujoco_ros_control/config/robot_model.xml");
+    out << urdf_string;
+    out.close();
 
+    std::string package_path = ros::package::getPath("mujoco_ros_control");
+    std::string name_file = "/config/robot_model.xml";
+    std::string filename = package_path + name_file;
+
+    const char* filename_char = filename.c_str();
+  
     // create mjModel
-    mujoco_model = mj_loadModel(urdf_string_char, NULL);
+    mujoco_model = mj_loadModel(filename_char, NULL);
 
     // create mjData corresponding to mjModel
     mujoco_data = mj_makeData(mujoco_model);
@@ -175,10 +182,10 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "mujoco_ros_control");
 
-    mujoco_ros_control::MujocoRosControl MujocoRosControl();
+    mujoco_ros_control::MujocoRosControl MujocoRosControl;
 
     //initialize mujoco stuff
-    MujocoRosControl().init();
+    MujocoRosControl.init();
 
     // MuJoCo visualization
     mjvScene scn;
@@ -203,13 +210,13 @@ int main(int argc, char** argv)
     mjv_defaultCamera(&cam);
     mjv_defaultOption(&opt);
     mjr_defaultContext(&con);
-    mjr_makeContext(MujocoRosControl().mujoco_model, &con, 200);
+    mjr_makeContext(MujocoRosControl.mujoco_model, &con, 200);
 
     // center and scale view
-    cam.lookat[0] = MujocoRosControl().mujoco_model->stat.center[0];
-    cam.lookat[1] = MujocoRosControl().mujoco_model->stat.center[1];
-    cam.lookat[2] = MujocoRosControl().mujoco_model->stat.center[2];
-    cam.distance = 1.5 * MujocoRosControl().mujoco_model->stat.extent;
+    cam.lookat[0] = MujocoRosControl.mujoco_model->stat.center[0];
+    cam.lookat[1] = MujocoRosControl.mujoco_model->stat.center[1];
+    cam.lookat[2] = MujocoRosControl.mujoco_model->stat.center[2];
+    cam.distance = 1.5 * MujocoRosControl.mujoco_model->stat.extent;
 
     // run main loop, target real-time simulation and 60 fps rendering
     while( !glfwWindowShouldClose(window) )
@@ -217,10 +224,10 @@ int main(int argc, char** argv)
         // advance interactive simulation for 1/60 sec
         //  Assuming MuJoCo can simulate faster than real-time, which it usually can,
         //  this loop will finish on time for the next frame to be rendered at 60 fps.
-        mjtNum sim_start = MujocoRosControl().mujoco_data->time;
-        while( MujocoRosControl().mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
+        mjtNum sim_start = MujocoRosControl.mujoco_data->time;
+        while( MujocoRosControl.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
         {
-            MujocoRosControl().update();
+            MujocoRosControl.update();
         }
         
         // get framebuffer viewport
@@ -228,7 +235,7 @@ int main(int argc, char** argv)
         glfwGetFramebufferSize(window, &viewport.width, &viewport.height);
 
         // update scene and render
-        mjv_updateScene( MujocoRosControl().mujoco_model,  MujocoRosControl().mujoco_data, &opt, NULL, &cam, mjCAT_ALL, &scn);
+        mjv_updateScene( MujocoRosControl.mujoco_model,  MujocoRosControl.mujoco_data, &opt, NULL, &cam, mjCAT_ALL, &scn);
         mjr_render(viewport, &scn, &con);
 
         // swap OpenGL buffers (blocking call due to v-sync)

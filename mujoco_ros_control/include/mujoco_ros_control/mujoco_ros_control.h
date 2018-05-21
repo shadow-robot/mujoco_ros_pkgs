@@ -17,11 +17,17 @@
 #include <ros/ros.h>
 #include <pluginlib/class_loader.h>
 #include <std_msgs/Bool.h>
+#include <ros/package.h>
 
 // Mujoco dependencies
-#include "/home/user/mjpro150/include/mujoco.h"
-#include "/home/user/mjpro150/include/mjdata.h"
-#include "/home/user/mjpro150/include/mjmodel.h"
+#include </home/user/mjpro150/include/mujoco.h>
+#include </home/user/mjpro150/include/mjdata.h>
+#include </home/user/mjpro150/include/mjmodel.h>
+
+// string stream
+#include <fstream>
+#include <string>
+#include <iostream>
 
 // ros_control
 #include <mujoco_ros_control/robot_hw_sim.h>
