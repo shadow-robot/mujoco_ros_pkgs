@@ -55,7 +55,7 @@ void MujocoRosControl::init()
 
     // get package path and filename
     std::string package_path = ros::package::getPath("mujoco_ros_control");
-    std::string name_file = "/config/robot_model.xml";
+    std::string name_file = "/robot_model.xml";
     std::string filename = package_path + name_file;
 
     // write xml to file
