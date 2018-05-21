@@ -46,9 +46,6 @@ public:
   // step update function
   void update();
 
-  // initialize glfw function
-  void init_glfw();
-
   // get the URDF XML from the parameter server
   std::string get_urdf(std::string param_name) const;
 

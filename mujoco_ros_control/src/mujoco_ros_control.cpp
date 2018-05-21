@@ -34,27 +34,10 @@ void MujocoRosControl::init()
         ROS_FATAL_STREAM_NAMED("mujoco_ros_control","A ROS node for Mujoco has not been initialized, unable to initialize node. ");
         return;
     }
-    
+
     // activation license mujoco
     //mj_activate(".txt")
 
-    // initialize GL stuff
-    init_glfw();
-
-    // create mjModel
-    mujoco_model = mj_loadModel("/home/user/projects/shadow_robot/base/src/mujoco_ros_pkgs/mujoco_ros_control/config/test_urdf.xml", NULL);
-
-    // create mjData corresponding to mjModel
-    mujoco_data = mj_makeData(mujoco_model);
-
-    // get the Mujoco simulation period
-    ros::Duration mujoco_period(mujoco_model->opt.timestep);
-
-    // set control period as mujoco_period
-    control_period_ = mujoco_period;
-    ROS_DEBUG_STREAM_NAMED("gazebo_ros_control","Control period not found in URDF/SDF, defaulting to Gazebo period of "
-      << control_period_);
-      
     // create robot node handle
     robot_node_handle = ros::NodeHandle("/");
 
@@ -70,6 +53,24 @@ void MujocoRosControl::init()
       ROS_ERROR_NAMED("mujoco_ros_control", "Error parsing URDF in mujoco_ros_control node, node not active.\n");
       return;
     }
+
+    // convert string to char because mujoco loadModel wants it like that
+    char *urdf_string_char = new char[urdf_string.length() + 1];
+    std::strcpy(urdf_string_char, urdf_string.c_str());
+
+    // create mjModel
+    mujoco_model = mj_loadModel(urdf_string_char, NULL);
+
+    // create mjData corresponding to mjModel
+    mujoco_data = mj_makeData(mujoco_model);
+
+    // get the Mujoco simulation period
+    ros::Duration mujoco_period(mujoco_model->opt.timestep);
+
+    // set control period as mujoco_period
+    control_period_ = mujoco_period;
+    ROS_DEBUG_STREAM_NAMED("gazebo_ros_control","Control period not found in URDF/SDF, defaulting to Gazebo period of "
+      << control_period_);
 
     // load the RobotHWSim abstraction to interface the controllers with the gazebo model
     try
@@ -128,13 +129,6 @@ void MujocoRosControl::update()
   robot_hw_sim_->write(sim_time_ros, sim_time_ros - last_write_sim_time_ros_);
   last_write_sim_time_ros_ = sim_time_ros;
   mj_step2(mujoco_model, mujoco_data);
-}
-
-// initialize openGL stuff for visualization
-void MujocoRosControl::init_glfw()
-{
-
-
 }
 
 // get the URDF XML from the parameter server
