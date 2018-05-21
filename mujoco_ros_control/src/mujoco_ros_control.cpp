@@ -22,21 +22,20 @@ MujocoRosControl::~MujocoRosControl()
   // deallocate existing mjData
   mj_deleteData(mujoco_data);
 
-  //mj_deactivate();
+  // mj_deactivate();
 }
 
 void MujocoRosControl::init()
 {
-
       // Check that ROS has been initialized
-    if(!ros::isInitialized())
+    if (!ros::isInitialized())
     {
-        ROS_FATAL_STREAM_NAMED("mujoco_ros_control","A ROS node for Mujoco has not been initialized, unable to initialize node. ");
+        ROS_FATAL_STREAM_NAMED("mujoco_ros_control", "Unable to initialize Mujoco node.");
         return;
     }
 
     // activation license mujoco
-    //mj_activate(".txt")
+    // mj_activate(".txt")
 
     // create robot node handle
     robot_node_handle = ros::NodeHandle("/");
@@ -54,17 +53,18 @@ void MujocoRosControl::init()
       return;
     }
 
-    // write xml to file
-    std::ofstream out("/home/user/projects/shadow_robot/base/src/mujoco_ros_pkgs/mujoco_ros_control/config/robot_model.xml");
-    out << urdf_string;
-    out.close();
-
+    // get package path and filename
     std::string package_path = ros::package::getPath("mujoco_ros_control");
     std::string name_file = "/config/robot_model.xml";
     std::string filename = package_path + name_file;
 
+    // write xml to file
+    std::ofstream out(filename);
+    out << urdf_string;
+    out.close();
+
     const char* filename_char = filename.c_str();
-  
+
     // create mjModel
     mujoco_model = mj_loadModel(filename_char, NULL);
 
@@ -76,8 +76,6 @@ void MujocoRosControl::init()
 
     // set control period as mujoco_period
     control_period_ = mujoco_period;
-    ROS_DEBUG_STREAM_NAMED("gazebo_ros_control","Control period not found in URDF/SDF, defaulting to Gazebo period of "
-      << control_period_);
 
     // load the RobotHWSim abstraction to interface the controllers with the gazebo model
     try
@@ -92,7 +90,7 @@ void MujocoRosControl::init()
 
     if(!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model, mujoco_data, urdf_model_ptr, transmissions_))
     {
-      ROS_FATAL_NAMED("mujoco_ros_control","Could not initialize robot simulation interface");
+      ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot simulation interface");
       return;
     }
 
@@ -102,16 +100,16 @@ void MujocoRosControl::init()
     }
     catch(pluginlib::LibraryLoadException &ex)
     {
-      ROS_FATAL_STREAM_NAMED("mujoco_ros_control","Failed to create robot simulation interface loader: "<<ex.what());
+      ROS_FATAL_STREAM_NAMED("mujoco_ros_control" ,"Failed to create robot simulation interface loader: "<<ex.what());
     }
-\
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 }
 
 void MujocoRosControl::update()
 {
   // get simulation time and period
-  ros::Time sim_time_ros(mujoco_data->time, mujoco_data->time); 
+  int nanosec_time = (mujoco_data->time) * 1e9;
+  ros::Time sim_time_ros(mujoco_data->time, nanosec_time); 
 
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
@@ -169,7 +167,7 @@ std::string MujocoRosControl::get_urdf(std::string param_name) const
   return urdf_string;
 }
 
-// Get Transmissions from the URDF
+// get Transmissions from the URDF
 bool MujocoRosControl::parse_transmissions(const std::string& urdf_string)
 {
   transmission_interface::TransmissionParser::parse(urdf_string, transmissions_);
@@ -184,7 +182,7 @@ int main(int argc, char** argv)
 
     mujoco_ros_control::MujocoRosControl MujocoRosControl;
 
-    //initialize mujoco stuff
+    // initialize mujoco stuff
     MujocoRosControl.init();
 
     // MuJoCo visualization
@@ -222,8 +220,8 @@ int main(int argc, char** argv)
     while( !glfwWindowShouldClose(window) )
     {
         // advance interactive simulation for 1/60 sec
-        //  Assuming MuJoCo can simulate faster than real-time, which it usually can,
-        //  this loop will finish on time for the next frame to be rendered at 60 fps.
+        // Assuming MuJoCo can simulate faster than real-time, which it usually can,
+        // this loop will finish on time for the next frame to be rendered at 60 fps.
         mjtNum sim_start = MujocoRosControl.mujoco_data->time;
         while( MujocoRosControl.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
         {

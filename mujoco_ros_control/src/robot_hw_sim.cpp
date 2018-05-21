@@ -33,8 +33,7 @@ bool RobotHWSim::init_sim(
     const urdf::Model *const urdf_model,
     std::vector<transmission_interface::TransmissionInfo> transmissions)
 {
-
-  // save references 
+  // save references
   mujoco_model_ = mujoco_model;
   mujoco_data_ = mujoco_data;
 
@@ -56,19 +55,19 @@ bool RobotHWSim::init_sim(
   joint_position_command_.resize(n_dof_);
   joint_velocity_command_.resize(n_dof_);
 
-    // Initialize values
+  // Initialize values
   for(unsigned int j=0; j < n_dof_; j++)
   {
     // Check that this transmission has one joint
     if(transmissions[j].joints_.size() == 0)
     {
-      ROS_WARN_STREAM_NAMED("default_robot_hw_sim","Transmission " << transmissions[j].name_
+      ROS_WARN_STREAM_NAMED("default_robot_hw_sim", "Transmission " << transmissions[j].name_
         << " has no associated joints.");
       continue;
     }
     else if(transmissions[j].joints_.size() > 1)
     {
-      ROS_WARN_STREAM_NAMED("default_robot_hw_sim","Transmission " << transmissions[j].name_
+      ROS_WARN_STREAM_NAMED("default_robot_hw_sim", "Transmission " << transmissions[j].name_
         << " has more than one joint. Currently the default robot hardware simulation "
         << " interface only supports one.");
       continue;
@@ -112,8 +111,7 @@ bool RobotHWSim::init_sim(
     const std::string& hardware_interface = joint_interfaces.front();
 
     // Debug
-    // Debug
-    ROS_DEBUG_STREAM_NAMED("default_robot_hw_sim","Loading joint '" << joint_names_[j]
+    ROS_DEBUG_STREAM_NAMED("default_robot_hw_sim", "Loading joint '" << joint_names_[j]
       << "' of type '" << hardware_interface << "'");
 
     // Create joint state interface for all joints
@@ -148,7 +146,7 @@ bool RobotHWSim::init_sim(
     }
     else
     {
-      ROS_FATAL_STREAM_NAMED("default_robot_hw_sim","No matching hardware interface found for '"
+      ROS_FATAL_STREAM_NAMED("default_robot_hw_sim", "No matching hardware interface found for '"
         << hardware_interface << "' while loading interfaces for " << joint_names_[j] );
       return false;
     }

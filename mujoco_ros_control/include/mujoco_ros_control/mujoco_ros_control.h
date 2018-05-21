@@ -6,8 +6,8 @@
  * @brief  Node to allow ros_control hardware interfaces to be plugged into mujoco
  **/
 
-#ifndef _MUJOCO_ROS_CONTROL___MUJOCO_ROS_CONTROL_H_
-#define _MUJOCO_ROS_CONTROL___MUJOCO_ROS_CONTROL_H_
+#ifndef MUJOCO_ROS_CONTROL___MUJOCO_ROS_CONTROL_H
+#define MUJOCO_ROS_CONTROL___MUJOCO_ROS_CONTROL_H
 
 // Boost
 #include <boost/shared_ptr.hpp>
@@ -24,10 +24,10 @@
 #include </home/user/mjpro150/include/mjdata.h>
 #include </home/user/mjpro150/include/mjmodel.h>
 
-// string stream
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <vector>
 
 // ros_control
 #include <mujoco_ros_control/robot_hw_sim.h>
@@ -43,7 +43,6 @@ namespace mujoco_ros_control
 class MujocoRosControl
 {
 public:
-
   virtual ~MujocoRosControl();
 
   // initialize params and controller manager
@@ -63,9 +62,8 @@ public:
   mjData* mujoco_data;
 
 protected:
-
   // node handles
-  ros::NodeHandle robot_node_handle; //namespaces to the robot name
+  ros::NodeHandle robot_node_handle;
 
   // interface loader
   boost::shared_ptr<pluginlib::ClassLoader<mujoco_ros_control::RobotHWSim> > robot_hw_sim_loader_;
@@ -87,7 +85,6 @@ protected:
   ros::Duration control_period_;
   ros::Time last_update_sim_time_ros_;
   ros::Time last_write_sim_time_ros_;
-
 };
-}
-#endif // #ifndef __MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H_
+}  // namespace mujoco_ros_control
+#endif // MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H

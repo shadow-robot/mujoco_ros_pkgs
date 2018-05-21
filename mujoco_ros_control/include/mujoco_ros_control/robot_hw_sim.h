@@ -6,8 +6,8 @@
  * @brief  Hardware interface for simulated robot in Mujoco
  **/
 
-#ifndef _MUJOCO_ROS_CONTROL___ROBOT_HW_SIM_H_
-#define _MUJOCO_ROS_CONTROL___ROBOT_HW_SIM_H_
+#ifndef MUJOCO_ROS_CONTROL_ROBOT_HW_SIM_H
+#define MUJOCO_ROS_CONTROL_ROBOT_HW_SIM_H
 
 // ros_control
 #include <control_toolbox/pid.h>
@@ -32,6 +32,9 @@
 // URDF
 #include <urdf/model.h>
 
+#include <string>
+#include <vector>
+
 namespace mujoco_ros_control
 {
 
@@ -39,7 +42,7 @@ class RobotHWSim : public hardware_interface::RobotHW
 {
 public:
   RobotHWSim();
-  virtual ~RobotHWSim(){};
+  virtual ~RobotHWSim(){}
 
   virtual bool init_sim(
     const std::string& robot_namespace,
@@ -53,7 +56,6 @@ public:
   virtual void write(const ros::Time& time, const ros::Duration& period);
 
 protected:
-
   // Methods used to control a joint.
   enum ControlMethod {EFFORT, POSITION, POSITION_PID, VELOCITY, VELOCITY_PID};
 
@@ -100,14 +102,12 @@ protected:
   std::vector<double> last_joint_position_command_;
   std::vector<double> joint_velocity_command_;
 
-  //mujoco elements
+  // mujoco elements
   mjModel* mujoco_model_;
   mjData* mujoco_data_;
 
 };
-
 typedef boost::shared_ptr<RobotHWSim> RobotHWSimPtr;
-
 }
 
-#endif // #ifndef __MUJOCO_ROS_CONTROL_ROBOT_HW_SIM_H_
+#endif //MUJOCO_ROS_CONTROL_ROBOT_HW_SIM_H
