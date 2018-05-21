@@ -59,14 +59,12 @@ void MujocoRosControl::init()
     std::string filename = package_path + name_file;
 
     // write xml to file
-    std::ofstream out(filename);
+    std::ofstream out(filename.c_str());
     out << urdf_string;
     out.close();
 
-    const char* filename_char = filename.c_str();
-
     // create mjModel
-    mujoco_model = mj_loadModel(filename_char, NULL);
+    mujoco_model = mj_loadModel(filename.c_str(), NULL);
 
     // create mjData corresponding to mjModel
     mujoco_data = mj_makeData(mujoco_model);
