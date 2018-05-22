@@ -60,9 +60,9 @@ void MujocoRosControl::init()
     std::string filename = package_path + name_file;
 
     // write xml to file
-    std::ofstream out(filename.c_str());
-    out << urdf_string;
-    out.close();
+    //std::ofstream out(filename.c_str());
+    //out << urdf_string;
+    //out.close();
 
     char error[1000];
 
@@ -70,7 +70,7 @@ void MujocoRosControl::init()
     mujoco_model = mj_loadXML(filename.c_str(), NULL, error, 1000);
     if (!mujoco_model)
     {
-      printf("Could not load mujoco model.\n");
+      printf("Could not load mujoco model with error: %s.\n", error);
       return;
     }
 
@@ -91,8 +91,8 @@ void MujocoRosControl::init()
     try
     {
       robot_hw_sim_loader_.reset
-        (new pluginlib::ClassLoader<mujoco_ros_control::RobotHWSim>
-          ("mujoco_ros_control", "mujoco_ros_control::RobotHWSim"));
+        (new pluginlib::ClassLoader<hardware_interface::RobotHW>
+          ("hardware_interface", "hardware_interface::RobotHW"));
 
     robot_hw_sim_ = robot_hw_sim_loader_->createInstance("mujoco_ros_control/RobotHwSim");
     urdf::Model urdf_model;

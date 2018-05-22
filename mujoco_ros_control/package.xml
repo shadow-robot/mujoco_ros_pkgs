@@ -20,7 +20,7 @@
   <depend>urdf</depend>
 
   <export>
-    <mujoco_ros_control plugin="${prefix}/robot_hw_sim_plugin.xml"/>
+    <hardware_interface plugin="${prefix}/robot_hw_sim_plugin.xml"/>
   </export>
 </package>
 
