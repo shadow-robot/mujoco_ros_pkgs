@@ -64,12 +64,23 @@ void MujocoRosControl::init()
     out << urdf_string;
     out.close();
 
+    char error[1000];
+
     // create mjModel
-    mujoco_model = mj_loadModel(filename.c_str(), NULL);
+    mujoco_model = mj_loadXML(filename.c_str(), NULL, error, 1000);
+    if (!mujoco_model)
+    {
+      printf("Could not load mujoco model.\n");
+      return;
+    }
 
     // create mjData corresponding to mjModel
     mujoco_data = mj_makeData(mujoco_model);
-
+    if (!mujoco_data)
+    {
+      printf("Could not create mujoco data from model.\n");
+      return;
+    }
     // get the Mujoco simulation period
     ros::Duration mujoco_period(mujoco_model->opt.timestep);
 
