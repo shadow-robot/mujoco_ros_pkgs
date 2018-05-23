@@ -25,7 +25,7 @@
 
 namespace mujoco_ros_control
 {
-  // Struct for passing loaded joint data
+// Struct for passing loaded joint data
 struct JointData
 {
   std::string name_;
@@ -51,4 +51,4 @@ public:
 };
 }  // namespace mujoco_ros_control
 
-#endif  // ifndef MUJOCO_ROS_CONTROL_ROBOT_HW_SIM_PLUGIN_H
+#endif  // MUJOCO_ROS_CONTROL_ROBOT_HW_SIM_PLUGIN_H
