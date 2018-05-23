@@ -119,9 +119,7 @@ void MujocoRosControl::init()
 
 void MujocoRosControl::update()
 {
-  // get simulation time and period
-  int64_t nanosec_time = (mujoco_data->time) * 1e9;
-  ros::Time sim_time_ros(nanosec_time);
+  ros::Time sim_time_ros(mujoco_data->time);
 
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
