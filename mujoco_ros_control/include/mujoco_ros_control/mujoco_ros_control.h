@@ -20,9 +20,9 @@
 #include <ros/package.h>
 
 // Mujoco dependencies
-#include </home/user/mjpro150/include/mujoco.h>
-#include </home/user/mjpro150/include/mjdata.h>
-#include </home/user/mjpro150/include/mjmodel.h>
+#include <mujoco.h>
+#include <mjdata.h>
+#include <mjmodel.h>
 
 #include <fstream>
 #include <string>

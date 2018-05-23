@@ -60,9 +60,9 @@ void MujocoRosControl::init()
     std::string filename = package_path + name_file;
 
     // write xml to file
-    //std::ofstream out(filename.c_str());
-    //out << urdf_string;
-    //out.close();
+    // std::ofstream out(filename.c_str());
+    // out << urdf_string;
+    // out.close();
 
     char error[1000];
 
