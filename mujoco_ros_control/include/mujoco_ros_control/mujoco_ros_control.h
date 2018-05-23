@@ -31,6 +31,8 @@
 
 // ros_control
 #include <mujoco_ros_control/robot_hw_sim.h>
+#include <mujoco_ros_control/robot_hw_sim_plugin.h>
+
 #include <controller_manager/controller_manager.h>
 #include <transmission_interface/transmission_parser.h>
 
@@ -66,7 +68,7 @@ protected:
   ros::NodeHandle robot_node_handle;
 
   // interface loader
-  boost::shared_ptr<pluginlib::ClassLoader<hardware_interface::RobotHW> > robot_hw_sim_loader_;
+  boost::shared_ptr<pluginlib::ClassLoader<mujoco_ros_control::RobotHWSimPlugin> > robot_hw_sim_loader_;
 
   // strings
   std::string robot_namespace_;
@@ -76,7 +78,7 @@ protected:
   std::vector<transmission_interface::TransmissionInfo> transmissions_;
 
   // robot simulator interface
-  boost::shared_ptr<hardware_interface::RobotHW> robot_hw_sim_;
+  boost::shared_ptr<mujoco_ros_control::RobotHWSimPlugin> robot_hw_sim_;
 
   // controller manager
   boost::shared_ptr<controller_manager::ControllerManager> controller_manager_;

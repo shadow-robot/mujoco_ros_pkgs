@@ -1,0 +1,4 @@
+<launch>
+  <!-- This launch file launches mujoco_ros_control node -->
+  <node name="mujoco_ros_control" pkg="mujoco_ros_control" type="mujoco_ros_control" output="screen" />
+</launch>

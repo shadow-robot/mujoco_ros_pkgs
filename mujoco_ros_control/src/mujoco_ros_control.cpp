@@ -91,10 +91,10 @@ void MujocoRosControl::init()
     try
     {
       robot_hw_sim_loader_.reset
-        (new pluginlib::ClassLoader<hardware_interface::RobotHW>
-          ("hardware_interface", "hardware_interface::RobotHW"));
+        (new pluginlib::ClassLoader<mujoco_ros_control::RobotHWSimPlugin>
+          ("mujoco_ros_control", "mujoco_ros_control::RobotHWSimPlugin"));
 
-    robot_hw_sim_ = robot_hw_sim_loader_->createInstance("mujoco_ros_control/RobotHwSim");
+    robot_hw_sim_ = robot_hw_sim_loader_->createInstance("mujoco_ros_control/RobotHWSim");
     urdf::Model urdf_model;
     const urdf::Model *const urdf_model_ptr = urdf_model.initString(urdf_string) ? &urdf_model : NULL;
 

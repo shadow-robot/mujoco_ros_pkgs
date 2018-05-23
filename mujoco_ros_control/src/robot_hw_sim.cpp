@@ -389,4 +389,4 @@ void RobotHWSim::register_joint_limits(const std::string& joint_name,
 }
 }  // namespace mujoco_ros_control
 
-PLUGINLIB_EXPORT_CLASS(mujoco_ros_control::RobotHWSim, hardware_interface::RobotHW)
+PLUGINLIB_EXPORT_CLASS(mujoco_ros_control::RobotHWSim, mujoco_ros_control::RobotHWSimPlugin)

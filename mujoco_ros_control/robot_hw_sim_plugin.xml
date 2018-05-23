@@ -1,5 +1,5 @@
 <library path="lib/librobot_hw_sim">
-  <class name="mujoco_ros_control/RobotHWSim" type="mujoco_ros_control::RobotHWSim" base_class_type="hardware_interface::RobotHW">
+  <class name="mujoco_ros_control/RobotHWSim" type="mujoco_ros_control::RobotHWSim" base_class_type="mujoco_ros_control::RobotHWSimPlugin">
     <description>
       A type of RobotHW
     </description>

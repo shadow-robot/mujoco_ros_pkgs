@@ -13,6 +13,7 @@
 #include <control_toolbox/pid.h>
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/robot_hw.h>
+#include <mujoco_ros_control/robot_hw_sim_plugin.h>
 #include <joint_limits_interface/joint_limits.h>
 #include <joint_limits_interface/joint_limits_interface.h>
 #include <joint_limits_interface/joint_limits_rosparam.h>
@@ -38,7 +39,7 @@
 namespace mujoco_ros_control
 {
 
-class RobotHWSim : public hardware_interface::RobotHW
+class RobotHWSim : public mujoco_ros_control::RobotHWSimPlugin
 {
 public:
   RobotHWSim();
