@@ -8,10 +8,10 @@
   Author: Kelsey Hawkins
   Contributers: Jimmy Da Silva, Ajit Krisshna N L, Muhammad Asif Rana
 -->
+  <!-- measured from model -->
   <mujoco> 
 	 <compiler meshdir="/home/user/projects/shadow_robot/base/src/fh_common/fh_description/meshes/v2/" balanceinertia="true" />
   </mujoco>
-  <!-- measured from model -->
   <link name="world"/>
   <joint name="world_joint" type="fixed">
     <parent link="world"/>
@@ -314,6 +314,11 @@
   <material name="White">
     <color rgba="1.0 1.0 1.0 1.0"/>
   </material>
+  <gazebo>
+    <plugin filename="libgazebo_ros_control.so" name="ros_control">
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+    </plugin>
+  </gazebo>
   <link name="H0_base_link">
     <inertial>
       <origin rpy="0 0 0" xyz="-8.6116E-06 -0.0058125 0.028294"/>
@@ -339,6 +344,9 @@
       </material>
     </collision>
   </link>
+  <gazebo reference="H0_base_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <joint name="H0Base" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="H0_base_attach"/>
@@ -398,6 +406,9 @@
         <xacro:dark_grey/>
       </xacro:mesh_collision-->
   </link>
+  <gazebo reference="H0_F0_palm_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <link name="H0_F0_base_link">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00027 0.02711 0.06013"/>
@@ -423,6 +434,9 @@
       </material>
     </collision>
   </link>
+  <gazebo reference="H0_F0_base_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <link name="H0_F0_link_1">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00071 -0.00022 0.01415"/>
@@ -448,6 +462,9 @@
       </material>
     </collision>
   </link>
+  <gazebo reference="H0_F0_link_1">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <link name="H0_F0_link_2">
     <inertial>
       <origin rpy="0 0 0" xyz="0.00197 -0.00166 0.00962"/>
@@ -473,6 +490,9 @@
       </material>
     </collision>
   </link>
+  <gazebo reference="H0_F0_link_2">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <joint name="H0_F0Palm" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="H0_insert_F0"/>
@@ -561,6 +581,9 @@
         <xacro:dark_grey/>
       </xacro:mesh_collision-->
   </link>
+  <gazebo reference="H0_F1_palm_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <link name="H0_F1_base_link">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00027 0.02711 0.06013"/>
@@ -586,6 +609,9 @@
       </material>
     </collision>
   </link>
+  <gazebo reference="H0_F1_base_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <link name="H0_F1_link_1">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00071 -0.00022 0.01415"/>
@@ -611,6 +637,9 @@
       </material>
     </collision>
   </link>
+  <gazebo reference="H0_F1_link_1">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <link name="H0_F1_link_2">
     <inertial>
       <origin rpy="0 0 0" xyz="0.00197 -0.00166 0.00962"/>
@@ -636,6 +665,9 @@
       </material>
     </collision>
   </link>
+  <gazebo reference="H0_F1_link_2">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <joint name="H0_F1Palm" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="H0_insert_F1"/>
@@ -724,6 +756,9 @@
         <xacro:dark_grey/>
       </xacro:mesh_collision-->
   </link>
+  <gazebo reference="H0_F2_palm_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <link name="H0_F2_base_link">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00027 0.02711 0.06013"/>
@@ -749,6 +784,9 @@
       </material>
     </collision>
   </link>
+  <gazebo reference="H0_F2_base_link">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <link name="H0_F2_link_1">
     <inertial>
       <origin rpy="0 0 0" xyz="-0.00071 -0.00022 0.01415"/>
@@ -774,6 +812,9 @@
       </material>
     </collision>
   </link>
+  <gazebo reference="H0_F2_link_1">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <link name="H0_F2_link_2">
     <inertial>
       <origin rpy="0 0 0" xyz="0.00197 -0.00166 0.00962"/>
@@ -799,6 +840,9 @@
       </material>
     </collision>
   </link>
+  <gazebo reference="H0_F2_link_2">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <joint name="H0_F2Palm" type="fixed">
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="H0_insert_F2"/>
@@ -891,6 +935,9 @@
       </material>
     </collision>
   </link>
+  <gazebo reference="H0_mounting_plate">
+    <material>Gazebo/DarkGrey</material>
+  </gazebo>
   <joint name="H0_mounting_plate_to_hand" type="fixed">
     <parent link="H0_mounting_plate"/>
     <child link="H0_base_attach"/>

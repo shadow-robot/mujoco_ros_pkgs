@@ -125,13 +125,13 @@ void MujocoRosControl::update()
 
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
+  // call first step of simulation without control signals
+  mj_step1(mujoco_model, mujoco_data);
+
   // check if we should update the controllers
   if (sim_period >= control_period_) {
     // store simulation time
     last_update_sim_time_ros_ = sim_time_ros;
-
-    // call first step of simulation without control signals
-    mj_step1(mujoco_model, mujoco_data);
 
     // update the robot simulation with the state of the mujoco model
     robot_hw_sim_->read(sim_time_ros, sim_period);
