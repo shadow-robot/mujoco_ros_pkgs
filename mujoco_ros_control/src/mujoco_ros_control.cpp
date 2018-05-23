@@ -121,7 +121,7 @@ void MujocoRosControl::update()
 {
   // get simulation time and period
   int64_t nanosec_time = (mujoco_data->time) * 1e9;
-  ros::Time sim_time_ros(mujoco_data->time, nanosec_time);
+  ros::Time sim_time_ros(nanosec_time);
 
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
@@ -130,6 +130,7 @@ void MujocoRosControl::update()
 
   // check if we should update the controllers
   if (sim_period >= control_period_) {
+
     // store simulation time
     last_update_sim_time_ros_ = sim_time_ros;
 
