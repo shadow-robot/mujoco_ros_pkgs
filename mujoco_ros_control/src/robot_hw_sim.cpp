@@ -167,7 +167,35 @@ bool RobotHWSim::init_sim(
                         joint_limit_nh, urdf_model,
                         &joint_types_[j], &joint_lower_limits_[j], &joint_upper_limits_[j],
                         &joint_effort_limits_[j]);
+
+  if (joint_control_methods_[j] != EFFORT)
+  {
+    // Initialize the PID controller. If no PID gain values are found, use joint->SetAngle() or
+    // joint->SetParam("vel") to control the joint.
+    const ros::NodeHandle nh(robot_nh, "/mujoco_ros_control/pid_gains/" +
+                             joint_names_[j]);
+    if (pid_controllers_[j].init(nh, true))
+    {
+      switch (joint_control_methods_[j])
+      {
+        case POSITION:
+          joint_control_methods_[j] = POSITION_PID;
+          break;
+        case VELOCITY:
+          joint_control_methods_[j] = VELOCITY_PID;
+          break;
+      }
+    }
+    else
+    {
+      // joint->SetParam("fmax") must be called if joint->SetAngle() or joint->SetParam("vel") are
+      // going to be called. joint->SetParam("fmax") must *not* be called if joint->SetForce() is
+      // going to be called.
+      mujoco_data_->ctrl[j] = joint_effort_limits_[j];
+    }
+   }
   }
+
   // Register interfaces
   registerInterface(&js_interface_);
   registerInterface(&ej_interface_);
@@ -198,6 +226,7 @@ void RobotHWSim::read(const ros::Time& time, const ros::Duration& period)
     }
     joint_velocity_[j] = mujoco_data_->qvel[j];
     joint_effort_[j] = mujoco_data_->qacc[j];
+
   }
 }
 

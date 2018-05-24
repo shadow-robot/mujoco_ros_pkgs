@@ -39,6 +39,8 @@
 // openGL stuff
 #include <GLFW/glfw3.h>
 
+#include <rosgraph_msgs/Clock.h>
+
 namespace mujoco_ros_control
 {
 
@@ -48,7 +50,7 @@ public:
   virtual ~MujocoRosControl();
 
   // initialize params and controller manager
-  void init();
+  void init(ros::NodeHandle &nodehandle);
 
   // step update function
   void update();
@@ -58,6 +60,8 @@ public:
 
   // parse transmissions from URDF
   bool parse_transmissions(const std::string& urdf_string);
+
+  void publish_sim_time();
 
   // pointer to the mujoco model
   mjModel* mujoco_model;
@@ -82,6 +86,11 @@ protected:
 
   // controller manager
   boost::shared_ptr<controller_manager::ControllerManager> controller_manager_;
+
+  // simulated clock
+  ros::Publisher     pub_clock_;
+  int pub_clock_frequency_;
+  ros::Time last_pub_clock_time_;
 
   // timing
   ros::Duration control_period_;

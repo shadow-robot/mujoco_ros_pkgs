@@ -26,7 +26,7 @@ MujocoRosControl::~MujocoRosControl()
   mj_deactivate();
 }
 
-void MujocoRosControl::init()
+void MujocoRosControl::init(ros::NodeHandle &nodehandle)
 {
       // Check that ROS has been initialized
     if (!ros::isInitialized())
@@ -37,6 +37,9 @@ void MujocoRosControl::init()
 
     // activation license mujoco
     mj_activate("/home/user/mjpro150/bin/mjkey.txt");
+
+    // publish clock for simulated time
+    pub_clock_ = nodehandle.advertise<rosgraph_msgs::Clock>("/clock",10);
 
     // create robot node handle
     robot_node_handle = ros::NodeHandle("/");
@@ -56,7 +59,7 @@ void MujocoRosControl::init()
 
     // get package path and filename
     std::string package_path = ros::package::getPath("mujoco_ros_control");
-    std::string name_file = "/robot_model.xml";
+    std::string name_file = "/hand_model.xml";
     std::string filename = package_path + name_file;
 
     // write xml to file
@@ -119,7 +122,9 @@ void MujocoRosControl::init()
 
 void MujocoRosControl::update()
 {
-  ros::Time sim_time_ros(mujoco_data->time);
+  publish_sim_time();
+  ros::Time sim_time = (ros::Time)mujoco_data->time;
+  ros::Time sim_time_ros(sim_time.sec, sim_time.nsec);
 
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
@@ -185,16 +190,32 @@ bool MujocoRosControl::parse_transmissions(const std::string& urdf_string)
   return true;
 }
 
+void MujocoRosControl::publish_sim_time()
+{
+  ros::Time sim_time = (ros::Time)mujoco_data->time;
+  if (pub_clock_frequency_ > 0 && (sim_time - last_pub_clock_time_).toSec() < 1.0/pub_clock_frequency_)
+    return;
+
+  ros::Time current_time = (ros::Time)mujoco_data->time;
+  rosgraph_msgs::Clock ros_time_;
+  ros_time_.clock.fromSec(current_time.toSec());
+  //  publish time to ros
+  last_pub_clock_time_ = sim_time;
+  pub_clock_.publish(ros_time_);
+}
+
 }  // namespace mujoco_ros_control
 
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "mujoco_ros_control");
 
+    ros::NodeHandle nh_;
+
     mujoco_ros_control::MujocoRosControl MujocoRosControl;
 
     // initialize mujoco stuff
-    MujocoRosControl.init();
+    MujocoRosControl.init(nh_);
 
     // MuJoCo visualization
     mjvScene scn;
@@ -226,6 +247,9 @@ int main(int argc, char** argv)
     cam.lookat[1] = MujocoRosControl.mujoco_model->stat.center[1];
     cam.lookat[2] = MujocoRosControl.mujoco_model->stat.center[2];
     cam.distance = 1.5 * MujocoRosControl.mujoco_model->stat.extent;
+
+    ros::AsyncSpinner spinner(1); // Use 1 threads
+    spinner.start();
 
     // run main loop, target real-time simulation and 60 fps rendering
     while ( !glfwWindowShouldClose(window) )
@@ -259,6 +283,5 @@ int main(int argc, char** argv)
     mjv_freeScene(&scn);
     glfwTerminate();
 
-    ros::spin();
     return 0;
 }
