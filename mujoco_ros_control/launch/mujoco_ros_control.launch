@@ -1,5 +1,9 @@
 <launch>
   <!-- This launch file launches mujoco_ros_control node -->
   <param name="/use_sim_time" value="true"/>
-  <node name="mujoco_ros_control" pkg="mujoco_ros_control" type="mujoco_ros_control" output="screen" />
+  <arg name="robot_type" default="hand_h"/>
+
+  <node name="mujoco_ros_control" pkg="mujoco_ros_control" type="mujoco_ros_control" output="screen">
+    <param name="robot_type" value="$(arg robot_type)"/>
+  </node>
 </launch>

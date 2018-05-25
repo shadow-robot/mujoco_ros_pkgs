@@ -57,15 +57,30 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
       return;
     }
 
-    // get package path and filename
-    std::string package_path = ros::package::getPath("mujoco_ros_control");
-    std::string name_file = "/hand_model.xml";
-    std::string filename = package_path + name_file;
+    // get package path, robot to load and filename
+    std::string package_path = ros::package::getPath("mujoco_models");
+    std::string name_file;
+    std::string robot_type;
+    if (nodehandle.getParam("mujoco_ros_control/robot_type", robot_type))
+    {
+      ROS_INFO("Got param: %s", robot_type.c_str());
+    }
+    else
+    {
+      ROS_ERROR("Failed to get param 'robot_type'");
+    }
 
-    // write xml to file
-    // std::ofstream out(filename.c_str());
-    // out << urdf_string;
-    // out.close();
+    std::cout<<"Robot type: "<<robot_type<<std::endl;
+    if (robot_type == "hand_h")
+    {
+      name_file = "/urdf/fh_model.xml";
+    }
+    else if (robot_type == "ur_hand_h")
+    {
+      name_file = "/urdf/ur10_fh_model.xml";
+    }
+
+    std::string filename = package_path + name_file;
 
     char error[1000];
 
@@ -118,6 +133,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
                              << ex.what());
     }
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
+
 }
 
 void MujocoRosControl::update()
@@ -128,7 +144,6 @@ void MujocoRosControl::update()
 
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
-  // call first step of simulation without control signals
   mj_step1(mujoco_model, mujoco_data);
 
   // check if we should update the controllers
@@ -145,7 +160,7 @@ void MujocoRosControl::update()
     // compute the controller commands
     controller_manager_->update(sim_time_ros, sim_period, reset_ctrls);
   }
-
+  
   // update the mujoco model with the result of the controller
   robot_hw_sim_->write(sim_time_ros, sim_time_ros - last_write_sim_time_ros_);
   last_write_sim_time_ros_ = sim_time_ros;

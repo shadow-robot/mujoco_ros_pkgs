@@ -191,7 +191,7 @@ bool RobotHWSim::init_sim(
       // joint->SetParam("fmax") must be called if joint->SetAngle() or joint->SetParam("vel") are
       // going to be called. joint->SetParam("fmax") must *not* be called if joint->SetForce() is
       // going to be called.
-      mujoco_data_->ctrl[j] = joint_effort_limits_[j];
+      //mujoco_data_->ctrl[j] = joint_effort_limits_[j];
     }
    }
   }
@@ -203,7 +203,6 @@ bool RobotHWSim::init_sim(
   registerInterface(&vj_interface_);
 
   return true;
-
 }
 
 void RobotHWSim::read(const ros::Time& time, const ros::Duration& period)
