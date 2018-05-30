@@ -39,7 +39,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     mj_activate("/home/user/mjpro150/bin/mjkey.txt");
 
     // publish clock for simulated time
-    pub_clock_ = nodehandle.advertise<rosgraph_msgs::Clock>("/clock",10);
+    pub_clock_ = nodehandle.advertise<rosgraph_msgs::Clock>("/clock", 10);
 
     // create robot node handle
     robot_node_handle = ros::NodeHandle("/");
@@ -142,10 +142,10 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     mju_copy(mujoco_data->qpos, state, mujoco_model->nq);
 
     // let everything settle
-    while(mujoco_data->time < 50)
+    while (mujoco_data->time < 50)
     {
       mj_step1(mujoco_model, mujoco_data);
-      for (int i=0; i<15; i++)
+      for (int i=0; i < 15; i++)
       {
         mujoco_data->ctrl[i] = mujoco_data->qfrc_bias[i];
       }
@@ -167,8 +167,8 @@ void MujocoRosControl::update()
   mj_step1(mujoco_model, mujoco_data);
 
   // check if we should update the controllers
-  if (sim_period >= control_period_) {
-
+  if (sim_period >= control_period_)
+  {
     // store simulation time
     last_update_sim_time_ros_ = sim_time_ros;
 
@@ -283,7 +283,7 @@ int main(int argc, char** argv)
     cam.lookat[2] = MujocoRosControl.mujoco_model->stat.center[2];
     cam.distance = 1.5 * MujocoRosControl.mujoco_model->stat.extent;
 
-    ros::AsyncSpinner spinner(1); // Use 1 threads
+    ros::AsyncSpinner spinner(1);
     spinner.start();
 
     // run main loop, target real-time simulation and 60 fps rendering
