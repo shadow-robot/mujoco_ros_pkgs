@@ -9,6 +9,7 @@
 
 #include <boost/bind.hpp>
 #include <mujoco_ros_control/mujoco_ros_control.h>
+#include <mujoco_ros_control/visualization_utils.h>
 #include <urdf/model.h>
 #include <string>
 
@@ -220,7 +221,6 @@ void MujocoRosControl::publish_sim_time()
   last_pub_clock_time_ = sim_time;
   pub_clock_.publish(ros_time_);
 }
-
 }  // namespace mujoco_ros_control
 
 int main(int argc, char** argv)
@@ -229,16 +229,12 @@ int main(int argc, char** argv)
 
     ros::NodeHandle nh_;
 
-    mujoco_ros_control::MujocoRosControl MujocoRosControl;
+    mujoco_ros_control::MujocoRosControl mujoco_ros_control;
+
+    mujoco_ros_control::MujocoVisualizationUtils mujoco_visualization_utils;
 
     // initialize mujoco stuff
-    MujocoRosControl.init(nh_);
-
-    // MuJoCo visualization
-    mjvScene scn;
-    mjvCamera cam;
-    mjvOption opt;
-    mjrContext con;
+    mujoco_ros_control.init(nh_);
 
     // init GLFW
     if ( !glfwInit() )
@@ -252,71 +248,46 @@ int main(int argc, char** argv)
     // make context current
     glfwMakeContextCurrent(window);
 
-    // initialize MuJoCo visualization
-    mjv_makeScene(&scn, 1000);
-    mjv_defaultCamera(&cam);
-    mjv_defaultOption(&opt);
-    mjr_defaultContext(&con);
-    mjr_makeContext(MujocoRosControl.mujoco_model, &con, 200);
+    // initialize mujoco visualization functions
+    mujoco_visualization_utils.init(window);
 
-    // center and scale view
-    cam.lookat[0] = MujocoRosControl.mujoco_model->stat.center[0];
-    cam.lookat[1] = MujocoRosControl.mujoco_model->stat.center[1];
-    cam.lookat[2] = MujocoRosControl.mujoco_model->stat.center[2];
-    cam.distance = 1.5 * MujocoRosControl.mujoco_model->stat.extent;
-
+    // spin
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
-    unsigned int n_dof_ = MujocoRosControl.mujoco_model->njnt;
+    // let everything settle
+    unsigned int n_dof_ = mujoco_ros_control.mujoco_model->njnt;
     double initial_qpos[n_dof_] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     const mjtNum* state = initial_qpos;
 
-    // let everything settle
-    while (MujocoRosControl.mujoco_data->time < 50)
+    while (mujoco_ros_control.mujoco_data->time < 50)
     {
-      mj_step1(MujocoRosControl.mujoco_model, MujocoRosControl.mujoco_data);
+      mj_step1(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
       for (int i=0; i < n_dof_; i++)
       {
-        MujocoRosControl.mujoco_data->ctrl[i] = initial_qpos[n_dof_] + MujocoRosControl.mujoco_data->qfrc_bias[i];
+        mujoco_ros_control.mujoco_data->ctrl[i] = initial_qpos[n_dof_] + mujoco_ros_control.mujoco_data->qfrc_bias[i];
       }
-      mj_step2(MujocoRosControl.mujoco_model, MujocoRosControl.mujoco_data);
+      mj_step2(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
     }
 
-    mju_copy(MujocoRosControl.mujoco_data->qpos, state, MujocoRosControl.mujoco_model->nq);
-       
+    mju_copy(mujoco_ros_control.mujoco_data->qpos, state, mujoco_ros_control.mujoco_model->nq);
+
     // run main loop, target real-time simulation and 60 fps rendering
     while ( !glfwWindowShouldClose(window) )
     {
         // advance interactive simulation for 1/60 sec
         // Assuming MuJoCo can simulate faster than real-time, which it usually can,
         // this loop will finish on time for the next frame to be rendered at 60 fps.
-        mjtNum sim_start = MujocoRosControl.mujoco_data->time;
+        mjtNum sim_start = mujoco_ros_control.mujoco_data->time;
 
-        while ( MujocoRosControl.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
+        while ( mujoco_ros_control.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
         {
-          MujocoRosControl.update();
+          mujoco_ros_control.update();
         }
-        // get framebuffer viewport
-        mjrRect viewport = {0, 0, 0, 0};
-        glfwGetFramebufferSize(window, &viewport.width, &viewport.height);
-
-        // update scene and render
-        mjv_updateScene(MujocoRosControl.mujoco_model,  MujocoRosControl.mujoco_data, &opt,
-                        NULL, &cam, mjCAT_ALL, &scn);
-        mjr_render(viewport, &scn, &con);
-
-        // swap OpenGL buffers (blocking call due to v-sync)
-        glfwSwapBuffers(window);
-
-        // process pending GUI events, call GLFW callbacks
-        glfwPollEvents();
+        mujoco_visualization_utils.update(window);
     }
 
-    // free scene and terminate glfw
-    mjr_freeContext(&con);
-    mjv_freeScene(&scn);
-    glfwTerminate();
+    mujoco_visualization_utils.terminate();
 
     return 0;
 }

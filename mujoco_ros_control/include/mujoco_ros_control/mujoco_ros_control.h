@@ -38,6 +38,7 @@
 
 // openGL stuff
 #include <GLFW/glfw3.h>
+#include <mujoco_ros_control/visualization_utils.h>
 
 #include <rosgraph_msgs/Clock.h>
 

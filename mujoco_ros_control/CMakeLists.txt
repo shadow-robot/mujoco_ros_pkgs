@@ -45,9 +45,12 @@ include_directories( include
 add_library(robot_hw_sim src/robot_hw_sim.cpp)
 target_link_libraries(robot_hw_sim ${catkin_LIBRARIES})
 
+add_library(visualization_utils src/visualization_utils.cpp)
+target_link_libraries(visualization_utils ${catkin_LIBRARIES})
+
 ## Declare a C++ library
 add_executable(mujoco_ros_control src/mujoco_ros_control.cpp)
-target_link_libraries(mujoco_ros_control ${catkin_LIBRARIES} glfw /home/user/mjpro150/bin/libmujoco150.so robot_hw_sim GLEW glut X11 GL GLU)
+target_link_libraries(mujoco_ros_control ${catkin_LIBRARIES} glfw /home/user/mjpro150/bin/libmujoco150.so robot_hw_sim visualization_utils GLEW glut X11 GL GLU)
 
 ## Install
 #install(TARGETS ${PROJECT_NAME} robot_hw_sim
