@@ -136,7 +136,8 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
 
     mj_resetData(mujoco_model, mujoco_data);
 
-    double initial_qpos[15] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    unsigned int n_dof_ = mujoco_model->njnt;
+    double initial_qpos[n_dof_] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     const mjtNum* state = initial_qpos;
 
     mju_copy(mujoco_data->qpos, state, mujoco_model->nq);
@@ -145,7 +146,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     while (mujoco_data->time < 50)
     {
       mj_step1(mujoco_model, mujoco_data);
-      for (int i=0; i < 15; i++)
+      for (int i=0; i < n_dof_; i++)
       {
         mujoco_data->ctrl[i] = mujoco_data->qfrc_bias[i];
       }
