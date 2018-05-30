@@ -70,7 +70,6 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
       ROS_ERROR("Failed to get param 'robot_type'");
     }
 
-    std::cout<<"Robot type: "<<robot_type<<std::endl;
     if (robot_type == "hand_h")
     {
       name_file = "/urdf/fh_model.xml";
@@ -99,6 +98,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
       printf("Could not create mujoco data from model.\n");
       return;
     }
+
     // get the Mujoco simulation period
     ros::Duration mujoco_period(mujoco_model->opt.timestep);
 
@@ -134,6 +134,15 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     }
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 
+    mj_resetData(mujoco_model, mujoco_data);
+
+    double initial_qpos[6] = {0, 0, 0, 0, 0, 0};
+    for (int i=0; i<6; i++)
+    {
+      mujoco_data->qpos[i] = initial_qpos[i];
+    }
+    
+
 }
 
 void MujocoRosControl::update()
@@ -143,6 +152,12 @@ void MujocoRosControl::update()
   ros::Time sim_time_ros(sim_time.sec, sim_time.nsec);
 
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
+
+  double initial_qpos[6] = {0, 0, 0, 0, 0, 0};
+  //for (int i=0; i<6; i++)
+  //{
+ //   mujoco_data->qpos[i] = initial_qpos[i];
+//}
 
   mj_step1(mujoco_model, mujoco_data);
 
@@ -160,7 +175,7 @@ void MujocoRosControl::update()
     // compute the controller commands
     controller_manager_->update(sim_time_ros, sim_period, reset_ctrls);
   }
-  
+
   // update the mujoco model with the result of the controller
   robot_hw_sim_->write(sim_time_ros, sim_time_ros - last_write_sim_time_ros_);
   last_write_sim_time_ros_ = sim_time_ros;
@@ -275,7 +290,7 @@ int main(int argc, char** argv)
         mjtNum sim_start = MujocoRosControl.mujoco_data->time;
         while ( MujocoRosControl.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
         {
-            MujocoRosControl.update();
+          MujocoRosControl.update();
         }
         // get framebuffer viewport
         mjrRect viewport = {0, 0, 0, 0};

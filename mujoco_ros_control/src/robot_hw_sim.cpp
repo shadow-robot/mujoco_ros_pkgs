@@ -170,12 +170,12 @@ bool RobotHWSim::init_sim(
 
   if (joint_control_methods_[j] != EFFORT)
   {
-    // Initialize the PID controller. If no PID gain values are found, use joint->SetAngle() or
-    // joint->SetParam("vel") to control the joint.
+    // Initialize the PID controller. If no PID gain values are found
     const ros::NodeHandle nh(robot_nh, "/mujoco_ros_control/pid_gains/" +
                              joint_names_[j]);
     if (pid_controllers_[j].init(nh, true))
     {
+      printf("PID CONTROLLER INITIALIZED");
       switch (joint_control_methods_[j])
       {
         case POSITION:
@@ -186,16 +186,19 @@ bool RobotHWSim::init_sim(
           break;
       }
     }
+        //pid_controllers_[0].initPid(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        //pid_controllers_[1].initPid(150.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        //pid_controllers_[2].initPid(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        //pid_controllers_[3].initPid(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        //pid_controllers_[4].initPid(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        //pid_controllers_[5].initPid(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     else
     {
-      // joint->SetParam("fmax") must be called if joint->SetAngle() or joint->SetParam("vel") are
-      // going to be called. joint->SetParam("fmax") must *not* be called if joint->SetForce() is
-      // going to be called.
-      //mujoco_data_->ctrl[j] = joint_effort_limits_[j];
+      printf("NO PID CONTROLLER");
+      mujoco_data_->ctrl[j] = joint_effort_limits_[j];
     }
-   }
   }
-
+}
   // Register interfaces
   registerInterface(&js_interface_);
   registerInterface(&ej_interface_);
@@ -244,37 +247,28 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
     switch (joint_control_methods_[j])
     {
       case EFFORT:
+      {
         mujoco_data_->ctrl[j] = joint_effort_command_[j];
-        break;
+      }
+      break;
 
       case POSITION:
+      {
         mujoco_data_->ctrl[j] = joint_position_command_[j];
-        break;
+      }
+      break;
 
       case POSITION_PID:
         {
           double error;
-          switch (joint_types_[j])
-          {
-            case urdf::Joint::REVOLUTE:
-              angles::shortest_angular_distance_with_limits(joint_position_[j],
-                                                            joint_position_command_[j],
-                                                            joint_lower_limits_[j],
-                                                            joint_upper_limits_[j],
-                                                            error);
-              break;
-            case urdf::Joint::CONTINUOUS:
-              error = angles::shortest_angular_distance(joint_position_[j],
-                                                        joint_position_command_[j]);
-              break;
-            default:
-              error = joint_position_command_[j] - joint_position_[j];
-          }
+
+          error = joint_position_command_[j] - joint_position_[j];
 
           const double effort_limit = joint_effort_limits_[j];
           const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
                                       -effort_limit, effort_limit);
-          mujoco_data_->ctrl[j] = effort;
+          //mujoco_data_->ctrl[j] = mujoco_data_->qfrc_bias[j];
+          mujoco_data_->ctrl[j] = effort;// + mujoco_data_->qfrc_bias[j];
         }
         break;
 
@@ -288,6 +282,7 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
         const double effort_limit = joint_effort_limits_[j];
         const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
                                     -effort_limit, effort_limit);
+        //mujoco_data_->ctrl[j] = mujoco_data_->qfrc_bias[j];
         mujoco_data_->ctrl[j] = effort;
         break;
     }
