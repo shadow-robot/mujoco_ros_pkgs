@@ -135,25 +135,6 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 
     mj_resetData(mujoco_model, mujoco_data);
-
-    unsigned int n_dof_ = mujoco_model->njnt;
-    double initial_qpos[n_dof_] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    const mjtNum* state = initial_qpos;
-
-    mju_copy(mujoco_data->qpos, state, mujoco_model->nq);
-
-    // let everything settle
-    while (mujoco_data->time < 50)
-    {
-      mj_step1(mujoco_model, mujoco_data);
-      for (int i=0; i < n_dof_; i++)
-      {
-        mujoco_data->ctrl[i] = mujoco_data->qfrc_bias[i];
-      }
-      mj_step2(mujoco_model, mujoco_data);
-    }
-
-    ROS_INFO("Mujoco simulation initialized");
 }
 
 void MujocoRosControl::update()
@@ -287,6 +268,23 @@ int main(int argc, char** argv)
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
+    unsigned int n_dof_ = MujocoRosControl.mujoco_model->njnt;
+    double initial_qpos[n_dof_] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    const mjtNum* state = initial_qpos;
+
+    // let everything settle
+    while (MujocoRosControl.mujoco_data->time < 50)
+    {
+      mj_step1(MujocoRosControl.mujoco_model, MujocoRosControl.mujoco_data);
+      for (int i=0; i < n_dof_; i++)
+      {
+        MujocoRosControl.mujoco_data->ctrl[i] = initial_qpos[n_dof_] + MujocoRosControl.mujoco_data->qfrc_bias[i];
+      }
+      mj_step2(MujocoRosControl.mujoco_model, MujocoRosControl.mujoco_data);
+    }
+
+    mju_copy(MujocoRosControl.mujoco_data->qpos, state, MujocoRosControl.mujoco_model->nq);
+       
     // run main loop, target real-time simulation and 60 fps rendering
     while ( !glfwWindowShouldClose(window) )
     {
@@ -294,6 +292,7 @@ int main(int argc, char** argv)
         // Assuming MuJoCo can simulate faster than real-time, which it usually can,
         // this loop will finish on time for the next frame to be rendered at 60 fps.
         mjtNum sim_start = MujocoRosControl.mujoco_data->time;
+
         while ( MujocoRosControl.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
         {
           MujocoRosControl.update();
