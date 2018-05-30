@@ -136,28 +136,33 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
 
     mj_resetData(mujoco_model, mujoco_data);
 
-    double initial_qpos[6] = {0, 0, 0, 0, 0, 0};
-    for (int i=0; i<6; i++)
-    {
-      mujoco_data->qpos[i] = initial_qpos[i];
-    }
-    
+    double initial_qpos[15] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    const mjtNum* state = initial_qpos;
 
+    mju_copy(mujoco_data->qpos, state, mujoco_model->nq);
+
+    // let everything settle
+    while(mujoco_data->time < 50)
+    {
+      mj_step1(mujoco_model, mujoco_data);
+      for (int i=0; i<15; i++)
+      {
+        mujoco_data->ctrl[i] = mujoco_data->qfrc_bias[i];
+      }
+      mj_step2(mujoco_model, mujoco_data);
+    }
+
+    ROS_INFO("Mujoco simulation initialized");
 }
 
 void MujocoRosControl::update()
 {
   publish_sim_time();
+
   ros::Time sim_time = (ros::Time)mujoco_data->time;
   ros::Time sim_time_ros(sim_time.sec, sim_time.nsec);
 
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
-
-  double initial_qpos[6] = {0, 0, 0, 0, 0, 0};
-  //for (int i=0; i<6; i++)
-  //{
- //   mujoco_data->qpos[i] = initial_qpos[i];
-//}
 
   mj_step1(mujoco_model, mujoco_data);
 

@@ -175,7 +175,6 @@ bool RobotHWSim::init_sim(
                              joint_names_[j]);
     if (pid_controllers_[j].init(nh, true))
     {
-      printf("PID CONTROLLER INITIALIZED");
       switch (joint_control_methods_[j])
       {
         case POSITION:
@@ -186,15 +185,8 @@ bool RobotHWSim::init_sim(
           break;
       }
     }
-        //pid_controllers_[0].initPid(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        //pid_controllers_[1].initPid(150.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        //pid_controllers_[2].initPid(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        //pid_controllers_[3].initPid(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        //pid_controllers_[4].initPid(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-        //pid_controllers_[5].initPid(1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
     else
     {
-      printf("NO PID CONTROLLER");
       mujoco_data_->ctrl[j] = joint_effort_limits_[j];
     }
   }
@@ -267,8 +259,7 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
           const double effort_limit = joint_effort_limits_[j];
           const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
                                       -effort_limit, effort_limit);
-          //mujoco_data_->ctrl[j] = mujoco_data_->qfrc_bias[j];
-          mujoco_data_->ctrl[j] = effort;// + mujoco_data_->qfrc_bias[j];
+          mujoco_data_->ctrl[j] = effort;
         }
         break;
 
@@ -282,7 +273,6 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
         const double effort_limit = joint_effort_limits_[j];
         const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
                                     -effort_limit, effort_limit);
-        //mujoco_data_->ctrl[j] = mujoco_data_->qfrc_bias[j];
         mujoco_data_->ctrl[j] = effort;
         break;
     }
