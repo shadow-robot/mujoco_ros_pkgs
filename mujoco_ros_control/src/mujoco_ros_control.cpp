@@ -231,7 +231,7 @@ int main(int argc, char** argv)
 
     mujoco_ros_control::MujocoRosControl mujoco_ros_control;
 
-    mujoco_ros_control::MujocoVisualizationUtils mujoco_visualization_utils;
+    mujoco_ros_control::MujocoVisualizationUtils &mujoco_visualization_utils = mujoco_ros_control::MujocoVisualizationUtils::getInstance(); 
 
     // initialize mujoco stuff
     mujoco_ros_control.init(nh_);
