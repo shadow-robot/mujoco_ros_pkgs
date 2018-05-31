@@ -16,8 +16,8 @@
 namespace mujoco_ros_control
 {
 
-MujocoVisualizationUtils::~MujocoVisualizationUtils()
-{};
+//MujocoVisualizationUtils::~MujocoVisualizationUtils()
+//{};
 
 void MujocoVisualizationUtils::init(mjModel* mujoco_model, mjData* mujoco_data, GLFWwindow* window)
 {
@@ -51,11 +51,10 @@ void MujocoVisualizationUtils::init(mjModel* mujoco_model, mjData* mujoco_data, 
   cam.lookat[2] = mujoco_model_->stat.center[2];
   cam.distance = 1.5 * mujoco_model_->stat.extent;
 
-  // set GLFW callbacks
-  boost::function<GLFWkeyfun(void)> keyboard_cb = boost::bind(&MujocoVisualizationUtils::keyboard, this, _1);
-  glfwSetKeyCallback(window, keyboard_cb);
-  glfwSetCursorPosCallback(window, mouse_move);
-  glfwSetScrollCallback(window, scroll);
+  //boost::function<void (GLFWwindow*, int, int, int, int)> keyboard_cb = boost::bind(&MujocoVisualizationUtils::keyboard, this, _1);
+  glfwSetKeyCallback(window, &MujocoVisualizationUtils::keyboard_callback);
+  //glfwSetCursorPosCallback(window, mouse_move);
+  //glfwSetScrollCallback(window, scroll);
 }
 
 void MujocoVisualizationUtils::update(GLFWwindow* window)
@@ -84,8 +83,14 @@ void MujocoVisualizationUtils::terminate()
   glfwTerminate();
 }
 
-// keyboard
-void MujocoVisualizationUtils::keyboard(GLFWwindow* window, int key, int scancode, int act, int mods)
+void MujocoVisualizationUtils::keyboard_callback(GLFWwindow* window, int key, int scancode, int act, int mods)
+{
+  //here we access the instance via the singleton pattern and forward the callback to the instance method
+  getInstance().keyboard_cb_implementation(window, key, scancode, act, mods);
+}
+
+// keyboard callback
+void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, int key, int scancode, int act, int mods)
 {
   // backspace: reset simulation
   if( act==GLFW_PRESS && key==GLFW_KEY_BACKSPACE )
@@ -95,8 +100,14 @@ void MujocoVisualizationUtils::keyboard(GLFWwindow* window, int key, int scancod
   }
 }
 
+void MujocoVisualizationUtils::mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
+{
+  //here we access the instance via the singleton pattern and forward the callback to the instance method
+  getInstance().mouse_move_cb_implementation(window, xpos, ypos);
+}
+
 // mouse move callback
-void MujocoVisualizationUtils::mouse_move(GLFWwindow* window, double xpos, double ypos)
+void MujocoVisualizationUtils::mouse_move_cb_implementation(GLFWwindow* window, double xpos, double ypos)
 {
   // no buttons down: nothing to do
   if( !button_left && !button_middle && !button_right )
@@ -129,8 +140,14 @@ void MujocoVisualizationUtils::mouse_move(GLFWwindow* window, double xpos, doubl
   mjv_moveCamera(mujoco_model_, action, dx/height, dy/height, &scn, &cam);
 }
 
-// scroll
-void MujocoVisualizationUtils::scroll(GLFWwindow* window, double xoffset, double yoffset)
+void MujocoVisualizationUtils::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+  //here we access the instance via the singleton pattern and forward the callback to the instance method
+  getInstance().scroll_cb_implementation(window, xoffset, yoffset);
+}
+
+// scroll callback
+void MujocoVisualizationUtils::scroll_cb_implementation(GLFWwindow* window, double xoffset, double yoffset)
 {
   // require model
   if( !mujoco_model_ )

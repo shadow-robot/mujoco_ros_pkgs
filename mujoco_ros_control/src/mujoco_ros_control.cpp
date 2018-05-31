@@ -249,7 +249,7 @@ int main(int argc, char** argv)
     glfwMakeContextCurrent(window);
 
     // initialize mujoco visualization functions
-    mujoco_visualization_utils.init(window);
+    mujoco_visualization_utils.init(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data, window);
 
     // spin
     ros::AsyncSpinner spinner(1);

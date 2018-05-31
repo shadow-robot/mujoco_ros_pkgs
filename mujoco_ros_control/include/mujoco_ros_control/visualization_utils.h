@@ -20,7 +20,12 @@ namespace mujoco_ros_control
 class MujocoVisualizationUtils
 {
 public:
-  virtual ~MujocoVisualizationUtils();
+  static MujocoVisualizationUtils& getInstance()
+  {
+    static MujocoVisualizationUtils instance;
+    return instance;
+  }
+  //virtual ~MujocoVisualizationUtils();
 
   void init(mjModel* mujoco_model, mjData* mujoco_data, GLFWwindow* window);
 
@@ -28,14 +33,26 @@ public:
   
   void terminate();
 
-  void keyboard(GLFWwindow* window, int key, int scancode, int act, int mods);
+  static void keyboard_callback(GLFWwindow* window, int key, int scancode, int act, int mods);
+ 
+  void keyboard_cb_implementation(GLFWwindow* window, int key, int scancode, int act, int mods);
+  
+  static void mouse_move_callback(GLFWwindow* window, double xpos, double ypos);
 
-  void mouse_move(GLFWwindow* window, double xpos, double ypos);
+  void mouse_move_cb_implementation(GLFWwindow* window, double xpos, double ypos);
 
-  void scroll(GLFWwindow* window, double xoffset, double yoffset);
+  static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+  void scroll_cb_implementation(GLFWwindow* window, double xoffset, double yoffset);
+
+  MujocoVisualizationUtils(void) // private constructor necessary to allow only 1 instance
+  {};
+
+  MujocoVisualizationUtils(MujocoVisualizationUtils const&); // prevent copies
+  void operator=(MujocoVisualizationUtils const&); // prevent assignments
   
 protected:
-  
+
   // MuJoCo data structures
   mjModel* mujoco_model_;
   mjData* mujoco_data_;
