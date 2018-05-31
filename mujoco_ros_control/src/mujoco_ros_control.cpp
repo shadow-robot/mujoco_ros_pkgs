@@ -77,7 +77,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     }
     else if (robot_type == "ur_hand_h")
     {
-      name_file = "/urdf/ur10_fh_model.xml";
+      name_file = "/urdf/ur10_fh_environment.xml";
     }
 
     std::string filename = package_path + name_file;
@@ -260,7 +260,7 @@ int main(int argc, char** argv)
     double initial_qpos[n_dof_] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     const mjtNum* state = initial_qpos;
 
-    while (mujoco_ros_control.mujoco_data->time < 70)
+    while (mujoco_ros_control.mujoco_data->time < 100)
     {
       mj_step1(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
       for (int i=0; i < n_dof_; i++)
