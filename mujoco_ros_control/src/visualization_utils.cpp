@@ -21,15 +21,10 @@ namespace mujoco_ros_control
 
 void MujocoVisualizationUtils::init(mjModel* mujoco_model, mjData* mujoco_data, GLFWwindow* window)
 {
+  ROS_INFO("Initializing GL functions");
   // save references
   mujoco_model_ = mujoco_model;
   mujoco_data_ = mujoco_data;
-
-  // MuJoCo data structures
-  mjvCamera cam;                      // abstract camera
-  mjvOption opt;                      // visualization options
-  mjvScene scn;                       // abstract scene
-  mjrContext con;                     // custom GPU context
 
   // mouse interaction
   button_left = false;
@@ -51,10 +46,11 @@ void MujocoVisualizationUtils::init(mjModel* mujoco_model, mjData* mujoco_data, 
   cam.lookat[2] = mujoco_model_->stat.center[2];
   cam.distance = 1.5 * mujoco_model_->stat.extent;
 
-  //boost::function<void (GLFWwindow*, int, int, int, int)> keyboard_cb = boost::bind(&MujocoVisualizationUtils::keyboard, this, _1);
+  glfwSetMouseButtonCallback(window,  &MujocoVisualizationUtils::mouse_button_callback);
   glfwSetKeyCallback(window, &MujocoVisualizationUtils::keyboard_callback);
-  //glfwSetCursorPosCallback(window, mouse_move);
-  //glfwSetScrollCallback(window, scroll);
+  glfwSetCursorPosCallback(window, &MujocoVisualizationUtils::mouse_move_callback);
+  glfwSetScrollCallback(window, &MujocoVisualizationUtils::scroll_callback);
+
 }
 
 void MujocoVisualizationUtils::update(GLFWwindow* window)
@@ -140,6 +136,128 @@ void MujocoVisualizationUtils::mouse_move_cb_implementation(GLFWwindow* window, 
   mjv_moveCamera(mujoco_model_, action, dx/height, dy/height, &scn, &cam);
 }
 
+void MujocoVisualizationUtils::mouse_button_callback(GLFWwindow* window, int button, int act, int mods)
+{
+  getInstance().mouse_button_cb_implementation(window, button, act, mods);
+}
+
+void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window, int button, int act, int mods)
+{
+    // past data for double-click detection
+    static int lastbutton = 0;
+    static double lastclicktm = 0;
+
+    // update button state
+    button_left =   (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)==GLFW_PRESS);
+    button_middle = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE)==GLFW_PRESS);
+    button_right =  (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)==GLFW_PRESS);
+
+    // Alt: swap left and right
+    if( (mods & GLFW_MOD_ALT) )
+    {
+        bool tmp = button_left;
+        button_left = button_right;
+        button_right = tmp;
+
+        if( button==GLFW_MOUSE_BUTTON_LEFT )
+            button = GLFW_MOUSE_BUTTON_RIGHT;
+        else if( button==GLFW_MOUSE_BUTTON_RIGHT )
+            button = GLFW_MOUSE_BUTTON_LEFT;
+    }
+
+    // update mouse position
+    glfwGetCursorPos(window, &lastx, &lasty);
+
+    // require model
+    if( !mujoco_model_ )
+        return;
+
+    // set perturbation
+    int newperturb = 0;
+    if( act==GLFW_PRESS && (mods & GLFW_MOD_CONTROL) && pert.select>0 )
+    {
+        // right: translate;  left: rotate
+        if( button_right )
+            newperturb = mjPERT_TRANSLATE;
+        else if( button_left )
+            newperturb = mjPERT_ROTATE;
+
+        // perturbation onset: reset reference
+        if( newperturb && !pert.active )
+            mjv_initPerturb(mujoco_model_, mujoco_data_, &scn, &pert);
+    }
+    pert.active = newperturb;
+
+    // detect double-click (250 msec)
+    if( act==GLFW_PRESS && glfwGetTime()-lastclicktm<0.25 && button==lastbutton )
+    {
+        // determine selection mode
+        int selmode;
+        if( button==GLFW_MOUSE_BUTTON_LEFT )
+            selmode = 1;
+        else if( mods & GLFW_MOD_CONTROL )
+            selmode = 3;
+        else
+            selmode = 2;
+
+        // get current window size
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+
+        // find geom and 3D click point, get corresponding body
+        mjtNum selpnt[3];
+        int selgeom = mjv_select(mujoco_model_, mujoco_data_, &opt,
+                                 (mjtNum)width/(mjtNum)height, 
+                                 (mjtNum)lastx/(mjtNum)width, 
+                                 (mjtNum)(height-lasty)/(mjtNum)height, 
+                                 &scn, selpnt);
+        int selbody = (selgeom>=0 ? mujoco_model_->geom_bodyid[selgeom] : 0);
+
+        // set lookat point, start tracking is requested
+        if( selmode==2 || selmode==3 )
+        {
+            // copy selpnt if geom clicked
+            if( selgeom>=0 )
+                mju_copy3(cam.lookat, selpnt);
+
+            // switch to tracking camera
+            if( selmode==3 && selbody )
+            {
+                cam.type = mjCAMERA_TRACKING;
+                cam.trackbodyid = selbody;
+                cam.fixedcamid = -1;
+            }
+        }
+
+        // set body selection
+        else
+        {
+            if( selbody )
+            {
+                // record selection
+                pert.select = selbody;
+
+                // compute localpos
+                mjtNum tmp[3];
+                mju_sub3(tmp, selpnt, mujoco_data_->xpos+3*pert.select);
+                mju_mulMatTVec(pert.localpos, mujoco_data_->xmat+9*pert.select, tmp, 3, 3);
+            }
+            else
+                pert.select = 0;
+        }
+
+        // stop perturbation on select
+        pert.active = 0;
+    }
+
+    // save info
+    if( act==GLFW_PRESS )
+    {
+        lastbutton = button;
+        lastclicktm = glfwGetTime();
+    }
+}
+
 void MujocoVisualizationUtils::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
   //here we access the instance via the singleton pattern and forward the callback to the instance method
@@ -155,5 +273,6 @@ void MujocoVisualizationUtils::scroll_cb_implementation(GLFWwindow* window, doub
   // scroll: emulate vertical mouse motion = 5% of window height
   mjv_moveCamera(mujoco_model_, mjMOUSE_ZOOM, 0, -0.05*yoffset, &scn, &cam);
 }
+
 
 }  // namespace mujoco_ros_control

@@ -260,7 +260,7 @@ int main(int argc, char** argv)
     double initial_qpos[n_dof_] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     const mjtNum* state = initial_qpos;
 
-    while (mujoco_ros_control.mujoco_data->time < 50)
+    while (mujoco_ros_control.mujoco_data->time < 70)
     {
       mj_step1(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
       for (int i=0; i < n_dof_; i++)

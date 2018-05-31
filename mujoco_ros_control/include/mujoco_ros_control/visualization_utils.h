@@ -13,6 +13,7 @@
 #include <glfw3.h>
 #include <stdio.h>
 #include <string.h>
+#include <ros/ros.h>
 
 namespace mujoco_ros_control
 {
@@ -44,6 +45,10 @@ public:
 
   void scroll_cb_implementation(GLFWwindow* window, double xoffset, double yoffset);
 
+  static void mouse_button_callback(GLFWwindow* window, int button, int act, int mods);
+
+  void mouse_button_cb_implementation(GLFWwindow* window, int button, int act, int mods);
+
 private:
   MujocoVisualizationUtils(void) // private constructor necessary to allow only 1 instance
   {};
@@ -60,6 +65,12 @@ protected:
   mjvOption opt;                      // visualization options
   mjvScene scn;                       // abstract scene
   mjrContext con;                     // custom GPU context
+  mjvPerturb pert;
+  mjvFigure figconstraint;
+  mjvFigure figcost;
+  mjvFigure figtimer;
+  mjvFigure figsize;
+  mjvFigure figsensor;
 
   // mouse interaction
   bool button_left;
