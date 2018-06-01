@@ -257,20 +257,20 @@ int main(int argc, char** argv)
 
     // let everything settle
     unsigned int n_dof_ = mujoco_ros_control.mujoco_model->njnt;
-    double initial_qpos[n_dof_] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    const mjtNum* state = initial_qpos;
 
-    while (mujoco_ros_control.mujoco_data->time < 100)
+    std::vector<double> initial_qpos;
+    initial_qpos.assign (n_dof_, 0);
+
+    while (mujoco_ros_control.mujoco_data->time < 30)
     {
       mj_step1(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
       for (int i=0; i < n_dof_; i++)
       {
-        mujoco_ros_control.mujoco_data->ctrl[i] = initial_qpos[n_dof_] + mujoco_ros_control.mujoco_data->qfrc_bias[i];
+        mujoco_ros_control.mujoco_data->ctrl[i] = initial_qpos[i] + mujoco_ros_control.mujoco_data->qfrc_bias[i];
       }
       mj_step2(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
     }
-
-    mju_copy(mujoco_ros_control.mujoco_data->qpos, state, mujoco_ros_control.mujoco_model->nq);
+    mju_copy(mujoco_ros_control.mujoco_data->qpos, mujoco_ros_control.mujoco_model->key_qpos, mujoco_ros_control.mujoco_model->nq*1);
 
     // run main loop, target real-time simulation and 60 fps rendering
     while ( !glfwWindowShouldClose(window) )

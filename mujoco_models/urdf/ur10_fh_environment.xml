@@ -16,7 +16,8 @@
             rgb1="0.8 0.6 0.4" rgb2="0.8 0.6 0.4" markrgb="1 1 1" random="0.01"/>  
         <texture name="texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" 
             width="512" height="512"/>  
-        <material name='MatPlane' reflectance='0.3' texture="texplane" texrepeat="1 1" texuniform="true"/>
+        <material name='mat_plane' reflectance='0.3' texture="texplane" texrepeat="1 1" texuniform="true"/>
+        <material name="block_mat" specular="0" shininess="0.5" reflectance="0" rgba="0.2 0.2 0.2 1"></material>
         <material name='geom' texture="texgeom" texuniform="true"/>
         <mesh name="base" file="base.stl" />
         <mesh name="shoulder" file="shoulder.stl" />
@@ -32,11 +33,10 @@
         <mesh name="finger_dist_link" file="finger_dist_link.stl" />
     </asset>
 	<worldbody>
-        <geom name='floor' pos='0 0 0.1' size='5 5 .125' type='plane' material="MatPlane" condim='3'/>
+        <geom name='floor' pos='0 0 0.1' size='5 5 .125' type='plane' material="mat_plane" condim='3'/>
 
 		<include file="robot_ur10_fh_model.xml"></include>
-
+        
 		<light directional="true" ambient="0.2 0.2 0.2" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" castshadow="false" pos="0 0 4" dir="0 0 -1" name="light0"></light>
 	</worldbody>
-
 </mujoco>
