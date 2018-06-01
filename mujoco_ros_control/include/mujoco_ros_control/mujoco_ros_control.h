@@ -37,7 +37,7 @@
 #include <transmission_interface/transmission_parser.h>
 
 // openGL stuff
-#include <GLFW/glfw3.h>
+#include <glfw3.h>
 
 #include <rosgraph_msgs/Clock.h>
 
