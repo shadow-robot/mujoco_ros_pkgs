@@ -100,6 +100,8 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
       return;
     }
 
+    check_objects_in_scene();
+
     // get the Mujoco simulation period
     ros::Duration mujoco_period(mujoco_model->opt.timestep);
 
@@ -118,7 +120,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     const urdf::Model *const urdf_model_ptr = urdf_model.initString(urdf_string) ? &urdf_model : NULL;
 
     if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
-                                 mujoco_data, urdf_model_ptr, transmissions_))
+                                 mujoco_data, urdf_model_ptr, transmissions_, objects_in_scene))
     {
       ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot sim interface");
       return;
@@ -221,6 +223,24 @@ void MujocoRosControl::publish_sim_time()
   last_pub_clock_time_ = sim_time;
   pub_clock_.publish(ros_time_);
 }
+
+int MujocoRosControl::check_objects_in_scene()
+{
+  objects_in_scene = 0;
+  n_dof_ = mujoco_model->njnt;
+
+  for (int i=0; i < n_dof_; i++)
+  {
+    int *number_of_free_joint = &(mujoco_model->jnt_type[i]);
+    int jnt_type = *number_of_free_joint;
+    if (jnt_type == 0)
+    {
+      ROS_INFO("Free Joint Found");
+      objects_in_scene += 1;
+    }
+  }
+  return objects_in_scene;
+}
 }  // namespace mujoco_ros_control
 
 int main(int argc, char** argv)
@@ -256,15 +276,13 @@ int main(int argc, char** argv)
     spinner.start();
 
     // let everything settle
-    unsigned int n_dof_ = mujoco_ros_control.mujoco_model->njnt;
-
     std::vector<double> initial_qpos;
-    initial_qpos.assign (n_dof_, 0);
+    initial_qpos.assign (mujoco_ros_control.n_dof_, 0);
 
     while (mujoco_ros_control.mujoco_data->time < 30)
     {
       mj_step1(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
-      for (int i=0; i < n_dof_; i++)
+      for (int i=0; i < mujoco_ros_control.n_dof_-mujoco_ros_control.objects_in_scene; i++)
       {
         mujoco_ros_control.mujoco_data->ctrl[i] = initial_qpos[i] + mujoco_ros_control.mujoco_data->qfrc_bias[i];
       }

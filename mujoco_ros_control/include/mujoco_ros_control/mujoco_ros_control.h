@@ -64,11 +64,16 @@ public:
 
   void publish_sim_time();
 
+  int check_objects_in_scene();
+
   // pointer to the mujoco model
   mjModel* mujoco_model;
   mjData* mujoco_data;
+  unsigned int n_dof_;
+  int objects_in_scene;
 
 protected:
+
   // node handles
   ros::NodeHandle robot_node_handle;
 
