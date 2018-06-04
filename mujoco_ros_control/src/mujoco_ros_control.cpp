@@ -15,6 +15,9 @@
 
 namespace mujoco_ros_control
 {
+MujocoRosControl::MujocoRosControl()
+: objects_in_scene(0), n_dof_(0)
+{}
 
 MujocoRosControl::~MujocoRosControl()
 {
@@ -226,7 +229,6 @@ void MujocoRosControl::publish_sim_time()
 
 int MujocoRosControl::check_objects_in_scene()
 {
-  objects_in_scene = 0;
   n_dof_ = mujoco_model->njnt;
 
   for (int i=0; i < n_dof_; i++)

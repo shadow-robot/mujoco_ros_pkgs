@@ -48,6 +48,7 @@ namespace mujoco_ros_control
 class MujocoRosControl
 {
 public:
+  MujocoRosControl();
   virtual ~MujocoRosControl();
 
   // initialize params and controller manager
