@@ -12,6 +12,7 @@
 #include <mujoco_ros_control/visualization_utils.h>
 #include <urdf/model.h>
 #include <string>
+#include <vector>
 
 namespace mujoco_ros_control
 {
@@ -254,7 +255,8 @@ int main(int argc, char** argv)
 
     mujoco_ros_control::MujocoRosControl mujoco_ros_control;
 
-    mujoco_ros_control::MujocoVisualizationUtils &mujoco_visualization_utils = mujoco_ros_control::MujocoVisualizationUtils::getInstance(); 
+    mujoco_ros_control::MujocoVisualizationUtils &mujoco_visualization_utils =
+        mujoco_ros_control::MujocoVisualizationUtils::getInstance();
 
     // initialize mujoco stuff
     mujoco_ros_control.init(nh_);
@@ -280,7 +282,7 @@ int main(int argc, char** argv)
 
     // // let everything settle
     std::vector<double> initial_qpos;
-    initial_qpos.assign (mujoco_ros_control.n_dof_, 0);
+    initial_qpos.assign(mujoco_ros_control.n_dof_, 0);
 
     while (mujoco_ros_control.mujoco_data->time < 30)
     {
@@ -291,7 +293,8 @@ int main(int argc, char** argv)
       }
       mj_step2(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
     }
-    mju_copy(mujoco_ros_control.mujoco_data->qpos, mujoco_ros_control.mujoco_model->key_qpos, mujoco_ros_control.mujoco_model->nq*1);
+    mju_copy(mujoco_ros_control.mujoco_data->qpos, mujoco_ros_control.mujoco_model->key_qpos,
+             mujoco_ros_control.mujoco_model->nq*1);
 
     // run main loop, target real-time simulation and 60 fps rendering
     while ( !glfwWindowShouldClose(window) )

@@ -84,7 +84,7 @@ void MujocoVisualizationUtils::keyboard_callback(GLFWwindow* window, int key, in
 void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, int key, int scancode, int act, int mods)
 {
   // backspace: reset simulation
-  if (act==GLFW_PRESS && key==GLFW_KEY_BACKSPACE)
+  if (act == GLFW_PRESS && key == GLFW_KEY_BACKSPACE)
   {
     mj_resetData(mujoco_model_, mujoco_data_);
     mj_forward(mujoco_model_, mujoco_data_);
@@ -114,8 +114,8 @@ void MujocoVisualizationUtils::mouse_move_cb_implementation(GLFWwindow* window, 
   glfwGetWindowSize(window, &width, &height);
 
   // get shift key state
-  bool mod_shift = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)==GLFW_PRESS ||
-                    glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT)==GLFW_PRESS);
+  bool mod_shift = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+                    glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS);
 
   // determine action based on mouse button
   mjtMouse action;
@@ -142,9 +142,9 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
     static double lastclicktm = 0;
 
     // update button state
-    button_left = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)==GLFW_PRESS);
-    button_middle = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE)==GLFW_PRESS);
-    button_right = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)==GLFW_PRESS);
+    button_left = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+    button_middle = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS);
+    button_right = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS);
 
     // Alt: swap left and right
     if ((mods & GLFW_MOD_ALT))
@@ -153,9 +153,9 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
         button_left = button_right;
         button_right = tmp;
 
-        if (button==GLFW_MOUSE_BUTTON_LEFT)
+        if (button == GLFW_MOUSE_BUTTON_LEFT)
             button = GLFW_MOUSE_BUTTON_RIGHT;
-        else if (button==GLFW_MOUSE_BUTTON_RIGHT)
+        else if (button == GLFW_MOUSE_BUTTON_RIGHT)
             button = GLFW_MOUSE_BUTTON_LEFT;
     }
 
@@ -168,7 +168,7 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
 
     // set perturbation
     int newperturb = 0;
-    if( act==GLFW_PRESS && (mods & GLFW_MOD_CONTROL) && pert.select>0 )
+    if (act == GLFW_PRESS && (mods & GLFW_MOD_CONTROL) && pert.select>0)
     {
         // right: translate;  left: rotate
         if (button_right)
@@ -183,11 +183,11 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
     pert.active = newperturb;
 
     // detect double-click (250 msec)
-    if( act==GLFW_PRESS && glfwGetTime()-lastclicktm<0.25 && button==lastbutton )
+    if (act == GLFW_PRESS && glfwGetTime()-lastclicktm<0.25 && button == lastbutton)
     {
         // determine selection mode
         int selmode;
-        if (button==GLFW_MOUSE_BUTTON_LEFT)
+        if (button == GLFW_MOUSE_BUTTON_LEFT)
             selmode = 1;
         else if (mods & GLFW_MOD_CONTROL)
             selmode = 3;
@@ -201,21 +201,21 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
         // find geom and 3D click point, get corresponding body
         mjtNum selpnt[3];
         int selgeom = mjv_select(mujoco_model_, mujoco_data_, &opt,
-                                 (mjtNum)width/(mjtNum)height, 
-                                 (mjtNum)lastx/(mjtNum)width, 
-                                 (mjtNum)(height-lasty)/(mjtNum)height, 
+                                 (mjtNum)width/(mjtNum)height,
+                                 (mjtNum)lastx/(mjtNum)width,
+                                 (mjtNum)(height-lasty)/(mjtNum)height,
                                  &scn, selpnt);
-        int selbody = (selgeom>=0 ? mujoco_model_->geom_bodyid[selgeom] : 0);
+        int selbody = (selgeom >=0 ? mujoco_model_->geom_bodyid[selgeom] : 0);
 
         // set lookat point, start tracking is requested
-        if (selmode==2 || selmode==3)
+        if (selmode == 2 || selmode == 3)
         {
             // copy selpnt if geom clicked
-            if( selgeom>=0 )
+            if (selgeom >= 0)
                 mju_copy3(cam.lookat, selpnt);
 
             // switch to tracking camera
-            if (selmode==3 && selbody)
+            if (selmode == 3 && selbody)
             {
                 cam.type = mjCAMERA_TRACKING;
                 cam.trackbodyid = selbody;
@@ -230,7 +230,6 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
             {
                 // record selection
                 pert.select = selbody;
-
                 // compute localpos
                 mjtNum tmp[3];
                 mju_sub3(tmp, selpnt, mujoco_data_->xpos+3*pert.select);
@@ -245,7 +244,7 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
     }
 
     // save info
-    if (act==GLFW_PRESS)
+    if (act == GLFW_PRESS)
     {
         lastbutton = button;
         lastclicktm = glfwGetTime();
