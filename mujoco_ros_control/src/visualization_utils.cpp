@@ -16,9 +16,6 @@
 namespace mujoco_ros_control
 {
 
-//MujocoVisualizationUtils::~MujocoVisualizationUtils()
-//{};
-
 void MujocoVisualizationUtils::init(mjModel* mujoco_model, mjData* mujoco_data, GLFWwindow* window)
 {
   ROS_INFO("Initializing GL functions");
@@ -50,7 +47,6 @@ void MujocoVisualizationUtils::init(mjModel* mujoco_model, mjData* mujoco_data, 
   glfwSetKeyCallback(window, &MujocoVisualizationUtils::keyboard_callback);
   glfwSetCursorPosCallback(window, &MujocoVisualizationUtils::mouse_move_callback);
   glfwSetScrollCallback(window, &MujocoVisualizationUtils::scroll_callback);
-
 }
 
 void MujocoVisualizationUtils::update(GLFWwindow* window)
@@ -81,7 +77,6 @@ void MujocoVisualizationUtils::terminate()
 
 void MujocoVisualizationUtils::keyboard_callback(GLFWwindow* window, int key, int scancode, int act, int mods)
 {
-  //here we access the instance via the singleton pattern and forward the callback to the instance method
   getInstance().keyboard_cb_implementation(window, key, scancode, act, mods);
 }
 
@@ -89,7 +84,7 @@ void MujocoVisualizationUtils::keyboard_callback(GLFWwindow* window, int key, in
 void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, int key, int scancode, int act, int mods)
 {
   // backspace: reset simulation
-  if( act==GLFW_PRESS && key==GLFW_KEY_BACKSPACE )
+  if (act==GLFW_PRESS && key==GLFW_KEY_BACKSPACE)
   {
     mj_resetData(mujoco_model_, mujoco_data_);
     mj_forward(mujoco_model_, mujoco_data_);
@@ -98,7 +93,6 @@ void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, in
 
 void MujocoVisualizationUtils::mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
 {
-  //here we access the instance via the singleton pattern and forward the callback to the instance method
   getInstance().mouse_move_cb_implementation(window, xpos, ypos);
 }
 
@@ -106,7 +100,7 @@ void MujocoVisualizationUtils::mouse_move_callback(GLFWwindow* window, double xp
 void MujocoVisualizationUtils::mouse_move_cb_implementation(GLFWwindow* window, double xpos, double ypos)
 {
   // no buttons down: nothing to do
-  if( !button_left && !button_middle && !button_right )
+  if (!button_left && !button_middle && !button_right)
       return;
 
   // compute mouse displacement, save
@@ -125,9 +119,9 @@ void MujocoVisualizationUtils::mouse_move_cb_implementation(GLFWwindow* window, 
 
   // determine action based on mouse button
   mjtMouse action;
-  if( button_right )
+  if (button_right)
       action = mod_shift ? mjMOUSE_MOVE_H : mjMOUSE_MOVE_V;
-  else if( button_left )
+  else if (button_left)
       action = mod_shift ? mjMOUSE_ROTATE_H : mjMOUSE_ROTATE_V;
   else
       action = mjMOUSE_ZOOM;
@@ -148,20 +142,20 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
     static double lastclicktm = 0;
 
     // update button state
-    button_left =   (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)==GLFW_PRESS);
+    button_left = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)==GLFW_PRESS);
     button_middle = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE)==GLFW_PRESS);
-    button_right =  (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)==GLFW_PRESS);
+    button_right = (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)==GLFW_PRESS);
 
     // Alt: swap left and right
-    if( (mods & GLFW_MOD_ALT) )
+    if ((mods & GLFW_MOD_ALT))
     {
         bool tmp = button_left;
         button_left = button_right;
         button_right = tmp;
 
-        if( button==GLFW_MOUSE_BUTTON_LEFT )
+        if (button==GLFW_MOUSE_BUTTON_LEFT)
             button = GLFW_MOUSE_BUTTON_RIGHT;
-        else if( button==GLFW_MOUSE_BUTTON_RIGHT )
+        else if (button==GLFW_MOUSE_BUTTON_RIGHT)
             button = GLFW_MOUSE_BUTTON_LEFT;
     }
 
@@ -169,7 +163,7 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
     glfwGetCursorPos(window, &lastx, &lasty);
 
     // require model
-    if( !mujoco_model_ )
+    if (!mujoco_model_)
         return;
 
     // set perturbation
@@ -177,13 +171,13 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
     if( act==GLFW_PRESS && (mods & GLFW_MOD_CONTROL) && pert.select>0 )
     {
         // right: translate;  left: rotate
-        if( button_right )
+        if (button_right)
             newperturb = mjPERT_TRANSLATE;
-        else if( button_left )
+        else if (button_left)
             newperturb = mjPERT_ROTATE;
 
         // perturbation onset: reset reference
-        if( newperturb && !pert.active )
+        if (newperturb && !pert.active)
             mjv_initPerturb(mujoco_model_, mujoco_data_, &scn, &pert);
     }
     pert.active = newperturb;
@@ -193,9 +187,9 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
     {
         // determine selection mode
         int selmode;
-        if( button==GLFW_MOUSE_BUTTON_LEFT )
+        if (button==GLFW_MOUSE_BUTTON_LEFT)
             selmode = 1;
-        else if( mods & GLFW_MOD_CONTROL )
+        else if (mods & GLFW_MOD_CONTROL)
             selmode = 3;
         else
             selmode = 2;
@@ -214,14 +208,14 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
         int selbody = (selgeom>=0 ? mujoco_model_->geom_bodyid[selgeom] : 0);
 
         // set lookat point, start tracking is requested
-        if( selmode==2 || selmode==3 )
+        if (selmode==2 || selmode==3)
         {
             // copy selpnt if geom clicked
             if( selgeom>=0 )
                 mju_copy3(cam.lookat, selpnt);
 
             // switch to tracking camera
-            if( selmode==3 && selbody )
+            if (selmode==3 && selbody)
             {
                 cam.type = mjCAMERA_TRACKING;
                 cam.trackbodyid = selbody;
@@ -232,7 +226,7 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
         // set body selection
         else
         {
-            if( selbody )
+            if (selbody)
             {
                 // record selection
                 pert.select = selbody;
@@ -251,7 +245,7 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
     }
 
     // save info
-    if( act==GLFW_PRESS )
+    if (act==GLFW_PRESS)
     {
         lastbutton = button;
         lastclicktm = glfwGetTime();
@@ -260,7 +254,6 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
 
 void MujocoVisualizationUtils::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-  //here we access the instance via the singleton pattern and forward the callback to the instance method
   getInstance().scroll_cb_implementation(window, xoffset, yoffset);
 }
 
@@ -268,11 +261,10 @@ void MujocoVisualizationUtils::scroll_callback(GLFWwindow* window, double xoffse
 void MujocoVisualizationUtils::scroll_cb_implementation(GLFWwindow* window, double xoffset, double yoffset)
 {
   // require model
-  if( !mujoco_model_ )
+  if (!mujoco_model_)
       return;
   // scroll: emulate vertical mouse motion = 5% of window height
   mjv_moveCamera(mujoco_model_, mjMOUSE_ZOOM, 0, -0.05*yoffset, &scn, &cam);
 }
-
 
 }  // namespace mujoco_ros_control

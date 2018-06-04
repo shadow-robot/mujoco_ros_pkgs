@@ -103,6 +103,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
       return;
     }
 
+    // check for free joints
     check_objects_in_scene();
 
     // get the Mujoco simulation period
@@ -277,7 +278,7 @@ int main(int argc, char** argv)
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
-    // let everything settle
+    // // let everything settle
     std::vector<double> initial_qpos;
     initial_qpos.assign (mujoco_ros_control.n_dof_, 0);
 

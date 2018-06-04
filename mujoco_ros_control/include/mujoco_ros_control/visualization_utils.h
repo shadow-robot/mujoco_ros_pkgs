@@ -6,8 +6,8 @@
  * @brief  Hardware interface for simulated robot in Mujoco
  **/
 
-#ifndef MUJOCO_ROS_CONTROL_MUJOCO_VISUALIZATION_UTILS_H
-#define MUJOCO_ROS_CONTROL_MUJOCO_VISUALIZATION_UTILS_H
+#ifndef MUJOCO_ROS_CONTROL_VISUALIZATION_UTILS_H
+#define MUJOCO_ROS_CONTROL_VISUALIZATION_UTILS_H
 
 #include <mujoco.h>
 #include <glfw3.h>
@@ -30,7 +30,7 @@ public:
   void init(mjModel* mujoco_model, mjData* mujoco_data, GLFWwindow* window);
 
   void update(GLFWwindow* window);
-  
+
   void terminate();
 
   static void keyboard_callback(GLFWwindow* window, int key, int scancode, int act, int mods);
@@ -50,14 +50,13 @@ public:
   void mouse_button_cb_implementation(GLFWwindow* window, int button, int act, int mods);
 
 private:
-  MujocoVisualizationUtils(void) // private constructor necessary to allow only 1 instance
+  MujocoVisualizationUtils(void)
   {};
 
-  MujocoVisualizationUtils(MujocoVisualizationUtils const&); // prevent copies
-  void operator=(MujocoVisualizationUtils const&); // prevent assignments
+  MujocoVisualizationUtils(MujocoVisualizationUtils const&);
+  void operator=(MujocoVisualizationUtils const&);
 
 protected:
-
   // MuJoCo data structures
   mjModel* mujoco_model_;
   mjData* mujoco_data_;
@@ -75,9 +74,9 @@ protected:
   // mouse interaction
   bool button_left;
   bool button_middle;
-  bool button_right ;
+  bool button_right;
   double lastx;
   double lasty;
 };
 }  // namespace mujoco_ros_control
-#endif  // MUJOCO_ROS_CONTROL_MUJOCO_VISUALIZATION_UTILS_H
+#endif  // MUJOCO_ROS_CONTROL_VISUALIZATION_UTILS_H

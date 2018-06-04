@@ -57,23 +57,25 @@ public:
   // step update function
   void update();
 
+  unsigned int n_dof_;
+  int objects_in_scene;
+
+  // pointer to the mujoco model
+  mjModel* mujoco_model;
+  mjData* mujoco_data;
+
+protected:
   // get the URDF XML from the parameter server
   std::string get_urdf(std::string param_name) const;
 
   // parse transmissions from URDF
   bool parse_transmissions(const std::string& urdf_string);
 
+  // publish simulation time to ros clock
   void publish_sim_time();
 
+  // check for free joints in the mujoco model
   int check_objects_in_scene();
-
-  // pointer to the mujoco model
-  mjModel* mujoco_model;
-  mjData* mujoco_data;
-  unsigned int n_dof_;
-  int objects_in_scene;
-
-protected:
 
   // node handles
   ros::NodeHandle robot_node_handle;
