@@ -168,7 +168,7 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
 
     // set perturbation
     int newperturb = 0;
-    if (act == GLFW_PRESS && (mods & GLFW_MOD_CONTROL) && pert.select>0)
+    if (act == GLFW_PRESS && (mods & GLFW_MOD_CONTROL) && pert.select > 0)
     {
         // right: translate;  left: rotate
         if (button_right)
@@ -183,7 +183,7 @@ void MujocoVisualizationUtils::mouse_button_cb_implementation(GLFWwindow* window
     pert.active = newperturb;
 
     // detect double-click (250 msec)
-    if (act == GLFW_PRESS && glfwGetTime()-lastclicktm<0.25 && button == lastbutton)
+    if (act == GLFW_PRESS && glfwGetTime()-lastclicktm < 0.25 && button == lastbutton)
     {
         // determine selection mode
         int selmode;
