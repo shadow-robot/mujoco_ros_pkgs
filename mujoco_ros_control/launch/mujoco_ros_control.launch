@@ -1,9 +1,11 @@
 <launch>
   <!-- This launch file launches mujoco_ros_control node -->
   <param name="/use_sim_time" value="true"/>
-  <arg name="robot_type" default="hand_h"/>
+  <arg name="robot_model_path" default="$(find mujoco_models)/urdf/ur10_fh_environment.xml"/>
+  <arg name="robot_description_param" default="robot_description"/>
 
   <node name="mujoco_ros_control" pkg="mujoco_ros_control" type="mujoco_ros_control" output="screen">
-    <param name="robot_type" value="$(arg robot_type)"/>
+    <param name="robot_model_path" value="$(arg robot_model_path)"/>
+    <param name="robot_description_param" value="$(arg robot_description_param)"/>
   </node>
 </launch>
