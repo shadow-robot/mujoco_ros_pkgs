@@ -7,8 +7,7 @@ In order to run the demo the following packages are needed:
 
 - [sr_utl_demos](https://github.com/shadow-robot/sr_utl_demos)
 - [shadow's fork of the object_recognition_msgs](https://github.com/shadow-robot/object_recognition_msgs)
-- Switch sr_manipulation to F#SRC-1374_mujoco_test_debug branch (This branch it allows to separate the approach and grasp phase
-  which is useful for debugging reasons)
+- Switch sr_manipulation to F#SRC-1374_mujoco_test_debug branch (The only difference between this branch and kinetic-devel is to separate the approach and grasp phase which is useful for debugging reasons)
 
 Before running the demo create the db folder in the tmp directory of your Docker with the following command:
 ```mkdir /tmp/db
