@@ -1,8 +1,0 @@
-arm_positions:
-  home_position:
-    ra_shoulder_pan_joint: 1.147
-    ra_elbow_joint: 1.695
-    ra_wrist_1_joint: -1.395
-    ra_wrist_2_joint: -1.584
-    ra_shoulder_lift_joint: -1.926
-    ra_wrist_3_joint: 1.830
