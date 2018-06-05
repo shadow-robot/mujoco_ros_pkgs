@@ -52,9 +52,16 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     ROS_INFO_NAMED("mujoco_ros_control", "Starting mujoco_ros_control node in namespace: %s", robot_namespace_.c_str());
 
     // read urdf from ros parameter server then setup actuators and mechanism control node.
-    robot_description_ = "robot_description";
+    if (nodehandle.getParam("mujoco_ros_control/robot_description_param", robot_description_param_))
+    {
+      ROS_INFO("Got param Robot description: %s", robot_description_param_.c_str());
+    }
+    else
+    {
+      ROS_ERROR("Failed to get param 'robot_description_param'");
+    }
 
-    const std::string urdf_string = get_urdf(robot_description_);
+    const std::string urdf_string = get_urdf(robot_description_param_);
 
     if (!parse_transmissions(urdf_string))
     {
@@ -62,34 +69,19 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
       return;
     }
 
-    // get package path, robot to load and filename
-    std::string package_path = ros::package::getPath("mujoco_models");
-    std::string name_file;
-    std::string robot_type;
-    if (nodehandle.getParam("mujoco_ros_control/robot_type", robot_type))
+    if (nodehandle.getParam("mujoco_ros_control/robot_model_path", robot_model_path_))
     {
-      ROS_INFO("Got param: %s", robot_type.c_str());
+      ROS_INFO("Got param: %s", robot_model_path_.c_str());
     }
     else
     {
-      ROS_ERROR("Failed to get param 'robot_type'");
+      ROS_ERROR("Failed to get param 'robot_model_path'");
     }
-
-    if (robot_type == "hand_h")
-    {
-      name_file = "/urdf/fh_model.xml";
-    }
-    else if (robot_type == "ur_hand_h")
-    {
-      name_file = "/urdf/ur10_fh_environment.xml";
-    }
-
-    std::string filename = package_path + name_file;
 
     char error[1000];
 
     // create mjModel
-    mujoco_model = mj_loadXML(filename.c_str(), NULL, error, 1000);
+    mujoco_model = mj_loadXML(robot_model_path_.c_str(), NULL, error, 1000);
     if (!mujoco_model)
     {
       printf("Could not load mujoco model with error: %s.\n", error);
@@ -196,7 +188,7 @@ std::string MujocoRosControl::get_urdf(std::string param_name) const
     else
     {
       ROS_INFO_ONCE_NAMED("mujoco_ros_control", "mujoco_ros_control plugin is waiting for model"
-        " URDF in parameter [%s] on the ROS param server.", robot_description_.c_str());
+        " URDF in parameter [%s] on the ROS param server.", robot_description_param_.c_str());
 
       robot_node_handle.getParam(param_name, urdf_string);
     }

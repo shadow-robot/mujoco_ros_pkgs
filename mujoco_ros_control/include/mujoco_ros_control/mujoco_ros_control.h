@@ -85,7 +85,8 @@ protected:
 
   // strings
   std::string robot_namespace_;
-  std::string robot_description_;
+  std::string robot_description_param_;
+  std::string robot_model_path_;
 
   // transmissions in this plugin's scope
   std::vector<transmission_interface::TransmissionInfo> transmissions_;
