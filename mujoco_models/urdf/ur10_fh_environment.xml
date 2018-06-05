@@ -39,7 +39,7 @@
         
         <body>
           <joint type="free"/>
-          <geom type="box" pos="0.6 0.6 0.2" size="0.033 0.045 0.075" rgba="0 .5 0 1"/>
+          <geom type="box" pos="0 0.7 0.2" size="0.033 0.045 0.075" rgba="0 .5 0 1"/>
         </body>
 
 		<light directional="true" ambient="0.2 0.2 0.2" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" castshadow="false" pos="0 0 4" dir="0 0 -1" name="light0"></light>
