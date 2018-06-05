@@ -8,6 +8,15 @@
         <global offwidth="800" offheight="800"/>
     </visual>
 
+    <default>
+      <default class="asset_class">
+        <geom friction="1 0.005 0.001" condim="4" margin="0.0005" contype="1" conaffinity="1"></geom>
+        <joint limited="true" damping="0.5" armature="0.005" margin="0.01" frictionloss="0.001"></joint>
+        <site size="0.005" rgba="0.4 0.9 0.4 1"></site>
+        <general ctrllimited="true" forcelimited="true"></general>
+      </default>
+    </default>
+
     <size njmax="500" nconmax="100" />
     <asset>
 	    <texture type="skybox" builtin="gradient" width="128" height="128" rgb1=".4 .6 .8" 
@@ -39,7 +48,7 @@
         
         <body>
           <joint type="free"/>
-          <geom type="box" pos="0 0.7 0.2" size="0.033 0.045 0.075" rgba="0 .5 0 1"/>
+          <geom type="box" pos="0 0.7 0.2" size="0.033 0.045 0.075" rgba="0 .5 0 1" friction="1 0.05 0.01" condim='4'/>
         </body>
 
 		<light directional="true" ambient="0.2 0.2 0.2" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" castshadow="false" pos="0 0 4" dir="0 0 -1" name="light0"></light>

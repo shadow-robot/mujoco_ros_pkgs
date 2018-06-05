@@ -1,8 +1,7 @@
 mujoco_ros_control/pid_gains:
   ra_shoulder_pan_joint: {p: 300.0, i: 0.0, d: 30.0}
-  ra_shoulder_lift_joint: {p: 8000.0, i: 100.0, d: 800.0}
-  ra_elbow_joint: {p: 6000.0, i: 0.0, d: 30.0}
+  ra_shoulder_lift_joint: {p: 12000.0, i: 100.0, d: 800.0}
+  ra_elbow_joint: {p: 8000.0, i: 0.0, d: 30.0}
   ra_wrist_1_joint: {p: 1000.0, i: 0.0, d: 20.0}
   ra_wrist_2_joint: {p: 300.0, i: 0.0, d: 1.0}
   ra_wrist_3_joint: {p: 40.0, i: 0.0, d: 1.0}
-  
