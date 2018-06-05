@@ -41,7 +41,7 @@ rosrun sr_manipulation_grasp_conductor pick_place_server.py
 When a message `Ready to receive place goals` appears, the pipeline is ready to pick the boxes. To initiate grasping, run the following:
 
 ```
-rosrun mujoco_ros_control pick_and_place_client.py -o "utl5_large_0" -p 0.761 0.873 0.7633 0.0 0.0 1.5707963267
+rosrun mujoco_ros_control pick_and_place_client.py -o "utl5_large_0" -p 0.461 0.673 0.01 0 1.57 0
 ```
 
 Here -o option represents the id of the object to pick up as defined in the recognized_object message and -p option represents the final place pose
