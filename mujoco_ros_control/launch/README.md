@@ -10,7 +10,8 @@ In order to run the demo the following packages are needed:
 - Switch sr_manipulation to F#SRC-1374_mujoco_test_debug branch (The only difference between this branch and kinetic-devel is to separate the approach and grasp phase which is useful for debugging reasons)
 
 Before running the demo create the db folder in the tmp directory of your Docker with the following command:
-```mkdir /tmp/db
+```
+mkdir /tmp/db
 ```
 
 ## Usage
