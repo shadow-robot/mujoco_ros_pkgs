@@ -8,7 +8,7 @@
         <global offwidth="800" offheight="800"/>
     </visual>
 
-    <option cone="elliptic" />
+    <option cone="elliptic" impratio="10"/>
     <size njmax="500" nconmax="100" />
     <asset>
 	    <texture type="skybox" builtin="gradient" width="128" height="128" rgb1=".4 .6 .8" 
