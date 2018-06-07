@@ -6,6 +6,7 @@ The goal of the demo is to evaluate Mujoco performance in performing utl5_demo i
 In order to run the demo the following packages are needed:
 
 - [sr_utl_demos](https://github.com/shadow-robot/sr_utl_demos)
+- [sr_vision](https://github.com/shadow-robot/sr_vision)
 - [shadow's fork of the object_recognition_msgs](https://github.com/shadow-robot/object_recognition_msgs)
 - Switch sr_manipulation to F#SRC-1374_mujoco_test_debug branch (The only difference between this branch and kinetic-devel is to separate the approach and grasp phase which is useful for debugging reasons)
 
