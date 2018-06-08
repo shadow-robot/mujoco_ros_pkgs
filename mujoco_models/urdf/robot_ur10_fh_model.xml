@@ -108,7 +108,7 @@
                                                                         <body name="H0_F2_link_2" pos="0 0 0.06" quat="0.999994 -0.00343244 0 0">
                                                                             <inertial pos="0.00197 -0.00166 0.00962" quat="0.699525 -0.0757005 0.0722124 0.706909" mass="0.071" diaginertia="3.75427e-05 3.51762e-05 1.10966e-05" />
                                                                             <joint name="H0_F2J2" pos="0 0 0" axis="1 0 0" limited="true" range="-1.0472 1.39626" damping="0.5" armature="0.005" margin="0.01" frictionloss="0.001"/>
-                                                                            <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_dist_link" friction="1 0.05 0.01" condim="4" margin="0.0005" contype="1" solimp="0.99 0.99 0.01" solref="0.01 1" conaffinity="1"/>
+                                                                            <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_dist_link" friction="1 0.05 0.01" condim="4" margin="0.0005" solimp="0.99 0.99 0.01" solref="0.01 1"  contype="1" conaffinity="1"/>
                                                                             <body name="H0_F2_tip" pos="0 0 0">
                                                                                 <inertial pos="0 0 0" mass="0" diaginertia="0 0 0" />
                                                                                 <body name="H0_F2_optoforce" pos="0 -0.006 0.046" quat="0.984727 -0.174108 0 0">
