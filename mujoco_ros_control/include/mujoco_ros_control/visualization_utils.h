@@ -49,6 +49,24 @@ public:
 
   void mouse_button_cb_implementation(GLFWwindow* window, int button, int act, int mods);
 
+  void profiler_init();
+
+  void profiler_update();
+
+  void profiler_show(mjrRect rect);
+
+  void sensor_init();
+
+  void sensor_update();
+
+  void sensor_show(mjrRect rect);
+
+  mjtNum timer();
+
+  void clear_timers(mjData* mujoco_data);
+
+  void autoscale(GLFWwindow* window);
+  
 private:
   MujocoVisualizationUtils(void)
   {};
@@ -70,6 +88,23 @@ protected:
   mjvFigure figtimer;
   mjvFigure figsize;
   mjvFigure figsensor;
+
+  char lastfile[1000];
+  char opt_title[1000];
+  char opt_content[1000];
+
+  // user state
+  bool paused;
+  bool showoption;
+  bool showinfo;
+  bool showfullscreen;
+  bool slowmotion;
+  bool showdepth;
+  bool showsensor;
+  bool showprofiler;
+  int showhelp;
+  int fontscale;
+  int keyreset;
 
   // mouse interaction
   bool button_left;
