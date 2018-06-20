@@ -92,6 +92,7 @@ protected:
   char lastfile[1000];
   char opt_title[1000];
   char opt_content[1000];
+  char status[1000];
 
   // user state
   bool paused;

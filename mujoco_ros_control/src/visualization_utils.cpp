@@ -77,19 +77,13 @@ void MujocoVisualizationUtils::update(GLFWwindow* window)
                   NULL, &cam, mjCAT_ALL, &scn);
   mjr_render(viewport, &scn, &con);
 
-  // show overlays
-  if (showhelp == 1)
-    mjr_overlay(mjFONT_NORMAL, mjGRID_TOPLEFT, smallrect, "Help  ", "F1  ", &con);
-  else if( showhelp==2 )
-    mjr_overlay(mjFONT_NORMAL, mjGRID_TOPLEFT, smallrect, help_title, help_content, &con);
-
   // show info
   if( showinfo )
   {
     if( paused )
-      mjr_overlay(mjFONT_NORMAL, mjGRID_BOTTOMLEFT, smallrect, "PAUSED", 0, &con);
+      mjr_overlay(mjFONT_NORMAL, mjGRID_BOTTOMLEFT, smallviewport, "PAUSED", 0, &con);
     else
-      mjr_overlay(mjFONT_NORMAL, mjGRID_BOTTOMLEFT, smallrect, 
+      mjr_overlay(mjFONT_NORMAL, mjGRID_BOTTOMLEFT, smallviewport, 
                  "Time\nSize\nCPU\nFPS\nEnergy\nSolver\nFwdInv\nCamera\nFrame\nLabel\nReset", status, &con);
   }
 
@@ -229,7 +223,7 @@ void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, in
         else
             keyreset = mjMIN(mujoco_model_->nkey-1, keyreset+1);
 
-        // continue with reset
+    // continue with reset
 
     case GLFW_KEY_BACKSPACE:            // reset
         mj_resetData(mujoco_model_, mujoco_data_);
