@@ -10,11 +10,13 @@
   <arg name="camera" default="ensenso" />
   <arg name="arm_group" default="right_arm_and_manipulator" />
   <arg name="description_repo_path" default="$(find sr_utl5)" />
-  <arg name="load_grasps_box" default="false" />
-  <arg name="load_grasps_cylinder" default="false" />
+  <arg name="load_grasps" default="true" />
   <arg name="manipulator_file" default="$(find sr_utl5)/config/manipulator_hand.yaml" />
   <arg name="arm_positions_file" default="$(find sr_utl5)/config/arm_positions.yaml" />
-  <arg name="robot_model_path" default="$(find mujoco_models)/urdf/ur10_fh_environment_cylinder.xml" />
+  <arg name="cylinder" default="false" />
+  <arg name="box" default="false" />
+  <arg name="robot_model_path" default="$(find mujoco_models)/urdf/ur10_fh_environment_box.xml" unless="$(arg cylinder)" />
+  <arg name="robot_model_path" default="$(find mujoco_models)/urdf/ur10_fh_environment_cylinder.xml" unless="$(arg box)" />
 
   <!-- Robot stuff -->
   <include file="$(find fh_robot_launch)/launch/fh_ur10_and_fh2_mujoco.launch">
@@ -41,6 +43,6 @@
   <include file="$(find sr_manipulation_launch)/launch/grasp_selector_with_db.launch">
     <arg name="object_publisher" default="false" />
   </include>
-  <node if="$(arg load_grasps_cylinder)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="20 sgs_restful_api fill_sr_manipulation_grasp_db.launch grasps_file_path:='$(find sr_utl5)/config/grasps_cyl_power_mujoco.yaml'" name="timed_load_grasps" output="screen"/>
-  <node if="$(arg load_grasps_box)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="20 sgs_restful_api fill_sr_manipulation_grasp_db.launch grasps_file_path:='$(find sr_utl5)/config/grasps.yaml'" name="timed_load_grasps" output="screen"/>
+  <node if="$(arg box)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="20 sgs_restful_api fill_sr_manipulation_grasp_db.launch grasps_file_path:='$(find sr_utl5)/config/grasps.yaml'" name="timed_load_grasps" output="screen"/>
+  <node if="$(arg cylinder)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="20 sgs_restful_api fill_sr_manipulation_grasp_db.launch grasps_file_path:='$(find sr_utl5)/config/grasps_cyl_power_mujoco.yaml'" name="timed_load_grasps" output="screen"/>
 </launch>

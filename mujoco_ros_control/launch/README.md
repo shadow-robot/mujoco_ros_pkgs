@@ -17,16 +17,29 @@ mkdir /tmp/db
 
 ## Usage
 
-To launch the simulation and load the models and necessary grasps run the following launch file:
+There are two possible demos, one with the box and one with a cylinder.
+
+To launch the box simulation demo and load the models and necessary grasps run the following launch file:
 
 ```
-roslaunch mujoco_ros_control demo_grasp.launch sim:=true grasp_controller:=true
+roslaunch mujoco_ros_control demo_grasp.launch sim:=true grasp_controller:=true box:=true
 ```
 
-Since we are not using vision we need to mock the publishing of the TF we want to grasp. This is achieved by running the following script:
+To launch the cylinder simulation demo and load the models and necessary grasps run the following command:
+```
+roslaunch mujoco_ros_control demo_grasp.launch sim:=true grasp_controller:=true cylinder:=true
+```
+
+Since we are not using vision we need to mock the publishing of the TF we want to grasp. 
+This is achieved by running the following script for the box:
 
 ```
 rosrun sr_vision_mocks spawn_object.py -p "utl5_large" 0 0.7 0 0.4 1.57 0
+```
+
+And the following one for the cylinder:
+```
+rosrun sr_vision_mocks spawn_object.py -p "utl5_large" 0 1 0 0.5 1.57 0
 ```
 
 In which utl5_large is the name of the object to pick and the other six fields represent the pose of the object.
