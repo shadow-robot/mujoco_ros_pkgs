@@ -509,22 +509,22 @@ void MujocoVisualizationUtils::profiler_init()
     mjv_defaultFigure(&figsize);
 
     // titles
-    snprintf(figconstraint.title, 100, "Counts");
-    snprintf(figcost.title, 100, "Convergence (log 10)");
-    snprintf(figsize.title, 100, "Dimensions");
-    snprintf(figtimer.title, 100, "CPU time (msec)");
+    snprintf(figconstraint.title, sizeof(figconstraint.title), "Counts");
+    snprintf(figcost.title, sizeof(figcost.title), "Convergence (log 10)");
+    snprintf(figsize.title, sizeof(figsize.title), "Dimensions");
+    snprintf(figtimer.title, sizeof(figtimer.title), "CPU time (msec)");
 
     // x-labels
-    snprintf(figconstraint.xlabel, 100, "Solver iteration");
-    snprintf(figcost.xlabel, 100, "Solver iteration");
-    snprintf(figsize.xlabel, 100, "Video frame");
-    snprintf(figtimer.xlabel, 100, "Video frame");
+    snprintf(figconstraint.xlabel, sizeof(figconstraint.xlabel), "Solver iteration");
+    snprintf(figcost.xlabel, sizeof(figcost.xlabel), "Solver iteration");
+    snprintf(figsize.xlabel, sizeof(figsize.xlabel), "Video frame");
+    snprintf(figtimer.xlabel, sizeof(figtimer.xlabel), "Video frame");
 
     // y-tick nubmer formats
-    snprintf(figconstraint.yformat, 100, ".0f");
-    snprintf(figcost.yformat, 100, ".1f");
-    snprintf(figsize.yformat, 100, ".0f");
-    snprintf(figtimer.yformat, 100, ".2f");
+    snprintf(figconstraint.yformat, sizeof(figconstraint.yformat), ".0f");
+    snprintf(figcost.yformat, sizeof(figcost.yformat), ".1f");
+    snprintf(figsize.yformat, sizeof(figsize.yformat), ".0f");
+    snprintf(figtimer.yformat, sizeof(figtimer.yformat), ".2f");
 
     // colors
     figconstraint.figurergba[0]  = 0.1f;
@@ -533,25 +533,25 @@ void MujocoVisualizationUtils::profiler_init()
     figtimer.figurergba[2] =  0.2f;
 
     // legends
-    snprintf(figconstraint.linename[0], 100, "total");
-    snprintf(figconstraint.linename[1], 100, "active");
-    snprintf(figconstraint.linename[2], 100, "changed");
-    snprintf(figconstraint.linename[3], 100, "evals");
-    snprintf(figconstraint.linename[4], 100, "updates");
-    snprintf(figcost.linename[0], 100, "improvement");
-    snprintf(figcost.linename[1], 100, "gradient");
-    snprintf(figcost.linename[2], 100, "lineslope");
-    snprintf(figsize.linename[0], 100, "dof");
-    snprintf(figsize.linename[1], 100, "body");
-    snprintf(figsize.linename[2], 100, "constraint");
-    snprintf(figsize.linename[3], 100, "sqrt(nnz)");
-    snprintf(figsize.linename[4], 100, "contact");
-    snprintf(figsize.linename[5], 100, "iteration");
-    snprintf(figtimer.linename[0], 100, "total");
-    snprintf(figtimer.linename[1], 100, "collision");
-    snprintf(figtimer.linename[2], 100, "prepare");
-    snprintf(figtimer.linename[3], 100, "solve");
-    snprintf(figtimer.linename[4], 100, "other");
+    snprintf(figconstraint.linename[0], sizeof(figconstraint.linename[0]), "total");
+    snprintf(figconstraint.linename[1], sizeof(figconstraint.linename[1]), "active");
+    snprintf(figconstraint.linename[2], sizeof(figconstraint.linename[2]), "changed");
+    snprintf(figconstraint.linename[3], sizeof(figconstraint.linename[3]), "evals");
+    snprintf(figconstraint.linename[4], sizeof(figconstraint.linename[4]), "updates");
+    snprintf(figcost.linename[0], sizeof(figcost.linename[0]), "improvement");
+    snprintf(figcost.linename[1], sizeof(figcost.linename[1]), "gradient");
+    snprintf(figcost.linename[2], sizeof(figcost.linename[2]), "lineslope");
+    snprintf(figsize.linename[0], sizeof(figsize.linename[0]), "dof");
+    snprintf(figsize.linename[1], sizeof(figsize.linename[1]), "body");
+    snprintf(figsize.linename[2], sizeof(figsize.linename[2]), "constraint");
+    snprintf(figsize.linename[3], sizeof(figsize.linename[3]), "sqrt(nnz)");
+    snprintf(figsize.linename[4], sizeof(figsize.linename[4]), "contact");
+    snprintf(figsize.linename[5], sizeof(figsize.linename[5]), "iteration");
+    snprintf(figtimer.linename[0], sizeof(figtimer.linename[0]), "total");
+    snprintf(figtimer.linename[1], sizeof(figtimer.linename[1]), "collision");
+    snprintf(figtimer.linename[2], sizeof(figtimer.linename[2]), "prepare");
+    snprintf(figtimer.linename[3], sizeof(figtimer.linename[3]), "solve");
+    snprintf(figtimer.linename[4], sizeof(figtimer.linename[4]), "other");
 
     // grid sizes
     figconstraint.gridsize[0] = 5;
@@ -636,13 +636,13 @@ void MujocoVisualizationUtils::profiler_update(void)
 
     for (i = 0; i < figcost.linepnt[0]; i++)
     {
-        // x 
+        // x
         figcost.linedata[0][2*i] = static_cast<float>(i);
         figcost.linedata[1][2*i] = static_cast<float>(i);
         figcost.linedata[2][2*i] = static_cast<float>(i);
 
         // y
-        figcost.linedata[0][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL, 
+        figcost.linedata[0][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL,
                                                         mujoco_data_->solver[i].improvement)));
         figcost.linedata[1][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL,
                                                         mujoco_data_->solver[i].gradient)));
@@ -728,10 +728,10 @@ void MujocoVisualizationUtils::sensor_init(void)
     figsensor.flg_barplot = 1;
 
     // title
-    snprintf(figsensor.title, 100, "Sensor data");
+    snprintf(figsensor.title, sizeof(figsensor.title), "Sensor data");
 
     // y-tick nubmer format
-    snprintf(figsensor.yformat, 100, ".0f");
+    snprintf(figsensor.yformat, sizeof(figsensor.yformat), ".0f");
 
     // grid size
     figsensor.gridsize[0] = 2;
