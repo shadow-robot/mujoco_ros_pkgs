@@ -26,12 +26,12 @@ void MujocoVisualizationUtils::init(mjModel* mujoco_model, mjData* mujoco_data, 
   // user state
   paused = false;
   showoption = false;
-  showinfo = true;
+  showinfo = false;
   showfullscreen = false;
   slowmotion = false;
   showdepth = false;
   showsensor = false;
-  showprofiler = true;
+  showprofiler = false;
   showhelp = 2;                   // 0: none; 1: brief; 2: full
   fontscale = mjFONTSCALE_150;    // can be 100, 150, 200
   keyreset = -1;                  // non-negative: reset to keyframe
@@ -76,72 +76,21 @@ void MujocoVisualizationUtils::update(GLFWwindow* window)
                   NULL, &cam, mjCAT_ALL, &scn);
   mjr_render(viewport, &scn, &con);
 
-  // show info
-  if (showinfo)
+  // show profiler
+  if (showprofiler)
   {
-    if (paused)
-      mjr_overlay(mjFONT_NORMAL, mjGRID_BOTTOMLEFT, smallviewport, "PAUSED", 0, &con);
-    else
-      mjr_overlay(mjFONT_NORMAL, mjGRID_BOTTOMLEFT, smallviewport,
-                 "Time\nSize\nCPU\nFPS\nEnergy\nSolver\nFwdInv\nCamera\nFrame\nLabel\nReset", status, &con);
+    if (!paused)
+       profiler_update();
+    profiler_show(viewport);
   }
 
-  // show options
-  if (showoption)
+  // show sensor
+  if (showsensor)
   {
-    int i;
-    char buf[100];
-
-    // fill titles on first pass
-    if (!opt_title[0])
-    {
-      for (i = 0; i < mjNRNDFLAG; i++)
-      {
-        // makeoptionstring(mjRNDSTRING[i][0], mjRNDSTRING[i][2][0], buf);
-        strcat(opt_title, buf);
-        strcat(opt_title, "\n");
-       }
-       for (i = 0; i < mjNVISFLAG; i++)
-       {
-          // makeoptionstring(mjVISSTRING[i][0], mjVISSTRING[i][2][0], buf);
-          strcat(opt_title, buf);
-          if (i < mjNVISFLAG-1)
-            strcat(opt_title, "\n");
-        }
-    }
-
-    // fill content
-    opt_content[0] = 0;
-    for (i = 0; i < mjNRNDFLAG; i++)
-        {
-            strcat(opt_content, scn.flags[i] ? " + " : "   ");
-            strcat(opt_content, "\n");
-        }
-        for (i = 0; i < mjNVISFLAG; i++)
-        {
-            strcat(opt_content, opt.flags[i] ? " + " : "   ");
-            if (i < mjNVISFLAG-1)
-                strcat(opt_content, "\n");
-        }
-        // show
-        mjr_overlay(mjFONT_NORMAL, mjGRID_TOPRIGHT, smallviewport, opt_title, opt_content, &con);
-    }
-
-    // show profiler
-    if (showprofiler)
-    {
-        if (!paused)
-            profiler_update();
-        profiler_show(viewport);
-    }
-
-    // show sensor
-    if (showsensor)
-    {
-        if (!paused)
-            sensor_update();
-        sensor_show(smallviewport);
-    }
+    if (!paused)
+       sensor_update();
+    sensor_show(smallviewport);
+  }
 
   // swap OpenGL buffers (blocking call due to v-sync)
   glfwSwapBuffers(window);
@@ -263,7 +212,7 @@ void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, in
         if (paused)
         {
             clear_timers(mujoco_data_);
-            for( n = 0; n < 100; n++ )
+            for (n = 0; n < 100; n++)
                 mj_step(mujoco_model_, mujoco_data_);
             profiler_update();
             sensor_update();
@@ -560,22 +509,22 @@ void MujocoVisualizationUtils::profiler_init()
     mjv_defaultFigure(&figsize);
 
     // titles
-    strcpy(figconstraint.title, "Counts");
-    strcpy(figcost.title, "Convergence (log 10)");
-    strcpy(figsize.title, "Dimensions");
-    strcpy(figtimer.title, "CPU time (msec)");
+    snprintf(figconstraint.title, 100, "Counts");
+    snprintf(figcost.title, 100, "Convergence (log 10)");
+    snprintf(figsize.title, 100, "Dimensions");
+    snprintf(figtimer.title, 100, "CPU time (msec)");
 
     // x-labels
-    strcpy(figconstraint.xlabel, "Solver iteration");
-    strcpy(figcost.xlabel, "Solver iteration");
-    strcpy(figsize.xlabel, "Video frame");
-    strcpy(figtimer.xlabel, "Video frame");
+    snprintf(figconstraint.xlabel, 100, "Solver iteration");
+    snprintf(figcost.xlabel, 100, "Solver iteration");
+    snprintf(figsize.xlabel, 100, "Video frame");
+    snprintf(figtimer.xlabel, 100, "Video frame");
 
     // y-tick nubmer formats
-    strcpy(figconstraint.yformat, "%.0f");
-    strcpy(figcost.yformat, "%.1f");
-    strcpy(figsize.yformat, "%.0f");
-    strcpy(figtimer.yformat, "%.2f");
+    snprintf(figconstraint.yformat, 100, ".0f");
+    snprintf(figcost.yformat, 100, ".1f");
+    snprintf(figsize.yformat, 100, ".0f");
+    snprintf(figtimer.yformat, 100, ".2f");
 
     // colors
     figconstraint.figurergba[0]  = 0.1f;
@@ -584,25 +533,25 @@ void MujocoVisualizationUtils::profiler_init()
     figtimer.figurergba[2] =  0.2f;
 
     // legends
-    strcpy(figconstraint.linename[0], "total");
-    strcpy(figconstraint.linename[1], "active");
-    strcpy(figconstraint.linename[2], "changed");
-    strcpy(figconstraint.linename[3], "evals");
-    strcpy(figconstraint.linename[4], "updates");
-    strcpy(figcost.linename[0], "improvement");
-    strcpy(figcost.linename[1], "gradient");
-    strcpy(figcost.linename[2], "lineslope");
-    strcpy(figsize.linename[0], "dof");
-    strcpy(figsize.linename[1], "body");
-    strcpy(figsize.linename[2], "constraint");
-    strcpy(figsize.linename[3], "sqrt(nnz)");
-    strcpy(figsize.linename[4], "contact");
-    strcpy(figsize.linename[5], "iteration");
-    strcpy(figtimer.linename[0], "total");
-    strcpy(figtimer.linename[1], "collision");
-    strcpy(figtimer.linename[2], "prepare");
-    strcpy(figtimer.linename[3], "solve");
-    strcpy(figtimer.linename[4], "other");
+    snprintf(figconstraint.linename[0], 100, "total");
+    snprintf(figconstraint.linename[1], 100, "active");
+    snprintf(figconstraint.linename[2], 100, "changed");
+    snprintf(figconstraint.linename[3], 100, "evals");
+    snprintf(figconstraint.linename[4], 100, "updates");
+    snprintf(figcost.linename[0], 100, "improvement");
+    snprintf(figcost.linename[1], 100, "gradient");
+    snprintf(figcost.linename[2], 100, "lineslope");
+    snprintf(figsize.linename[0], 100, "dof");
+    snprintf(figsize.linename[1], 100, "body");
+    snprintf(figsize.linename[2], 100, "constraint");
+    snprintf(figsize.linename[3], 100, "sqrt(nnz)");
+    snprintf(figsize.linename[4], 100, "contact");
+    snprintf(figsize.linename[5], 100, "iteration");
+    snprintf(figtimer.linename[0], 100, "total");
+    snprintf(figtimer.linename[1], 100, "collision");
+    snprintf(figtimer.linename[2], 100, "prepare");
+    snprintf(figtimer.linename[3], 100, "solve");
+    snprintf(figtimer.linename[4], 100, "other");
 
     // grid sizes
     figconstraint.gridsize[0] = 5;
@@ -687,15 +636,18 @@ void MujocoVisualizationUtils::profiler_update(void)
 
     for (i = 0; i < figcost.linepnt[0]; i++)
     {
-        // x
+        // x 
         figcost.linedata[0][2*i] = static_cast<float>(i);
         figcost.linedata[1][2*i] = static_cast<float>(i);
         figcost.linedata[2][2*i] = static_cast<float>(i);
 
         // y
-        figcost.linedata[0][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL, mujoco_data_->solver[i].improvement)));
-        figcost.linedata[1][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL, mujoco_data_->solver[i].gradient)));
-        figcost.linedata[2][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL, mujoco_data_->solver[i].lineslope)));
+        figcost.linedata[0][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL, 
+                                                        mujoco_data_->solver[i].improvement)));
+        figcost.linedata[1][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL,
+                                                        mujoco_data_->solver[i].gradient)));
+        figcost.linedata[2][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL,
+                                                        mujoco_data_->solver[i].lineslope)));
     }
 
     // get timers: total, collision, prepare, solve, other
@@ -776,10 +728,10 @@ void MujocoVisualizationUtils::sensor_init(void)
     figsensor.flg_barplot = 1;
 
     // title
-    strcpy(figsensor.title, "Sensor data");
+    snprintf(figsensor.title, 100, "Sensor data");
 
     // y-tick nubmer format
-    strcpy(figsensor.yformat, "%.0f");
+    snprintf(figsensor.yformat, 100, ".0f");
 
     // grid size
     figsensor.gridsize[0] = 2;

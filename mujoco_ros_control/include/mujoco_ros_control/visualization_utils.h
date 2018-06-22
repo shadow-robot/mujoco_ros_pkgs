@@ -33,40 +33,6 @@ public:
 
   void terminate();
 
-  static void keyboard_callback(GLFWwindow* window, int key, int scancode, int act, int mods);
-
-  void keyboard_cb_implementation(GLFWwindow* window, int key, int scancode, int act, int mods);
-
-  static void mouse_move_callback(GLFWwindow* window, double xpos, double ypos);
-
-  void mouse_move_cb_implementation(GLFWwindow* window, double xpos, double ypos);
-
-  static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-
-  void scroll_cb_implementation(GLFWwindow* window, double xoffset, double yoffset);
-
-  static void mouse_button_callback(GLFWwindow* window, int button, int act, int mods);
-
-  void mouse_button_cb_implementation(GLFWwindow* window, int button, int act, int mods);
-
-  void profiler_init();
-
-  void profiler_update();
-
-  void profiler_show(mjrRect rect);
-
-  void sensor_init();
-
-  void sensor_update();
-
-  void sensor_show(mjrRect rect);
-
-  mjtNum timer();
-
-  void clear_timers(mjData* mujoco_data);
-
-  void autoscale(GLFWwindow* window);
-
 private:
   MujocoVisualizationUtils(void)
   {};
@@ -113,6 +79,40 @@ protected:
   bool button_right;
   double lastx;
   double lasty;
+
+  static void keyboard_callback(GLFWwindow* window, int key, int scancode, int act, int mods);
+
+  void keyboard_cb_implementation(GLFWwindow* window, int key, int scancode, int act, int mods);
+
+  static void mouse_move_callback(GLFWwindow* window, double xpos, double ypos);
+
+  void mouse_move_cb_implementation(GLFWwindow* window, double xpos, double ypos);
+
+  static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+  void scroll_cb_implementation(GLFWwindow* window, double xoffset, double yoffset);
+
+  static void mouse_button_callback(GLFWwindow* window, int button, int act, int mods);
+
+  void mouse_button_cb_implementation(GLFWwindow* window, int button, int act, int mods);
+
+  void profiler_init();
+
+  void profiler_update();
+
+  void profiler_show(mjrRect rect);
+
+  void sensor_init();
+
+  void sensor_update();
+
+  void sensor_show(mjrRect rect);
+
+  mjtNum timer();
+
+  void clear_timers(mjData* mujoco_data);
+
+  void autoscale(GLFWwindow* window);
 };
 }  // namespace mujoco_ros_control
 #endif  // MUJOCO_ROS_CONTROL_VISUALIZATION_UTILS_H
