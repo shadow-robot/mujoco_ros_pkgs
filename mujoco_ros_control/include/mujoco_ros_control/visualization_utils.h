@@ -66,7 +66,7 @@ public:
   void clear_timers(mjData* mujoco_data);
 
   void autoscale(GLFWwindow* window);
-  
+
 private:
   MujocoVisualizationUtils(void)
   {};

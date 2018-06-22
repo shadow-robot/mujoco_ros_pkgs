@@ -66,7 +66,6 @@ void MujocoVisualizationUtils::init(mjModel* mujoco_model, mjData* mujoco_data, 
 
 void MujocoVisualizationUtils::update(GLFWwindow* window)
 {
-   
   // get framebuffer viewport
   mjrRect viewport = {0, 0, 0, 0};
   glfwGetFramebufferSize(window, &viewport.width, &viewport.height);
@@ -78,12 +77,12 @@ void MujocoVisualizationUtils::update(GLFWwindow* window)
   mjr_render(viewport, &scn, &con);
 
   // show info
-  if( showinfo )
+  if (showinfo)
   {
-    if( paused )
+    if (paused)
       mjr_overlay(mjFONT_NORMAL, mjGRID_BOTTOMLEFT, smallviewport, "PAUSED", 0, &con);
     else
-      mjr_overlay(mjFONT_NORMAL, mjGRID_BOTTOMLEFT, smallviewport, 
+      mjr_overlay(mjFONT_NORMAL, mjGRID_BOTTOMLEFT, smallviewport,
                  "Time\nSize\nCPU\nFPS\nEnergy\nSolver\nFwdInv\nCamera\nFrame\nLabel\nReset", status, &con);
   }
 
@@ -98,13 +97,13 @@ void MujocoVisualizationUtils::update(GLFWwindow* window)
     {
       for (i = 0; i < mjNRNDFLAG; i++)
       {
-        //makeoptionstring(mjRNDSTRING[i][0], mjRNDSTRING[i][2][0], buf);
+        // makeoptionstring(mjRNDSTRING[i][0], mjRNDSTRING[i][2][0], buf);
         strcat(opt_title, buf);
         strcat(opt_title, "\n");
        }
-       for (i = 0; i<mjNVISFLAG; i++)
+       for (i = 0; i < mjNVISFLAG; i++)
        {
-          //makeoptionstring(mjVISSTRING[i][0], mjVISSTRING[i][2][0], buf);
+          // makeoptionstring(mjVISSTRING[i][0], mjVISSTRING[i][2][0], buf);
           strcat(opt_title, buf);
           if (i < mjNVISFLAG-1)
             strcat(opt_title, "\n");
@@ -118,10 +117,10 @@ void MujocoVisualizationUtils::update(GLFWwindow* window)
             strcat(opt_content, scn.flags[i] ? " + " : "   ");
             strcat(opt_content, "\n");
         }
-        for(i = 0; i < mjNVISFLAG; i++)
+        for (i = 0; i < mjNVISFLAG; i++)
         {
             strcat(opt_content, opt.flags[i] ? " + " : "   ");
-            if(i < mjNVISFLAG-1)
+            if (i < mjNVISFLAG-1)
                 strcat(opt_content, "\n");
         }
         // show
@@ -139,7 +138,7 @@ void MujocoVisualizationUtils::update(GLFWwindow* window)
     // show sensor
     if (showsensor)
     {
-        if( !paused )
+        if (!paused)
             sensor_update();
         sensor_show(smallviewport);
     }
@@ -173,14 +172,14 @@ void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, in
         return;
 
     // do not act on release
-    if (act==GLFW_RELEASE)
+    if (act == GLFW_RELEASE)
         return;
 
     switch (key)
     {
     case GLFW_KEY_F1:                   // help
         showhelp++;
-        if( showhelp>2 )
+        if (showhelp > 2)
             showhelp = 0;
         break;
 
@@ -218,7 +217,7 @@ void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, in
 
     case GLFW_KEY_PAGE_UP:              // previous keyreset
     case GLFW_KEY_PAGE_DOWN:            // next keyreset
-        if (key==GLFW_KEY_PAGE_UP)
+        if (key == GLFW_KEY_PAGE_UP)
             keyreset = mjMAX(-1, keyreset-1);
         else
             keyreset = mjMIN(mujoco_model_->nkey-1, keyreset+1);
@@ -264,7 +263,7 @@ void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, in
         if (paused)
         {
             clear_timers(mujoco_data_);
-            for( n=0; n<100; n++ )
+            for( n = 0; n < 100; n++ )
                 mj_step(mujoco_model_, mujoco_data_);
             profiler_update();
             sensor_update();
@@ -276,7 +275,7 @@ void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, in
         {
             mujoco_model_->opt.timestep = -mujoco_model_->opt.timestep;
             clear_timers(mujoco_data_);
-            for (n=0; n<100; n++)
+            for (n = 0; n < 100; n++)
                 mj_step(mujoco_model_, mujoco_data_);
             mujoco_model_->opt.timestep = -mujoco_model_->opt.timestep;
             profiler_update();
@@ -317,7 +316,7 @@ void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, in
     case ']':                           // next fixed camera
         if (mujoco_model_->ncam)
         {
-            if (cam.type!=mjCAMERA_FIXED)
+            if (cam.type != mjCAMERA_FIXED)
             {
                 cam.type = mjCAMERA_FIXED;
                 cam.fixedcamid = 0;
@@ -359,11 +358,11 @@ void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, in
 
         // toggle rendering flag
         for (int i = 0; i < mjNRNDFLAG; i++)
-            if( key == mjRNDSTRING[i][2][0] )
+            if (key == mjRNDSTRING[i][2][0])
                 scn.flags[i] = !scn.flags[i];
 
         // toggle geom/site group
-        for (int i=0; i < mjNGROUP; i++)
+        for (int i = 0; i < mjNGROUP; i++)
             if (key == i+'0')
             {
                 if (mods & GLFW_MOD_SHIFT)
@@ -637,8 +636,8 @@ void MujocoVisualizationUtils::profiler_init()
     for (n = 0; n < 6; n++)
         for (i = 0; i < mjMAXLINEPNT; i++)
         {
-            figtimer.linedata[n][2*i] = (float)-i;
-            figsize.linedata[n][2*i] = (float)-i;
+            figtimer.linedata[n][2*i] = static_cast<float>(-i);
+            figsize.linedata[n][2*i] = static_cast<float>(-i);
         }
 }
 
@@ -662,18 +661,18 @@ void MujocoVisualizationUtils::profiler_update(void)
     for (i=0; i < figconstraint.linepnt[0]; i++)
     {
         // x
-        figconstraint.linedata[0][2*i] = (float)i;
-        figconstraint.linedata[1][2*i] = (float)i;
-        figconstraint.linedata[2][2*i] = (float)i;
-        figconstraint.linedata[3][2*i] = (float)i;
-        figconstraint.linedata[4][2*i] = (float)i;
+        figconstraint.linedata[0][2*i] = static_cast<float>(i);
+        figconstraint.linedata[1][2*i] = static_cast<float>(i);
+        figconstraint.linedata[2][2*i] = static_cast<float>(i);
+        figconstraint.linedata[3][2*i] = static_cast<float>(i);
+        figconstraint.linedata[4][2*i] = static_cast<float>(i);
 
         // y
-        figconstraint.linedata[0][2*i+1] = (float)mujoco_data_->nefc;
-        figconstraint.linedata[1][2*i+1] = (float)mujoco_data_->solver[i].nactive;
-        figconstraint.linedata[2][2*i+1] = (float)mujoco_data_->solver[i].nchange;
-        figconstraint.linedata[3][2*i+1] = (float)mujoco_data_->solver[i].neval;
-        figconstraint.linedata[4][2*i+1] = (float)mujoco_data_->solver[i].nupdate;
+        figconstraint.linedata[0][2*i+1] = static_cast<float>(mujoco_data_->nefc);
+        figconstraint.linedata[1][2*i+1] = static_cast<float>(mujoco_data_->solver[i].nactive);
+        figconstraint.linedata[2][2*i+1] = static_cast<float>(mujoco_data_->solver[i].nchange);
+        figconstraint.linedata[3][2*i+1] = static_cast<float>(mujoco_data_->solver[i].neval);
+        figconstraint.linedata[4][2*i+1] = static_cast<float>(mujoco_data_->solver[i].nupdate);
     }
 
     // update cost figure
@@ -689,26 +688,29 @@ void MujocoVisualizationUtils::profiler_update(void)
     for (i = 0; i < figcost.linepnt[0]; i++)
     {
         // x
-        figcost.linedata[0][2*i] = (float)i;
-        figcost.linedata[1][2*i] = (float)i;
-        figcost.linedata[2][2*i] = (float)i;
+        figcost.linedata[0][2*i] = static_cast<float>(i);
+        figcost.linedata[1][2*i] = static_cast<float>(i);
+        figcost.linedata[2][2*i] = static_cast<float>(i);
 
         // y
-        figcost.linedata[0][2*i+1] = (float)mju_log10(mju_max(mjMINVAL, mujoco_data_->solver[i].improvement));
-        figcost.linedata[1][2*i+1] = (float)mju_log10(mju_max(mjMINVAL, mujoco_data_->solver[i].gradient));
-        figcost.linedata[2][2*i+1] = (float)mju_log10(mju_max(mjMINVAL, mujoco_data_->solver[i].lineslope));
+        figcost.linedata[0][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL, mujoco_data_->solver[i].improvement)));
+        figcost.linedata[1][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL, mujoco_data_->solver[i].gradient)));
+        figcost.linedata[2][2*i+1] = static_cast<float>(mju_log10(mju_max(mjMINVAL, mujoco_data_->solver[i].lineslope)));
     }
 
     // get timers: total, collision, prepare, solve, other
     int itotal = (mujoco_data_->timer[mjTIMER_STEP].duration > mujoco_data_->timer[mjTIMER_FORWARD].duration ?
                     mjTIMER_STEP : mjTIMER_FORWARD);
-    float tdata[5] = { 
-        (float)(mujoco_data_->timer[itotal].duration/mjMAX(1,mujoco_data_->timer[itotal].number)),
-        (float)(mujoco_data_->timer[mjTIMER_POS_COLLISION].duration/mjMAX(1, mujoco_data_->timer[mjTIMER_POS_COLLISION].number)),
-        (float)(mujoco_data_->timer[mjTIMER_POS_MAKE].duration/mjMAX(1, mujoco_data_->timer[mjTIMER_POS_MAKE].number)) +
-            (float)(mujoco_data_->timer[mjTIMER_POS_PROJECT].duration/mjMAX(1, mujoco_data_->timer[mjTIMER_POS_PROJECT].number)),
-        (float)(mujoco_data_->timer[mjTIMER_CONSTRAINT].duration/mjMAX(1, mujoco_data_->timer[mjTIMER_CONSTRAINT].number)),
-        0
+    float tdata[5] = {
+        static_cast<float>((mujoco_data_->timer[itotal].duration/mjMAX(1, mujoco_data_->timer[itotal].number))),
+        static_cast<float>((mujoco_data_->timer[mjTIMER_POS_COLLISION].duration/mjMAX(1,
+                           mujoco_data_->timer[mjTIMER_POS_COLLISION].number))),
+        static_cast<float>((mujoco_data_->timer[mjTIMER_POS_MAKE].duration/mjMAX(1,
+                           mujoco_data_->timer[mjTIMER_POS_MAKE].number))) +
+            static_cast<float>((mujoco_data_->timer[mjTIMER_POS_PROJECT].duration/mjMAX(1,
+                               mujoco_data_->timer[mjTIMER_POS_PROJECT].number))),
+        static_cast<float>((mujoco_data_->timer[mjTIMER_CONSTRAINT].duration/mjMAX(1,
+                           mujoco_data_->timer[mjTIMER_CONSTRAINT].number))), 0
     };
     tdata[4] = tdata[0] - tdata[1] - tdata[2] - tdata[3];
 
@@ -727,12 +729,12 @@ void MujocoVisualizationUtils::profiler_update(void)
 
     // get sizes: nv, nbody, nefc, sqrt(nnz), ncont, iter
     float sdata[6] = {
-        (float)mujoco_model_->nv,
-        (float)mujoco_model_->nbody,
-        (float)mujoco_data_->nefc,
-        (float)mju_sqrt((mjtNum)mujoco_data_->solver_nnz),
-        (float)mujoco_data_->ncon,
-        (float)mujoco_data_->solver_iter
+        static_cast<float>(mujoco_model_->nv),
+        static_cast<float>(mujoco_model_->nbody),
+        static_cast<float>(mujoco_data_->nefc),
+        static_cast<float>(mju_sqrt((mjtNum)mujoco_data_->solver_nnz)),
+        static_cast<float>(mujoco_data_->ncon),
+        static_cast<float>(mujoco_data_->solver_iter)
     };
 
     // update figsize
@@ -821,20 +823,20 @@ void MujocoVisualizationUtils::sensor_update(void)
         for (int i = 0; i < dim; i++)
         {
             // check size
-            if( (p+2*i) >= mjMAXLINEPNT/2 )
+            if ((p+2*i) >= mjMAXLINEPNT/2)
                 break;
 
             // x
-            figsensor.linedata[lineid][2*p+4*i] = (float)(adr+i);
-            figsensor.linedata[lineid][2*p+4*i+2] = (float)(adr+i);
+            figsensor.linedata[lineid][2*p+4*i] = static_cast<float>((adr+i));
+            figsensor.linedata[lineid][2*p+4*i+2] = static_cast<float>((adr+i));
 
             // y
             figsensor.linedata[lineid][2*p+4*i+1] = 0;
-            figsensor.linedata[lineid][2*p+4*i+3] = (float)(mujoco_data_->sensordata[adr+i]/cutoff);
+            figsensor.linedata[lineid][2*p+4*i+3] = static_cast<float>((mujoco_data_->sensordata[adr+i]/cutoff));
         }
 
         // update linepnt
-        figsensor.linepnt[lineid] = mjMIN(mjMAXLINEPNT-1, 
+        figsensor.linepnt[lineid] = mjMIN(mjMAXLINEPNT-1,
                                           figsensor.linepnt[lineid]+2*dim);
     }
 }
@@ -865,7 +867,7 @@ mjtNum MujocoVisualizationUtils::timer(void)
 {
     // save start time
     static double starttm = 0;
-    if( starttm==0 )
+    if (starttm == 0)
         starttm = glfwGetTime();
 
     // return time since start
