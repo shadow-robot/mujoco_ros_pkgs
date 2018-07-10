@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mujoco>
-	<compiler angle="radian" inertiafromgeom='true' coordinate="local" meshdir="meshes/visual/"></compiler>
+	<compiler angle="radian" coordinate="local" meshdir="meshes/visual/"></compiler>
 
     <visual>
         <map fogstart="3" fogend="5" force="0.1" znear="0.5"/>
@@ -22,10 +22,16 @@
         <material name='geom' texture="texgeom" texuniform="true"/>
         <mesh name="base" file="base.stl" />
         <mesh name="shoulder" file="shoulder.stl" />
-        <mesh name="upperarm" file="upperarm.stl" />
-        <mesh name="forearm" file="forearm.stl" />
-        <mesh name="wrist1" file="wrist1.stl" />
-        <mesh name="wrist2" file="wrist2.stl" />
+        <mesh name="upperarm_body_link" file="upperarm_body.stl" />
+        <mesh name="upperarm_bottom_link" file="upperarm_bottom_link.stl" />
+        <mesh name="upperarm_top_link" file="upperarm_top_link.stl" />
+        <mesh name="forearm_body_link" file="forearm_body_link.stl" />
+        <mesh name="forearm_bottom_link" file="forearm_bottom_link.stl" />
+        <mesh name="forearm_top_link" file="forearm_top_link.stl" />
+        <mesh name="wrist1_link" file="wrist1_link.stl" />
+        <mesh name="wrist1_base" file="wrist1_base.stl" />
+        <mesh name="wrist2_link" file="wrist2_link.stl" />
+        <mesh name="wrist2_base" file="wrist2_base.stl" />
         <mesh name="wrist3" file="wrist3.stl" />
         <mesh name="mount_link_50_4_M6_col" file="mount_link_50_4_M6.stl" />
         <mesh name="palm_link_col" file="palm_link.stl" />
