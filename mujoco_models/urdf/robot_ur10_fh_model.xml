@@ -43,12 +43,12 @@
                                                             <inertial pos="-0.045 -0.025981 0" quat="0.382681 0 0 0.923881" mass="0" diaginertia="0 0 0" />
                                                             <body name="H0_F0_palm_link" pos="0 0 0">
                                                                 <inertial pos="-0.00681802 -0.0094702 0.067588" quat="0.992601 0.0892342 0.0144943 -0.0810556" mass="0.095" diaginertia="2.7996e-05 2.73461e-05 9.27404e-06" />
-                                                                <body name="H0_F0_base_link" pos="0 0 0.00016528" quat="0.999937 0 0 0.0112008">
+                                                                <body name="H0_F0_base_back_link" pos="0 0 0.00016528" quat="0.999937 0 0 0.0112008">
                                                                     <inertial pos="-0.00027 0.02711 0.06013" quat="0.978249 0.193656 -0.0153906 0.0727275" mass="0.416" diaginertia="0.00226577 0.00222685 0.000243067" />
                                                                     <joint name="H0_F0J0" pos="0 0 0" axis="0 0 1" limited="true" range="-0.785398 0.785398" damping="0.5" armature="0.005" margin="0" frictionloss="0.001"/>
-                                                                    <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_link_col" contype="1" conaffinity="1"/>
-                                                                    <body name="H0_F0_base_link_ears" pos="0 0 0" quat="0.999937 0 0 0.0112008">
-                                                                        <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_link_ears" contype="1" conaffinity="1"/>
+                                                                    <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_back_link" contype="1" conaffinity="1"/>
+                                                                    <body name="H0_F0_base_front_link" pos="0 0 0" quat="0.999937 0 0 0.0112008">
+                                                                        <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_front_link" contype="1" conaffinity="1"/>
                                                                         <body name="H0_F0_link_1" pos="0 0.035 0.11683" quat="0.999375 0.0353401 0 0">
                                                                             <inertial pos="-0.00071 -0.00022 0.01415" quat="0.707254 0.0180711 0.0290452 0.706132" mass="0.254" diaginertia="0.000214007 0.000191817 8.34524e-05" />
                                                                             <joint name="H0_F0J1" pos="0 0 0" axis="1 0 0" limited="true" range="-1.39626 1.0472" damping="0.5" armature="0.005" margin="0" frictionloss="0.001"/>
@@ -73,12 +73,12 @@
                                                             <inertial pos="0 0.029019 0" mass="0" diaginertia="0 0 0" />
                                                             <body name="H0_F1_palm_link" pos="0 0 0">
                                                                 <inertial pos="-0.00681802 -0.0094702 0.067588" quat="0.992601 0.0892342 0.0144943 -0.0810556" mass="0.095" diaginertia="2.7996e-05 2.73461e-05 9.27404e-06" />
-                                                                <body name="H0_F1_base_link" pos="0 0 0.00016528" quat="0.999937 0 0 0.0112008">
+                                                                <body name="H0_F1_base_back_link" pos="0 0 0.00016528" quat="0.999937 0 0 0.0112008">
                                                                     <inertial pos="-0.00027 0.02711 0.06013" quat="0.978249 0.193656 -0.0153906 0.0727275" mass="0.416" diaginertia="0.00226577 0.00222685 0.000243067" />
                                                                     <joint name="H0_F1J0" pos="0 0 0" axis="0 0 1" limited="true" range="-0.785398 0.785398" damping="0.5" armature="0.005" margin="0" frictionloss="0.001"/>
-                                                                    <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_link_col" margin="0" contype="1" conaffinity="1"/>
-                                                                    <body name="H0_F1_base_link_ears" pos="0 0 0" quat="0.999937 0 0 0.0112008">
-                                                                        <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_link_ears" contype="1" conaffinity="1"/>
+                                                                    <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_back_link" margin="0" contype="1" conaffinity="1"/>
+                                                                    <body name="H0_F1_base_front_link" pos="0 0 0" quat="0.999937 0 0 0.0112008">
+                                                                        <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_front_link" contype="1" conaffinity="1"/>
                                                                         <body name="H0_F1_link_1" pos="0 0.035 0.11683" quat="0.999375 0.0353401 0 0">
                                                                             <inertial pos="-0.00071 -0.00022 0.01415" quat="0.707254 0.0180711 0.0290452 0.706132" mass="0.254" diaginertia="0.000214007 0.000191817 8.34524e-05" />
                                                                             <joint name="H0_F1J1" pos="0 0 0" axis="1 0 0" limited="true" range="-1.39626 1.0472" damping="0.5" armature="0.005" margin="0" frictionloss="0.001"/>
@@ -103,12 +103,12 @@
                                                             <inertial pos="0.045 -0.025981 0" quat="0.382681 0 0 -0.923881" mass="0" diaginertia="0 0 0" />
                                                             <body name="H0_F2_palm_link" pos="0 0 0">
                                                                 <inertial pos="-0.00681802 -0.0094702 0.067588" quat="0.992601 0.0892342 0.0144943 -0.0810556" mass="0.095" diaginertia="2.7996e-05 2.73461e-05 9.27404e-06" />
-                                                                <body name="H0_F2_base_link" pos="0 0 0.00016528" quat="0.999937 0 0 0.0112008">
+                                                                <body name="H0_F2_base_front_link" pos="0 0 0.00016528" quat="0.999937 0 0 0.0112008">
                                                                     <inertial pos="-0.00027 0.02711 0.06013" quat="0.978249 0.193656 -0.0153906 0.0727275" mass="0.416" diaginertia="0.00226577 0.00222685 0.000243067" />
                                                                     <joint name="H0_F2J0" pos="0 0 0" axis="0 0 1" limited="true" range="-0.785398 0.785398" damping="0.5" armature="0.005" margin="0" frictionloss="0.001"/>
-                                                                    <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_link_col" margin="0" contype="1" conaffinity="1"/>
-                                                                    <body name="H0_F2_base_link_ears" pos="0 0 0" quat="0.999937 0 0 0.0112008">
-                                                                        <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_link_ears" contype="1" conaffinity="1"/>
+                                                                    <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_front_link" margin="0" contype="1" conaffinity="1"/>
+                                                                    <body name="H0_F2_base_back_link" pos="0 0 0" quat="0.999937 0 0 0.0112008">
+                                                                        <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_back_link" contype="1" conaffinity="1"/>
                                                                         <body name="H0_F2_link_1" pos="0 0.035 0.11683" quat="0.999375 0.0353401 0 0">
                                                                             <inertial pos="-0.00071 -0.00022 0.01415" quat="0.707254 0.0180711 0.0290452 0.706132" mass="0.254" diaginertia="0.000214007 0.000191817 8.34524e-05" />
                                                                             <joint name="H0_F2J1" pos="0 0 0" axis="1 0 0" limited="true" range="-1.39626 1.0472" damping="0.5" armature="0.005" margin="0" frictionloss="0.001"/>

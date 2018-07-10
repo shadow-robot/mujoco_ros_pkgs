@@ -29,8 +29,8 @@
         <mesh name="wrist3" file="wrist3.stl" />
         <mesh name="mount_link_50_4_M6_col" file="mount_link_50_4_M6.stl" />
         <mesh name="palm_link_col" file="palm_link.stl" />
-        <mesh name="finger_base_link_col" file="finger_base_link_body.stl" />
-        <mesh name="finger_base_link_ears" file="finger_base_ears.stl" />
+        <mesh name="finger_base_back_link" file="finger_base_back_link.stl" />
+        <mesh name="finger_base_front_link" file="finger_base_front_link.stl" />
         <mesh name="finger_prox_link_col" file="finger_prox_link.stl" />
         <mesh name="finger_dist_link" file="finger_dist_link.stl" />
     </asset>
