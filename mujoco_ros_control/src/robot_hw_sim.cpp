@@ -35,7 +35,8 @@ bool RobotHWSim::init_sim(
     ros::NodeHandle robot_nh,
     mjModel* mujoco_model, mjData* mujoco_data,
     const urdf::Model *const urdf_model,
-    std::vector<transmission_interface::TransmissionInfo> transmissions)
+    std::vector<transmission_interface::TransmissionInfo> transmissions,
+    int objects_in_scene)
 {
   // save references
   mujoco_model_ = mujoco_model;
@@ -44,7 +45,7 @@ bool RobotHWSim::init_sim(
   const ros::NodeHandle joint_limit_nh(robot_nh);
 
   // resize vectors to number of DOF
-  n_dof_ = mujoco_model->njnt;
+  n_dof_ = mujoco_model->njnt - objects_in_scene;
   joint_names_.resize(n_dof_);
   joint_types_.resize(n_dof_);
   joint_lower_limits_.resize(n_dof_);

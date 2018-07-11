@@ -50,7 +50,8 @@ public:
     ros::NodeHandle model_nh,
     mjModel* mujoco_model, mjData *mujoco_data,
     const urdf::Model *const urdf_model,
-    std::vector<transmission_interface::TransmissionInfo> transmissions);
+    std::vector<transmission_interface::TransmissionInfo> transmissions,
+    int objects_in_scene);
 
   virtual void read(const ros::Time& time, const ros::Duration& period);
 

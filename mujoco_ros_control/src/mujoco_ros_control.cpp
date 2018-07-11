@@ -9,11 +9,16 @@
 
 #include <boost/bind.hpp>
 #include <mujoco_ros_control/mujoco_ros_control.h>
+#include <mujoco_ros_control/visualization_utils.h>
 #include <urdf/model.h>
 #include <string>
+#include <vector>
 
 namespace mujoco_ros_control
 {
+MujocoRosControl::MujocoRosControl()
+: objects_in_scene(0), n_dof_(0)
+{}
 
 MujocoRosControl::~MujocoRosControl()
 {
@@ -47,9 +52,16 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     ROS_INFO_NAMED("mujoco_ros_control", "Starting mujoco_ros_control node in namespace: %s", robot_namespace_.c_str());
 
     // read urdf from ros parameter server then setup actuators and mechanism control node.
-    robot_description_ = "robot_description";
+    if (nodehandle.getParam("mujoco_ros_control/robot_description_param", robot_description_param_))
+    {
+      ROS_INFO("Got param Robot description: %s", robot_description_param_.c_str());
+    }
+    else
+    {
+      ROS_ERROR("Failed to get param 'robot_description_param'");
+    }
 
-    const std::string urdf_string = get_urdf(robot_description_);
+    const std::string urdf_string = get_urdf(robot_description_param_);
 
     if (!parse_transmissions(urdf_string))
     {
@@ -57,34 +69,19 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
       return;
     }
 
-    // get package path, robot to load and filename
-    std::string package_path = ros::package::getPath("mujoco_models");
-    std::string name_file;
-    std::string robot_type;
-    if (nodehandle.getParam("mujoco_ros_control/robot_type", robot_type))
+    if (nodehandle.getParam("mujoco_ros_control/robot_model_path", robot_model_path_))
     {
-      ROS_INFO("Got param: %s", robot_type.c_str());
+      ROS_INFO("Got param: %s", robot_model_path_.c_str());
     }
     else
     {
-      ROS_ERROR("Failed to get param 'robot_type'");
+      ROS_ERROR("Failed to get param 'robot_model_path'");
     }
-
-    if (robot_type == "hand_h")
-    {
-      name_file = "/urdf/fh_model.xml";
-    }
-    else if (robot_type == "ur_hand_h")
-    {
-      name_file = "/urdf/ur10_fh_model.xml";
-    }
-
-    std::string filename = package_path + name_file;
 
     char error[1000];
 
     // create mjModel
-    mujoco_model = mj_loadXML(filename.c_str(), NULL, error, 1000);
+    mujoco_model = mj_loadXML(robot_model_path_.c_str(), NULL, error, 1000);
     if (!mujoco_model)
     {
       printf("Could not load mujoco model with error: %s.\n", error);
@@ -98,6 +95,9 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
       printf("Could not create mujoco data from model.\n");
       return;
     }
+
+    // check for free joints
+    check_objects_in_scene();
 
     // get the Mujoco simulation period
     ros::Duration mujoco_period(mujoco_model->opt.timestep);
@@ -117,7 +117,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     const urdf::Model *const urdf_model_ptr = urdf_model.initString(urdf_string) ? &urdf_model : NULL;
 
     if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
-                                 mujoco_data, urdf_model_ptr, transmissions_))
+                                 mujoco_data, urdf_model_ptr, transmissions_, objects_in_scene))
     {
       ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot sim interface");
       return;
@@ -188,7 +188,7 @@ std::string MujocoRosControl::get_urdf(std::string param_name) const
     else
     {
       ROS_INFO_ONCE_NAMED("mujoco_ros_control", "mujoco_ros_control plugin is waiting for model"
-        " URDF in parameter [%s] on the ROS param server.", robot_description_.c_str());
+        " URDF in parameter [%s] on the ROS param server.", robot_description_param_.c_str());
 
       robot_node_handle.getParam(param_name, urdf_string);
     }
@@ -221,6 +221,22 @@ void MujocoRosControl::publish_sim_time()
   pub_clock_.publish(ros_time_);
 }
 
+int MujocoRosControl::check_objects_in_scene()
+{
+  n_dof_ = mujoco_model->njnt;
+
+  for (int i=0; i < n_dof_; i++)
+  {
+    int *number_of_free_joint = &(mujoco_model->jnt_type[i]);
+    int jnt_type = *number_of_free_joint;
+    if (jnt_type == 0)
+    {
+      ROS_INFO("Free Joint Found");
+      objects_in_scene += 1;
+    }
+  }
+  return objects_in_scene;
+}
 }  // namespace mujoco_ros_control
 
 int main(int argc, char** argv)
@@ -229,16 +245,13 @@ int main(int argc, char** argv)
 
     ros::NodeHandle nh_;
 
-    mujoco_ros_control::MujocoRosControl MujocoRosControl;
+    mujoco_ros_control::MujocoRosControl mujoco_ros_control;
+
+    mujoco_ros_control::MujocoVisualizationUtils &mujoco_visualization_utils =
+        mujoco_ros_control::MujocoVisualizationUtils::getInstance();
 
     // initialize mujoco stuff
-    MujocoRosControl.init(nh_);
-
-    // MuJoCo visualization
-    mjvScene scn;
-    mjvCamera cam;
-    mjvOption opt;
-    mjrContext con;
+    mujoco_ros_control.init(nh_);
 
     // init GLFW
     if ( !glfwInit() )
@@ -252,71 +265,45 @@ int main(int argc, char** argv)
     // make context current
     glfwMakeContextCurrent(window);
 
-    // initialize MuJoCo visualization
-    mjv_makeScene(&scn, 1000);
-    mjv_defaultCamera(&cam);
-    mjv_defaultOption(&opt);
-    mjr_defaultContext(&con);
-    mjr_makeContext(MujocoRosControl.mujoco_model, &con, 200);
+    // initialize mujoco visualization functions
+    mujoco_visualization_utils.init(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data, window);
 
-    // center and scale view
-    cam.lookat[0] = MujocoRosControl.mujoco_model->stat.center[0];
-    cam.lookat[1] = MujocoRosControl.mujoco_model->stat.center[1];
-    cam.lookat[2] = MujocoRosControl.mujoco_model->stat.center[2];
-    cam.distance = 1.5 * MujocoRosControl.mujoco_model->stat.extent;
-
+    // spin
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
-    unsigned int n_dof_ = MujocoRosControl.mujoco_model->njnt;
-    double initial_qpos[n_dof_] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    const mjtNum* state = initial_qpos;
+    // // let everything settle
+    std::vector<double> initial_qpos;
+    initial_qpos.assign(mujoco_ros_control.n_dof_, 0);
 
-    // let everything settle
-    while (MujocoRosControl.mujoco_data->time < 50)
+    while (mujoco_ros_control.mujoco_data->time < 30)
     {
-      mj_step1(MujocoRosControl.mujoco_model, MujocoRosControl.mujoco_data);
-      for (int i=0; i < n_dof_; i++)
+      mj_step1(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
+      for (int i=0; i < mujoco_ros_control.n_dof_-mujoco_ros_control.objects_in_scene; i++)
       {
-        MujocoRosControl.mujoco_data->ctrl[i] = initial_qpos[n_dof_] + MujocoRosControl.mujoco_data->qfrc_bias[i];
+        mujoco_ros_control.mujoco_data->ctrl[i] = initial_qpos[i] + mujoco_ros_control.mujoco_data->qfrc_bias[i];
       }
-      mj_step2(MujocoRosControl.mujoco_model, MujocoRosControl.mujoco_data);
+      mj_step2(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
     }
+    mju_copy(mujoco_ros_control.mujoco_data->qpos, mujoco_ros_control.mujoco_model->key_qpos,
+             mujoco_ros_control.mujoco_model->nq*1);
 
-    mju_copy(MujocoRosControl.mujoco_data->qpos, state, MujocoRosControl.mujoco_model->nq);
-       
     // run main loop, target real-time simulation and 60 fps rendering
     while ( !glfwWindowShouldClose(window) )
     {
         // advance interactive simulation for 1/60 sec
         // Assuming MuJoCo can simulate faster than real-time, which it usually can,
         // this loop will finish on time for the next frame to be rendered at 60 fps.
-        mjtNum sim_start = MujocoRosControl.mujoco_data->time;
+        mjtNum sim_start = mujoco_ros_control.mujoco_data->time;
 
-        while ( MujocoRosControl.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
+        while ( mujoco_ros_control.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
         {
-          MujocoRosControl.update();
+          mujoco_ros_control.update();
         }
-        // get framebuffer viewport
-        mjrRect viewport = {0, 0, 0, 0};
-        glfwGetFramebufferSize(window, &viewport.width, &viewport.height);
-
-        // update scene and render
-        mjv_updateScene(MujocoRosControl.mujoco_model,  MujocoRosControl.mujoco_data, &opt,
-                        NULL, &cam, mjCAT_ALL, &scn);
-        mjr_render(viewport, &scn, &con);
-
-        // swap OpenGL buffers (blocking call due to v-sync)
-        glfwSwapBuffers(window);
-
-        // process pending GUI events, call GLFW callbacks
-        glfwPollEvents();
+        mujoco_visualization_utils.update(window);
     }
 
-    // free scene and terminate glfw
-    mjr_freeContext(&con);
-    mjv_freeScene(&scn);
-    glfwTerminate();
+    mujoco_visualization_utils.terminate();
 
     return 0;
 }

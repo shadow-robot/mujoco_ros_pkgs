@@ -37,7 +37,8 @@
 #include <transmission_interface/transmission_parser.h>
 
 // openGL stuff
-#include <GLFW/glfw3.h>
+#include <glfw3.h>
+#include <mujoco_ros_control/visualization_utils.h>
 
 #include <rosgraph_msgs/Clock.h>
 
@@ -47,6 +48,7 @@ namespace mujoco_ros_control
 class MujocoRosControl
 {
 public:
+  MujocoRosControl();
   virtual ~MujocoRosControl();
 
   // initialize params and controller manager
@@ -55,19 +57,26 @@ public:
   // step update function
   void update();
 
-  // get the URDF XML from the parameter server
-  std::string get_urdf(std::string param_name) const;
-
-  // parse transmissions from URDF
-  bool parse_transmissions(const std::string& urdf_string);
-
-  void publish_sim_time();
+  unsigned int n_dof_;
+  int objects_in_scene;
 
   // pointer to the mujoco model
   mjModel* mujoco_model;
   mjData* mujoco_data;
 
 protected:
+  // get the URDF XML from the parameter server
+  std::string get_urdf(std::string param_name) const;
+
+  // parse transmissions from URDF
+  bool parse_transmissions(const std::string& urdf_string);
+
+  // publish simulation time to ros clock
+  void publish_sim_time();
+
+  // check for free joints in the mujoco model
+  int check_objects_in_scene();
+
   // node handles
   ros::NodeHandle robot_node_handle;
 
@@ -76,7 +85,8 @@ protected:
 
   // strings
   std::string robot_namespace_;
-  std::string robot_description_;
+  std::string robot_description_param_;
+  std::string robot_model_path_;
 
   // transmissions in this plugin's scope
   std::vector<transmission_interface::TransmissionInfo> transmissions_;
