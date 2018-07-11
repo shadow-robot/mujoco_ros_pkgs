@@ -1,44 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mujoco>
-	<compiler angle="radian" coordinate="local" meshdir="meshes/visual/"></compiler>
-
-    <visual>
-        <map fogstart="3" fogend="5" force="0.1" znear="0.5"/>
-        <quality shadowsize="2048" offsamples="8"/>
-        <global offwidth="800" offheight="800"/>
-    </visual>
-
-    <option cone="elliptic" impratio="300" timestep="0.002"/>
-    <size njmax="500" nconmax="200" />
+	<include file="shared_options.xml"></include>
     <asset>
-	    <texture type="skybox" builtin="gradient" width="128" height="128" rgb1=".4 .6 .8" 
-            rgb2="0 0 0"/>  
-        <texture name="texgeom" type="cube" builtin="flat" mark="cross" width="127" height="1278" 
-            rgb1="0.8 0.6 0.4" rgb2="0.8 0.6 0.4" markrgb="1 1 1" random="0.01"/>  
-        <texture name="texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" 
-            width="512" height="512"/>  
-        <material name='mat_plane' reflectance='0.3' texture="texplane" texrepeat="1 1" texuniform="true"/>
-        <material name="block_mat" specular="0" shininess="0.5" reflectance="0" rgba="0.2 0.2 0.2 1"></material>
-        <material name='geom' texture="texgeom" texuniform="true"/>
-        <mesh name="base" file="base.stl" />
-        <mesh name="shoulder" file="shoulder.stl" />
-        <mesh name="upperarm_body_link" file="upperarm_body.stl" />
-        <mesh name="upperarm_bottom_link" file="upperarm_bottom_link.stl" />
-        <mesh name="upperarm_top_link" file="upperarm_top_link.stl" />
-        <mesh name="forearm_body_link" file="forearm_body_link.stl" />
-        <mesh name="forearm_bottom_link" file="forearm_bottom_link.stl" />
-        <mesh name="forearm_top_link" file="forearm_top_link.stl" />
-        <mesh name="wrist1_link" file="wrist1_link.stl" />
-        <mesh name="wrist1_base" file="wrist1_base.stl" />
-        <mesh name="wrist2_link" file="wrist2_link.stl" />
-        <mesh name="wrist2_base" file="wrist2_base.stl" />
-        <mesh name="wrist3" file="wrist3.stl" />
-        <mesh name="mount_link_50_4_M6_col" file="mount_link_50_4_M6.stl" />
-        <mesh name="palm_link_col" file="palm_link.stl" />
-        <mesh name="finger_base_back_link" file="finger_base_back_link.stl" />
-        <mesh name="finger_base_front_link" file="finger_base_front_link.stl" />
-        <mesh name="finger_prox_link_col" file="finger_prox_link.stl" />
-        <mesh name="finger_dist_link" file="finger_dist_link.stl" />
+        <include file="shared_asset.xml"></include>
     </asset>
 	<worldbody>
         <geom name='floor' pos='0 0 0.1' size='5 5 .125' type='plane' material="mat_plane" condim='3'/>
