@@ -135,6 +135,8 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 
     mj_resetData(mujoco_model, mujoco_data);
+
+    contact_force = mj_stackAlloc(mujoco_data, 6);
 }
 
 void MujocoRosControl::update()
@@ -147,6 +149,15 @@ void MujocoRosControl::update()
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
   mj_step1(mujoco_model, mujoco_data);
+
+  mujoco_contacts = mujoco_data->ncon;
+
+  for (int i = 0; i < mujoco_contacts; i++)
+  {
+    mj_contactForce(mujoco_model, mujoco_data, i, contact_force);
+    // std::cout << "Contact force for contact    " << i << '\n';
+    // mju_printMat(contact_force, 6, 1);
+  }
 
   // check if we should update the controllers
   if (sim_period >= control_period_)
@@ -165,6 +176,7 @@ void MujocoRosControl::update()
 
   // update the mujoco model with the result of the controller
   robot_hw_sim_->write(sim_time_ros, sim_time_ros - last_write_sim_time_ros_);
+
   last_write_sim_time_ros_ = sim_time_ros;
   mj_step2(mujoco_model, mujoco_data);
 }
