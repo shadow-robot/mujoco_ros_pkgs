@@ -5,6 +5,7 @@
 The goal of the demo is to evaluate Mujoco performance in performing utl5_demo in simulation.
 In order to run the demo the following packages are needed:
 
+- Use custom version of [fh_interface](https://github.com/shadow-robot/fh_interface/tree/F%23SRC-1374_mujoco_launch)
 - [sr_utl_demos](https://github.com/shadow-robot/sr_utl_demos)
 - [sr_vision](https://github.com/shadow-robot/sr_vision)
 - [shadow's fork of the object_recognition_msgs](https://github.com/shadow-robot/object_recognition_msgs)
