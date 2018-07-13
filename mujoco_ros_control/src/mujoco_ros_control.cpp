@@ -17,8 +17,8 @@
 namespace mujoco_ros_control
 {
 MujocoRosControl::MujocoRosControl()
-: objects_in_scene(0), n_dof_(0)
-{}
+{
+}
 
 MujocoRosControl::~MujocoRosControl()
 {
@@ -117,7 +117,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     const urdf::Model *const urdf_model_ptr = urdf_model.initString(urdf_string) ? &urdf_model : NULL;
 
     if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
-                                 mujoco_data, urdf_model_ptr, transmissions_, objects_in_scene))
+                                 mujoco_data, urdf_model_ptr, transmissions_, objects_in_scene.size()))
     {
       ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot sim interface");
       return;
@@ -233,21 +233,24 @@ void MujocoRosControl::publish_sim_time()
   pub_clock_.publish(ros_time_);
 }
 
-int MujocoRosControl::check_objects_in_scene()
+void MujocoRosControl::check_objects_in_scene()
 {
   n_dof_ = mujoco_model->njnt;
 
   for (int i=0; i < n_dof_; i++)
   {
-    int *number_of_free_joint = &(mujoco_model->jnt_type[i]);
-    int jnt_type = *number_of_free_joint;
-    if (jnt_type == 0)
+    int number_of_free_joint = mujoco_model->jnt_type[i];
+    if (number_of_free_joint == 0)
     {
       ROS_INFO("Free Joint Found");
-      objects_in_scene += 1;
+      int attached_object_id = *(&(mujoco_model->jnt_bodyid[i]));
+      ROS_INFO_STREAM("Attached object id: " << attached_object_id);
+      ROS_INFO_STREAM(mj_id2name(mujoco_model, 1, attached_object_id));
+      ROS_INFO_STREAM(mujoco_data->xipos[3*attached_object_id] << ", " << mujoco_data->xipos[3*attached_object_id+1] << ", " << mujoco_data->xipos[3*attached_object_id+2]);
+      objects_in_scene.push_back(attached_object_id);
     }
   }
-  return objects_in_scene;
+
 }
 }  // namespace mujoco_ros_control
 
@@ -291,7 +294,7 @@ int main(int argc, char** argv)
     while (mujoco_ros_control.mujoco_data->time < 30)
     {
       mj_step1(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
-      for (int i=0; i < mujoco_ros_control.n_dof_-mujoco_ros_control.objects_in_scene; i++)
+      for (int i=0; i < mujoco_ros_control.n_dof_-mujoco_ros_control.objects_in_scene.size(); i++)
       {
         mujoco_ros_control.mujoco_data->ctrl[i] = initial_qpos[i] + mujoco_ros_control.mujoco_data->qfrc_bias[i];
       }

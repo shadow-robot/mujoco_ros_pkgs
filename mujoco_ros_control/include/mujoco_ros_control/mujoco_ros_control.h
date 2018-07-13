@@ -58,7 +58,7 @@ public:
   void update();
 
   unsigned int n_dof_;
-  int objects_in_scene;
+  std::vector<int> objects_in_scene;
 
   // pointer to the mujoco model
   mjModel* mujoco_model;
@@ -75,7 +75,7 @@ protected:
   void publish_sim_time();
 
   // check for free joints in the mujoco model
-  int check_objects_in_scene();
+  void check_objects_in_scene();
 
   // node handles
   ros::NodeHandle robot_node_handle;
