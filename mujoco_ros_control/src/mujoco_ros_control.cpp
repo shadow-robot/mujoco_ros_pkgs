@@ -179,6 +179,8 @@ void MujocoRosControl::update()
 
   last_write_sim_time_ros_ = sim_time_ros;
   mj_step2(mujoco_model, mujoco_data);
+
+  check_objects_in_scene();
 }
 
 // get the URDF XML from the parameter server
@@ -233,6 +235,7 @@ void MujocoRosControl::publish_sim_time()
   pub_clock_.publish(ros_time_);
 }
 
+// TO DO: Do this once, create a method getting the pose and create a publisher getting it out
 void MujocoRosControl::check_objects_in_scene()
 {
   n_dof_ = mujoco_model->njnt;
@@ -243,7 +246,7 @@ void MujocoRosControl::check_objects_in_scene()
     if (number_of_free_joint == 0)
     {
       ROS_INFO("Free Joint Found");
-      int attached_object_id = *(&(mujoco_model->jnt_bodyid[i]));
+      int attached_object_id = mujoco_model->jnt_bodyid[i];
       ROS_INFO_STREAM("Attached object id: " << attached_object_id);
       ROS_INFO_STREAM(mj_id2name(mujoco_model, 1, attached_object_id));
       ROS_INFO_STREAM(mujoco_data->xipos[3*attached_object_id] << ", " << mujoco_data->xipos[3*attached_object_id+1] << ", " << mujoco_data->xipos[3*attached_object_id+2]);
