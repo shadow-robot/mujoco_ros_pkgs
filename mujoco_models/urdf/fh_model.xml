@@ -1,12 +1,7 @@
 <mujoco model="hand_H_v2">
-    <compiler angle="radian" meshdir="meshes/visual/" texturedir="textures/" />
-    <option impratio="20" tolerance="1e-10" iterations="10" />
-    <size njmax="600" nconmax="150" nstack="300000" />
+    <include file="shared_options.xml"></include>
     <asset>
-        <mesh name="palm_link_col" file="palm_link_col.stl" />
-        <mesh name="finger_base_link_col" file="finger_base_link_col.stl" />
-        <mesh name="finger_prox_link_col" file="finger_prox_link_col.stl" />
-        <mesh name="finger_dist_link" file="finger_dist_link.stl" />
+        <include file="shared_asset.xml"></include>
     </asset>
     <worldbody>
         <body name="H0_wrist_attach" pos="0 0 0">
@@ -21,7 +16,8 @@
                         <body name="H0_F0_base_link" pos="0 0 0.00016528" quat="0.999937 0 0 0.0112008">
                             <inertial pos="3.29175e-05 0.0257198 0.0640745" quat="0.999447 -0.032655 0.000557149 0.0061748" mass="0.482887" diaginertia="0.000750982 0.000728478 0.00032531" />
                             <joint name="H0_F0J0" pos="0 0 0" axis="0 0 1" limited="true" range="-0.785398 0.785398" damping="0.5" armature="0.005" margin="0.01" frictionloss="0.001"/>
-                            <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_link_col" friction="1 0.05 0.01" condim="4" margin="0.0005" contype="1" conaffinity="1"/>
+                            <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_front_link" margin="0" contype="1" conaffinity="1"/>
+                            <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_back_link" contype="1" conaffinity="1" pos="0 0 0" quat="0.999937 0 0 0.0112008"/>
                             <body name="H0_F0_link_1" pos="0 0.035 0.11683" quat="0.999375 0.0353401 0 0">
                                 <inertial pos="0.000425187 -0.000367262 0.0278443" quat="0.731527 -0.00311774 -0.00402921 0.681793" mass="0.152927" diaginertia="0.000123742 0.000112273 4.66523e-05" />
                                 <joint name="H0_F0J1" pos="0 0 0" axis="1 0 0" limited="true" range="-1.39626 1.0472" damping="0.5" armature="0.005" margin="0.01" frictionloss="0.001"/>
@@ -48,7 +44,8 @@
                         <body name="H0_F1_base_link" pos="0 0 0.00016528" quat="0.999937 0 0 0.0112008">
                             <inertial pos="3.29175e-05 0.0257198 0.0640745" quat="0.999447 -0.032655 0.000557149 0.0061748" mass="0.482887" diaginertia="0.000750982 0.000728478 0.00032531" />
                             <joint name="H0_F1J0" pos="0 0 0" axis="0 0 1" limited="true" range="-0.785398 0.785398" damping="0.5" armature="0.005" margin="0.01" frictionloss="0.001"/>
-                            <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_link_col" friction="1 0.05 0.01" condim="4" margin="0.0005" contype="1" conaffinity="1"/>
+                            <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_front_link" margin="0" contype="1" conaffinity="1"/>
+                            <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_back_link" contype="1" conaffinity="1" pos="0 0 0" quat="0.999937 0 0 0.0112008"/>
                             <body name="H0_F1_link_1" pos="0 0.035 0.11683" quat="0.999375 0.0353401 0 0">
                                 <inertial pos="0.000425187 -0.000367262 0.0278443" quat="0.731527 -0.00311774 -0.00402921 0.681793" mass="0.152927" diaginertia="0.000123742 0.000112273 4.66523e-05" />
                                 <joint name="H0_F1J1" pos="0 0 0" axis="1 0 0" limited="true" range="-1.39626 1.0472" damping="0.5" armature="0.005" margin="0.01" frictionloss="0.001"/>
@@ -72,10 +69,11 @@
                     <inertial pos="0.045 -0.025981 0" quat="0.382681 0 0 -0.923881" mass="0" diaginertia="0 0 0" />
                     <body name="H0_F2_palm_link" pos="0 0 0">
                         <inertial pos="-0.00681802 -0.0094702 0.067588" quat="0.992601 0.0892342 0.0144943 -0.0810556" mass="0.095" diaginertia="2.7996e-05 2.73461e-05 9.27404e-06" />
-                        <body name="H0_F2_base_link" pos="0 0 0.00016528" quat="0.999937 0 0 0.0112008" friction="1 0.05 0.01" condim="4" margin="0.0005" contype="1" conaffinity="1">
+                        <body name="H0_F2_base_link" pos="0 0 0.00016528" quat="0.999937 0 0 0.0112008">
                             <inertial pos="3.29175e-05 0.0257198 0.0640745" quat="0.999447 -0.032655 0.000557149 0.0061748" mass="0.482887" diaginertia="0.000750982 0.000728478 0.00032531" />
                             <joint name="H0_F2J0" pos="0 0 0" axis="0 0 1" limited="true" range="-0.785398 0.785398" damping="0.5" armature="0.005" margin="0.01" frictionloss="0.001"/>
-                            <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_link_col" friction="1 0.05 0.01" condim="4" margin="0.0005" contype="1" conaffinity="1"/>
+                            <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_front_link" margin="0" contype="1" conaffinity="1"/>
+                            <geom type="mesh" rgba="0.267 0.267 0.267 1" mesh="finger_base_back_link" contype="1" conaffinity="1" pos="0 0 0" quat="0.999937 0 0 0.0112008"/>
                             <body name="H0_F2_link_1" pos="0 0.035 0.11683" quat="0.999375 0.0353401 0 0">
                                 <inertial pos="0.000425187 -0.000367262 0.0278443" quat="0.731527 -0.00311774 -0.00402921 0.681793" mass="0.152927" diaginertia="0.000123742 0.000112273 4.66523e-05" />
                                 <joint name="H0_F2J1" pos="0 0 0" axis="1 0 0" limited="true" range="-1.39626 1.0472" damping="0.5" armature="0.005" margin="0.01" frictionloss="0.001"/>
