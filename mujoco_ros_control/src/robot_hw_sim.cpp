@@ -220,7 +220,7 @@ void RobotHWSim::read(const ros::Time& time, const ros::Duration& period)
                             position);
     }
     joint_velocity_[j] = mujoco_data_->qvel[j];
-    joint_effort_[j] = mujoco_data_->qacc[j];
+    joint_effort_[j] = mujoco_data_->qfrc_applied[j];
   }
 }
 

@@ -88,6 +88,11 @@ protected:
   std::string robot_description_param_;
   std::string robot_model_path_;
 
+  std::vector<int> mujoco_ids;
+  std::vector<int>::iterator it;
+  mjtNum* contact_force;
+  int mujoco_contacts;
+
   // transmissions in this plugin's scope
   std::vector<transmission_interface::TransmissionInfo> transmissions_;
 
@@ -98,7 +103,7 @@ protected:
   boost::shared_ptr<controller_manager::ControllerManager> controller_manager_;
 
   // simulated clock
-  ros::Publisher     pub_clock_;
+  ros::Publisher pub_clock_;
   int pub_clock_frequency_;
   ros::Time last_pub_clock_time_;
 
