@@ -34,7 +34,6 @@
 #include <mujoco_ros_control/robot_hw_sim_plugin.h>
 
 // msgs
-#include "std_msgs/String.h"
 #include "geometry_msgs/Pose.h"
 #include "mujoco_ros_msgs/FreeObjectsStates.h"
 
