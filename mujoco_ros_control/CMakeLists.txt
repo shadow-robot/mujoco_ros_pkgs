@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   joint_limits_interface
   urdf
+  mujoco_ros_msgs
 )
 
 catkin_package(
@@ -30,7 +31,7 @@ catkin_package(
     hardware_interface
     transmission_interface
     joint_limits_interface
-    urdf 
+    urdf
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} robot_hw_sim
 )

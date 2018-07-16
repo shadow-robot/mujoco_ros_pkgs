@@ -17,6 +17,7 @@
   <depend>hardware_interface</depend>
   <depend>transmission_interface</depend>
   <depend>joint_limits_interface</depend>
+  <depend>mujoco_ros_msgs</depend>
   <depend>urdf</depend>
 
   <export>

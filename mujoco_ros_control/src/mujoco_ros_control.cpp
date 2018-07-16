@@ -180,7 +180,7 @@ void MujocoRosControl::update()
   last_write_sim_time_ros_ = sim_time_ros;
   mj_step2(mujoco_model, mujoco_data);
 
-  check_objects_in_scene();
+  publish_free_objects();
 }
 
 // get the URDF XML from the parameter server
@@ -235,9 +235,9 @@ void MujocoRosControl::publish_sim_time()
   pub_clock_.publish(ros_time_);
 }
 
-// TO DO: Do this once, create a method getting the pose and create a publisher getting it out
 void MujocoRosControl::check_objects_in_scene()
 {
+  int attached_object_id;
   n_dof_ = mujoco_model->njnt;
 
   for (int i=0; i < n_dof_; i++)
@@ -245,15 +245,31 @@ void MujocoRosControl::check_objects_in_scene()
     int number_of_free_joint = mujoco_model->jnt_type[i];
     if (number_of_free_joint == 0)
     {
-      ROS_INFO("Free Joint Found");
-      int attached_object_id = mujoco_model->jnt_bodyid[i];
-      ROS_INFO_STREAM("Attached object id: " << attached_object_id);
-      ROS_INFO_STREAM(mj_id2name(mujoco_model, 1, attached_object_id));
-      ROS_INFO_STREAM(mujoco_data->xipos[3*attached_object_id] << ", " << mujoco_data->xipos[3*attached_object_id+1] << ", " << mujoco_data->xipos[3*attached_object_id+2]);
+      attached_object_id = mujoco_model->jnt_bodyid[i];
       objects_in_scene.push_back(attached_object_id);
+      ROS_INFO_STREAM("Free object found: " << mj_id2name(mujoco_model, 1, attached_object_id));
     }
   }
+}
 
+void MujocoRosControl::publish_free_objects()
+{
+  mujoco_ros_msgs::FreeObjectsStates free_objects;
+  geometry_msgs::Pose pose;
+  for (int i=0; i < objects_in_scene.size(); i++)
+  {
+    pose.position.x = mujoco_data->xpos[3*objects_in_scene[i]];
+    pose.position.y = mujoco_data->xpos[3*objects_in_scene[i]+1];
+    pose.position.z = mujoco_data->xpos[3*objects_in_scene[i]+2];
+    pose.orientation.x = mujoco_data->xquat[4*objects_in_scene[i]];
+    pose.orientation.y = mujoco_data->xquat[4*objects_in_scene[i]+1];
+    pose.orientation.z = mujoco_data->xquat[4*objects_in_scene[i]+2];
+    pose.orientation.w = mujoco_data->xquat[4*objects_in_scene[i]+3];
+
+    free_objects.name.push_back(mj_id2name(mujoco_model, 1, objects_in_scene[i]));
+    free_objects.pose.push_back(pose);
+  }
+  free_objects_publisher.publish(free_objects);
 }
 }  // namespace mujoco_ros_control
 

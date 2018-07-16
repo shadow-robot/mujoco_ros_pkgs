@@ -7,11 +7,16 @@
 	<worldbody>
         <geom name='floor' pos='0 0 0.1' size='5 5 .125' type='plane' material="mat_plane" condim='3'/>
 
-		<include file="robot_ur10_fh_model.xml"></include>
+        <include file="robot_ur10_fh_model.xml"></include>
 
-        <body name='test_box'>
+        <body name="test_box" pos="1 1 0.2" quat="1 0 0 0">
           <freejoint/>
-          <geom type="box" pos="0 0.7 0.2" size="0.033 0.045 0.075" rgba="0 .5 0 1" condim='4' friction="1.5 0.5 0.1" solimp="0.99 0.99 0.01" solref="0.01 1" contype='1'/>
+          <geom type="box" size="0.033 0.045 0.075" rgba="0 .5 0 1" condim='4' friction="1.5 0.5 0.1" solimp="0.99 0.99 0.01" solref="0.01 1" contype='1'/>
+        </body>
+
+        <body name="test_box2" pos="2 2 0.2" quat="0.924 0 0 0.383">
+          <freejoint/>
+          <geom type="box" size="0.033 0.045 0.075" rgba="0 .5 0 1" condim='4' friction="1.5 0.5 0.1" solimp="0.99 0.99 0.01" solref="0.01 1" contype='1'/>
         </body>
 
 		<light directional="true" ambient="0.2 0.2 0.2" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" castshadow="false" pos="0 0 4" dir="0 0 -1" name="light0"></light>

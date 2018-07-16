@@ -33,6 +33,11 @@
 #include <mujoco_ros_control/robot_hw_sim.h>
 #include <mujoco_ros_control/robot_hw_sim_plugin.h>
 
+// msgs
+#include "std_msgs/String.h"
+#include "geometry_msgs/Pose.h"
+#include "mujoco_ros_msgs/FreeObjectsStates.h"
+
 #include <controller_manager/controller_manager.h>
 #include <transmission_interface/transmission_parser.h>
 
@@ -77,6 +82,9 @@ protected:
   // check for free joints in the mujoco model
   void check_objects_in_scene();
 
+  //publish free objects
+  void publish_free_objects();
+
   // node handles
   ros::NodeHandle robot_node_handle;
 
@@ -111,6 +119,10 @@ protected:
   ros::Duration control_period_;
   ros::Time last_update_sim_time_ros_;
   ros::Time last_write_sim_time_ros_;
+
+  // publishing
+  ros::NodeHandle n;
+  ros::Publisher free_objects_publisher = n.advertise<mujoco_ros_msgs::FreeObjectsStates>("/mujoco/free_objects_states", 1000);
 };
 }  // namespace mujoco_ros_control
 #endif  // MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H
