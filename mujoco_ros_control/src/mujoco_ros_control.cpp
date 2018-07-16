@@ -238,12 +238,13 @@ void MujocoRosControl::publish_sim_time()
 void MujocoRosControl::check_objects_in_scene()
 {
   int attached_object_id;
+  int joint_type;
   n_dof_ = mujoco_model->njnt;
 
   for (int i=0; i < n_dof_; i++)
   {
-    int number_of_free_joint = mujoco_model->jnt_type[i];
-    if (number_of_free_joint == 0)
+    joint_type = mujoco_model->jnt_type[i];
+    if (joint_type == 0)
     {
       attached_object_id = mujoco_model->jnt_bodyid[i];
       objects_in_scene.push_back(attached_object_id);
