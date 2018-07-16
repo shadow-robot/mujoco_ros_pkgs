@@ -83,7 +83,7 @@ protected:
   void check_objects_in_scene();
 
   //publish free objects
-  void publish_free_objects();
+  void publish_objects_in_scene();
 
   // node handles
   ros::NodeHandle robot_node_handle;

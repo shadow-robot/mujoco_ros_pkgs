@@ -180,7 +180,7 @@ void MujocoRosControl::update()
   last_write_sim_time_ros_ = sim_time_ros;
   mj_step2(mujoco_model, mujoco_data);
 
-  publish_free_objects();
+  publish_objects_in_scene();
 }
 
 // get the URDF XML from the parameter server
@@ -252,7 +252,7 @@ void MujocoRosControl::check_objects_in_scene()
   }
 }
 
-void MujocoRosControl::publish_free_objects()
+void MujocoRosControl::publish_objects_in_scene()
 {
   mujoco_ros_msgs::FreeObjectsStates free_objects;
   geometry_msgs::Pose pose;
