@@ -81,7 +81,7 @@ protected:
   // check for free joints in the mujoco model
   void check_objects_in_scene();
 
-  //publish free objects
+  // publish free objects
   void publish_objects_in_scene();
 
   // node handles
@@ -121,7 +121,8 @@ protected:
 
   // publishing
   ros::NodeHandle n;
-  ros::Publisher free_objects_publisher = n.advertise<mujoco_ros_msgs::FreeObjectsStates>("/mujoco/free_objects_states", 1000);
+  ros::Publisher free_objects_publisher = n.advertise<mujoco_ros_msgs::FreeObjectsStates>
+                                                     ("/mujoco/free_objects_states", 1000);
 };
 }  // namespace mujoco_ros_control
 #endif  // MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H
