@@ -7,7 +7,7 @@
 	<worldbody>
         <geom name='floor' pos='0 0 0.1' size='5 5 .125' type='plane' material="mat_plane" condim='3'/>
 
-        <!-- <include file="robot_ur10_fh_model.xml"></include> -->
+        <include file="robot_ur10_fh_model.xml"></include>
 
         <body name="test_box" pos="1 1 0.2" quat="1 0 0 0">
           <freejoint/>

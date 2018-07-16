@@ -62,7 +62,7 @@ public:
   void update();
 
   unsigned int n_dof_;
-  std::vector<int> objects_in_scene;
+  std::vector<int> objects_in_scene_;
 
   // pointer to the mujoco model
   mjModel* mujoco_model;
@@ -121,8 +121,8 @@ protected:
 
   // publishing
   ros::NodeHandle n;
-  ros::Publisher free_objects_publisher = n.advertise<mujoco_ros_msgs::FreeObjectsStates>
-                                                     ("/mujoco/free_objects_states", 1000);
+  ros::Publisher objects_in_scene_publisher = n.advertise<mujoco_ros_msgs::FreeObjectsStates>
+                                                         ("/mujoco/free_objects_states", 1000);
 };
 }  // namespace mujoco_ros_control
 #endif  // MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H
