@@ -249,12 +249,12 @@ void MujocoRosControl::publish_objects_in_scene()
   for (int i=0; i < objects_in_scene_.size(); i++)
   {
     pose.position.x = mujoco_data->xpos[3 * objects_in_scene_[i]];
-    pose.position.y = mujoco_data->xpos[3 * objects_in_scene_[i]+1];
-    pose.position.z = mujoco_data->xpos[3 * objects_in_scene_[i]+2];
+    pose.position.y = mujoco_data->xpos[3 * objects_in_scene_[i] + 1];
+    pose.position.z = mujoco_data->xpos[3 * objects_in_scene_[i] + 2];
     pose.orientation.x = mujoco_data->xquat[4 * objects_in_scene_[i]];
-    pose.orientation.y = mujoco_data->xquat[4 * objects_in_scene_[i]+1];
-    pose.orientation.z = mujoco_data->xquat[4 * objects_in_scene_[i]+2];
-    pose.orientation.w = mujoco_data->xquat[4 * objects_in_scene_[i]+3];
+    pose.orientation.y = mujoco_data->xquat[4 * objects_in_scene_[i] + 1];
+    pose.orientation.z = mujoco_data->xquat[4 * objects_in_scene_[i] + 2];
+    pose.orientation.w = mujoco_data->xquat[4 * objects_in_scene_[i] + 3];
 
     free_objects.name.push_back(mj_id2name(mujoco_model, 1, objects_in_scene_[i]));
     free_objects.pose.push_back(pose);
