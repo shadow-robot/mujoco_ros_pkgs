@@ -97,8 +97,6 @@ protected:
 
   std::vector<int> mujoco_ids;
   std::vector<int>::iterator it;
-  mjtNum* contact_force;
-  int mujoco_contacts;
 
   // transmissions in this plugin's scope
   std::vector<transmission_interface::TransmissionInfo> transmissions_;

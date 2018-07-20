@@ -6,12 +6,13 @@
     </asset>
 	<worldbody>
         <geom name='floor' pos='0 0 0.1' size='5 5 .125' type='plane' material="mat_plane" condim='3'/>
+        <body name='floor' pos='0 0 0.1'></body>
 
 		<include file="robot_ur10_fh_model.xml"></include>
 
-        <body>
+        <body name="cylinder" pos="0 1 0.2">
           <freejoint/>
-          <geom type="cylinder" pos="0 1 0.2" size="0.035 0.15" rgba="0 .5 0 1" condim='4' friction="1.5 0.05 0.01" solimp="0.5 0.99 0.001" solref="0.01 1" contype='1'/>
+          <geom type="cylinder" size="0.035 0.15" rgba="0 .5 0 1" condim='4' friction="1.5 0.05 0.01" solimp="0.5 0.99 0.001" solref="0.01 1" contype='1'/>
         </body>
 
 		<light directional="true" ambient="0.2 0.2 0.2" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" castshadow="false" pos="0 0 4" dir="0 0 -1" name="light0"></light>
