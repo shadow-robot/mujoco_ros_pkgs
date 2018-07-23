@@ -134,6 +134,8 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     }
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 
+    // advertise services
+    spawn_object_service = robot_node_handle.advertiseService("spawn_object", &MujocoRosControl::spawn_object, this);
     mj_resetData(mujoco_model, mujoco_data);
 }
 
@@ -260,6 +262,12 @@ void MujocoRosControl::publish_objects_in_scene()
     free_objects.pose.push_back(pose);
   }
   objects_in_scene_publisher.publish(free_objects);
+}
+
+bool MujocoRosControl::spawn_object(mujoco_ros_msgs::SpawnObject::Request &req,
+                                            mujoco_ros_msgs::SpawnObject::Response &res)
+{
+  //mujoco_model.name_bodyadr = new int[req.name];
 }
 }  // namespace mujoco_ros_control
 

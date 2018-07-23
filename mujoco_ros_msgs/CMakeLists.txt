@@ -13,6 +13,11 @@ add_message_files(
   FreeObjectsStates.msg
 )
 
+add_service_files(
+  FILES
+  SpawnObject.srv
+)
+
 generate_messages(DEPENDENCIES ${MSG_DEPS})
 
 catkin_package(
