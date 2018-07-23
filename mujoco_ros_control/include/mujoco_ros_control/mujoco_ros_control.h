@@ -118,9 +118,8 @@ protected:
   ros::Time last_write_sim_time_ros_;
 
   // publishing
-  ros::NodeHandle n;
-  ros::Publisher objects_in_scene_publisher = n.advertise<mujoco_ros_msgs::FreeObjectsStates>
-                                                         ("/mujoco/free_objects_states", 1000);
+  ros::Publisher objects_in_scene_publisher = robot_node_handle.advertise<mujoco_ros_msgs::FreeObjectsStates>
+                                                                         ("/mujoco/free_objects_states", 1000);
 };
 }  // namespace mujoco_ros_control
 #endif  // MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H
