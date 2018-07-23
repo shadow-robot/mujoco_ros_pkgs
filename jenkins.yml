@@ -5,7 +5,7 @@ settings:
     release: kinetic
   docker:
     image: shadowrobot/build-tools
-    tag: xenial-kinetic-mongodb-openrave
+    tag: xenial-kinetic-mujoco
   toolset:
     template_job_name: template_unit_tests_and_code_coverage
     modules:
