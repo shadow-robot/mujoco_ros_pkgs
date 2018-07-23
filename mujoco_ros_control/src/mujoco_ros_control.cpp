@@ -302,7 +302,7 @@ int main(int argc, char** argv)
       mj_step1(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
       for (int i=0; i < mujoco_ros_control.n_dof_-mujoco_ros_control.objects_in_scene_.size(); i++)
       {
-         mujoco_ros_control.mujoco_data->ctrl[i] = mujoco_ros_control.mujoco_data->qfrc_bias[i];
+        mujoco_ros_control.mujoco_data->ctrl[i] = mujoco_ros_control.mujoco_data->qfrc_bias[i];
       }
       mj_step2(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
     }

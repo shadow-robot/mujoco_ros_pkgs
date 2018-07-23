@@ -115,7 +115,6 @@ void MujocoVisualizationUtils::keyboard_callback(GLFWwindow* window, int key, in
 void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, int key, int scancode, int act, int mods)
 {
     int n;
-    char error[1000];
 
     // require model
     if (!mujoco_model_)
@@ -128,7 +127,6 @@ void MujocoVisualizationUtils::keyboard_cb_implementation(GLFWwindow* window, in
     switch (key)
     {
     case GLFW_KEY_F1:                   // help
-        mj_saveLastXML("/home/user/compiled_model", mujoco_model_, error, 1000);
         showhelp++;
         if (showhelp > 2)
             showhelp = 0;
