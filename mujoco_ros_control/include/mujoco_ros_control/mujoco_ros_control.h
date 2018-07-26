@@ -36,7 +36,6 @@
 // msgs
 #include "geometry_msgs/Pose.h"
 #include "mujoco_ros_msgs/FreeObjectsStates.h"
-#include "mujoco_ros_msgs/SpawnObject.h"
 
 #include <controller_manager/controller_manager.h>
 #include <transmission_interface/transmission_parser.h>
@@ -85,9 +84,6 @@ protected:
   // publish free objects
   void publish_objects_in_scene();
 
-  // spawn object service
-  bool spawn_object(mujoco_ros_msgs::SpawnObject::Request &req, mujoco_ros_msgs::SpawnObject::Response &res);
-
   // node handles
   ros::NodeHandle robot_node_handle;
 
@@ -124,8 +120,6 @@ protected:
   // publishing
   ros::Publisher objects_in_scene_publisher = robot_node_handle.advertise<mujoco_ros_msgs::FreeObjectsStates>
                                                                          ("/mujoco/free_objects_states", 1000);
-
-  ros::ServiceServer spawn_object_service;
 
 };
 }  // namespace mujoco_ros_control
