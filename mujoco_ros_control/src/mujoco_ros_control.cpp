@@ -17,8 +17,8 @@
 namespace mujoco_ros_control
 {
 MujocoRosControl::MujocoRosControl()
-: objects_in_scene(0), n_dof_(0)
-{}
+{
+}
 
 MujocoRosControl::~MujocoRosControl()
 {
@@ -117,7 +117,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     const urdf::Model *const urdf_model_ptr = urdf_model.initString(urdf_string) ? &urdf_model : NULL;
 
     if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
-                                 mujoco_data, urdf_model_ptr, transmissions_, objects_in_scene))
+                                 mujoco_data, urdf_model_ptr, transmissions_, objects_in_scene_.size()))
     {
       ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot sim interface");
       return;
@@ -135,8 +135,6 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 
     mj_resetData(mujoco_model, mujoco_data);
-
-    contact_force = mj_stackAlloc(mujoco_data, 6);
 }
 
 void MujocoRosControl::update()
@@ -149,15 +147,6 @@ void MujocoRosControl::update()
   ros::Duration sim_period = sim_time_ros - last_update_sim_time_ros_;
 
   mj_step1(mujoco_model, mujoco_data);
-
-  mujoco_contacts = mujoco_data->ncon;
-
-  for (int i = 0; i < mujoco_contacts; i++)
-  {
-    mj_contactForce(mujoco_model, mujoco_data, i, contact_force);
-    // std::cout << "Contact force for contact    " << i << '\n';
-    // mju_printMat(contact_force, 6, 1);
-  }
 
   // check if we should update the controllers
   if (sim_period >= control_period_)
@@ -179,6 +168,8 @@ void MujocoRosControl::update()
 
   last_write_sim_time_ros_ = sim_time_ros;
   mj_step2(mujoco_model, mujoco_data);
+
+  publish_objects_in_scene();
 }
 
 // get the URDF XML from the parameter server
@@ -233,21 +224,42 @@ void MujocoRosControl::publish_sim_time()
   pub_clock_.publish(ros_time_);
 }
 
-int MujocoRosControl::check_objects_in_scene()
+void MujocoRosControl::check_objects_in_scene()
 {
+  int object_id;
+  int joint_type;
   n_dof_ = mujoco_model->njnt;
 
   for (int i=0; i < n_dof_; i++)
   {
-    int *number_of_free_joint = &(mujoco_model->jnt_type[i]);
-    int jnt_type = *number_of_free_joint;
-    if (jnt_type == 0)
+    joint_type = mujoco_model->jnt_type[i];
+    if (joint_type == 0)
     {
-      ROS_INFO("Free Joint Found");
-      objects_in_scene += 1;
+      object_id = mujoco_model->jnt_bodyid[i];
+      objects_in_scene_.push_back(object_id);
+      ROS_INFO_STREAM("Free object found: " << mj_id2name(mujoco_model, 1, object_id));
     }
   }
-  return objects_in_scene;
+}
+
+void MujocoRosControl::publish_objects_in_scene()
+{
+  mujoco_ros_msgs::FreeObjectsStates free_objects;
+  geometry_msgs::Pose pose;
+  for (int i=0; i < objects_in_scene_.size(); i++)
+  {
+    pose.position.x = mujoco_data->xpos[3 * objects_in_scene_[i]];
+    pose.position.y = mujoco_data->xpos[3 * objects_in_scene_[i] + 1];
+    pose.position.z = mujoco_data->xpos[3 * objects_in_scene_[i] + 2];
+    pose.orientation.x = mujoco_data->xquat[4 * objects_in_scene_[i]];
+    pose.orientation.y = mujoco_data->xquat[4 * objects_in_scene_[i] + 1];
+    pose.orientation.z = mujoco_data->xquat[4 * objects_in_scene_[i] + 2];
+    pose.orientation.w = mujoco_data->xquat[4 * objects_in_scene_[i] + 3];
+
+    free_objects.name.push_back(mj_id2name(mujoco_model, 1, objects_in_scene_[i]));
+    free_objects.pose.push_back(pose);
+  }
+  objects_in_scene_publisher.publish(free_objects);
 }
 }  // namespace mujoco_ros_control
 
@@ -284,35 +296,35 @@ int main(int argc, char** argv)
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
-    // // let everything settle
-    std::vector<double> initial_qpos;
-    initial_qpos.assign(mujoco_ros_control.n_dof_, 0);
-
-    while (mujoco_ros_control.mujoco_data->time < 30)
+    // let everything settle
+    while (mujoco_ros_control.mujoco_data->time < 50)
     {
       mj_step1(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
-      for (int i=0; i < mujoco_ros_control.n_dof_-mujoco_ros_control.objects_in_scene; i++)
+      for (int i=0; i < mujoco_ros_control.n_dof_-mujoco_ros_control.objects_in_scene_.size(); i++)
       {
-        mujoco_ros_control.mujoco_data->ctrl[i] = initial_qpos[i] + mujoco_ros_control.mujoco_data->qfrc_bias[i];
+        mujoco_ros_control.mujoco_data->ctrl[i] = mujoco_ros_control.mujoco_data->qfrc_bias[i];
       }
       mj_step2(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
     }
-    mju_copy(mujoco_ros_control.mujoco_data->qpos, mujoco_ros_control.mujoco_model->key_qpos,
-             mujoco_ros_control.mujoco_model->nq*1);
+
+    for (int i=0; i < mujoco_ros_control.n_dof_ - mujoco_ros_control.objects_in_scene_.size(); i++)
+    {
+      mujoco_ros_control.mujoco_data->qpos[i] = 0;
+    }
 
     // run main loop, target real-time simulation and 60 fps rendering
     while ( !glfwWindowShouldClose(window) )
     {
-        // advance interactive simulation for 1/60 sec
-        // Assuming MuJoCo can simulate faster than real-time, which it usually can,
-        // this loop will finish on time for the next frame to be rendered at 60 fps.
-        mjtNum sim_start = mujoco_ros_control.mujoco_data->time;
+      // advance interactive simulation for 1/60 sec
+      // Assuming MuJoCo can simulate faster than real-time, which it usually can,
+      // this loop will finish on time for the next frame to be rendered at 60 fps.
+      mjtNum sim_start = mujoco_ros_control.mujoco_data->time;
 
-        while ( mujoco_ros_control.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
-        {
-          mujoco_ros_control.update();
-        }
-        mujoco_visualization_utils.update(window);
+      while ( mujoco_ros_control.mujoco_data->time - sim_start < 1.0/60.0 && ros::ok() )
+      {
+        mujoco_ros_control.update();
+      }
+      mujoco_visualization_utils.update(window);
     }
 
     mujoco_visualization_utils.terminate();

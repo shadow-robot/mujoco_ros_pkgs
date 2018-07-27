@@ -33,6 +33,10 @@
 #include <mujoco_ros_control/robot_hw_sim.h>
 #include <mujoco_ros_control/robot_hw_sim_plugin.h>
 
+// msgs
+#include "geometry_msgs/Pose.h"
+#include "mujoco_ros_msgs/FreeObjectsStates.h"
+
 #include <controller_manager/controller_manager.h>
 #include <transmission_interface/transmission_parser.h>
 
@@ -58,7 +62,7 @@ public:
   void update();
 
   unsigned int n_dof_;
-  int objects_in_scene;
+  std::vector<int> objects_in_scene_;
 
   // pointer to the mujoco model
   mjModel* mujoco_model;
@@ -75,7 +79,10 @@ protected:
   void publish_sim_time();
 
   // check for free joints in the mujoco model
-  int check_objects_in_scene();
+  void check_objects_in_scene();
+
+  // publish free objects
+  void publish_objects_in_scene();
 
   // node handles
   ros::NodeHandle robot_node_handle;
@@ -90,8 +97,6 @@ protected:
 
   std::vector<int> mujoco_ids;
   std::vector<int>::iterator it;
-  mjtNum* contact_force;
-  int mujoco_contacts;
 
   // transmissions in this plugin's scope
   std::vector<transmission_interface::TransmissionInfo> transmissions_;
@@ -111,6 +116,10 @@ protected:
   ros::Duration control_period_;
   ros::Time last_update_sim_time_ros_;
   ros::Time last_write_sim_time_ros_;
+
+  // publishing
+  ros::Publisher objects_in_scene_publisher = robot_node_handle.advertise<mujoco_ros_msgs::FreeObjectsStates>
+                                                                         ("/mujoco/free_objects_states", 1000);
 };
 }  // namespace mujoco_ros_control
 #endif  // MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H
