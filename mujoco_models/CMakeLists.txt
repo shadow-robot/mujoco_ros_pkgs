@@ -157,7 +157,7 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
   scripts/spawn_simulation.py
-  scripts/dummy_external_node.py
+  scripts/spawn_sim_client_example.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -1,0 +1,10 @@
+<launch>
+  <!-- meshes directory defined inside mujoco_models/models/meshes folder -->
+  <arg name="mesh_directory" default="arm_and_hand_meshes/"/> 
+  <arg name="mujoco_world_filename" default="test.xml"/>
+
+  <node name="mujoco_simulation_spawner" pkg="mujoco_models" type="spawn_simulation.py" output="screen">
+    <param name="mesh_directory" value="$(arg mesh_directory)"/>
+    <param name="mujoco_world_filename" value="$(arg mujoco_world_filename)"/>
+  </node>
+</launch>

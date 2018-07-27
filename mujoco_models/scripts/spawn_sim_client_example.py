@@ -8,7 +8,7 @@ from mujoco_ros_msgs.srv import SpawnObjects
 from object_recognition_msgs.msg import RecognizedObjectArray, RecognizedObject
 
 
-class DummyObjRecognition(object):
+class SpawnSimClient(object):
     """
     Dummy class to launch Mujoco simulation with objects
     """
@@ -57,7 +57,7 @@ class DummyObjRecognition(object):
         self._request_sim(request)
 
 if __name__ == '__main__':
-    rospy.init_node("dummy_spawn_mujoco_node")
-    spawn_sim = DummyObjRecognition()
+    rospy.init_node("spawn_sim_client_example_node")
+    spawn_sim = SpawnSimClient()
     spawn_sim._send_request()
     rospy.spin()

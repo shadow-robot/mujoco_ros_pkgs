@@ -6,12 +6,8 @@
   <arg name="initial_z" default="0" />
   <arg name="start_home" default="$(arg sim)" />
   <arg name="scene_file" default="$(find mujoco_models)/mujoco.scene" />
-  <arg name="camera" default="ensenso" />
   <arg name="arm_group" default="right_arm_and_manipulator" />
-  <arg name="description_repo_path" default="$(find sr_utl5)" />
-  <arg name="manipulator_file" default="$(find sr_utl5)/config/manipulator_hand.yaml" />
-  <arg name="arm_positions_file" default="$(find sr_utl5)/config/arm_positions.yaml" />
-  <arg name="robot_model_path" default="$(find mujoco_models)/urdf/ur10_fh_environment.xml"/>
+  <arg name="robot_model_path" default="$(find mujoco_models)/models/ur10_fh_environment.xml"/>
 
   <!-- Robot stuff -->
   <include file="$(find fh_robot_launch)/launch/fh_ur10_and_fh2_mujoco.launch">
