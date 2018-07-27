@@ -6,11 +6,13 @@
 import rospy
 import rospkg
 import roslaunch
+import subprocess
+import os
+import signal
 import xml.etree.ElementTree as xmlTool
 from xml.dom import minidom
-
 from mujoco_ros_msgs.srv import SpawnObjects, SpawnObjectsResponse
-import subprocess
+from std_srvs.srv import Trigger
 
 
 class SpawnSimulation(object):
@@ -25,7 +27,9 @@ class SpawnSimulation(object):
         self._mesh_directory = rospy.get_param("~mesh_directory")
         self._mujoco_world_filename = rospy.get_param("~mujoco_world_filename")
         self._obj_names_list = []
-        rospy.Service("/spawn_sim_environment", SpawnObjects, self._spawn_sim_environment_service)
+        self._process_pid = 0
+        rospy.Service("mujoco/spawn_sim_environment", SpawnObjects, self._spawn_sim_environment_service)
+        rospy.Service("mujoco/terminate_sim", Trigger, self._terminate_sim_service)
 
     def _spawn_sim_environment_service(self, req):
         """
@@ -36,13 +40,11 @@ class SpawnSimulation(object):
         for obj in req.objects.objects:
             self._obj_names_list.append(obj.type.key)
             self._append_object_to_xml(obj.type.key, obj.pose.pose.pose)
-        try:
-            subprocess.call("roslaunch mujoco_ros_control mujoco_simulation.launch sim:=true \
-                             grasp_controller:=true robot_model_path:={}/{}".format(self._xml_config_dir,
-                             self._mujoco_world_filename), shell=True)
-        except:
-            rospy.logerr("Could not spawn Mujoco simulation")
-            spawned = False
+
+        process = subprocess.Popen("roslaunch mujoco_ros_control mujoco_simulation.launch sim:=true \
+                                   grasp_controller:=true robot_model_path:={}/{}".format(self._xml_config_dir,
+                                   self._mujoco_world_filename), shell=True)
+        self._process_pid = os.getpgid(process.pid)
         return SpawnObjectsResponse(spawned)
 
     def _append_object_to_xml(self, obj_name, obj_pose):
@@ -73,6 +75,17 @@ class SpawnSimulation(object):
                                                                  'mesh': obj_name, 'condim': '4',
                                                                  'friction': '1.7 0.8 1', 'contype': '1'})
         self._base_config_xml.write("{}/{}".format(self._xml_config_dir, self._mujoco_world_filename))
+
+    def _terminate_sim_service(self, req):
+        """
+        Service to terminate simulation
+        """
+        success = True
+        os.killpg(self._process_pid, signal.SIGTERM)
+        # except:
+        #     rospy.logerr("Could not kill Mujoco simulation")
+        #     success = False
+        # return TriggerResponse(success)
 
 
 if __name__ == '__main__':

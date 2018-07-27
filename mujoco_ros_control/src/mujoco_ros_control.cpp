@@ -261,7 +261,7 @@ void MujocoRosControl::publish_objects_in_scene()
   }
   objects_in_scene_publisher.publish(free_objects);
 }
-}
+} // namespace mujoco_ros_control
 
 int main(int argc, char** argv)
 {

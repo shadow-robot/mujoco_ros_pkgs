@@ -13,14 +13,14 @@ class SpawnSimClient(object):
     Dummy class to launch Mujoco simulation with objects
     """
 
-    def __init__(self):        
-        self._sim_service = rospy.ServiceProxy("spawn_sim_environment", SpawnObjects)
+    def __init__(self):
+        self._sim_service = rospy.ServiceProxy("mujoco/spawn_sim_environment", SpawnObjects)
 
     def _request_sim(self, request):
         '''
         Request to spawn simulation
         '''
-        rospy.wait_for_service("spawn_sim_environment", 15)
+        rospy.wait_for_service("mujoco/spawn_sim_environment", 15)
         try:
             response = self._sim_service(request)
             if response is True:
