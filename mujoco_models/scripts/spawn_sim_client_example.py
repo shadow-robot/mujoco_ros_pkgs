@@ -20,10 +20,10 @@ class SpawnSimClient(object):
         '''
         Request to spawn simulation
         '''
-        rospy.wait_for_service("spawn_sim_environment",   15)
+        rospy.wait_for_service("spawn_sim_environment", 15)
         try:
             response = self._sim_service(request)
-            if response == True:
+            if response is True:
                 rospy.loginfo("Sim environment successfully loaded!")
             return response.spawned
         except rospy.ServiceException,   e:
