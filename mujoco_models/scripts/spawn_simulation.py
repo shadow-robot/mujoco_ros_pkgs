@@ -6,6 +6,7 @@
 import rospy
 import rospkg
 import subprocess
+import os.path
 import xml.etree.ElementTree as xmlTool
 from xml.dom import minidom
 from mujoco_ros_msgs.srv import SpawnObjects, SpawnObjectsResponse
@@ -19,15 +20,16 @@ class SpawnSimulation(object):
 
     def __init__(self):
 
-        self._mesh_directory = rospy.get_param("~mesh_directory", "")
-        self._generated_mujoco_env_filename = rospy.get_param("~generated_mujoco_env_filename", "test.xml")
-        base_mujoco_env_filename = rospy.get_param("~base_mujoco_env_filename", "ur10_fh_environment.xml")
         self._xml_config_dir = rospkg.RosPack().get_path("mujoco_models") + "/models"
+        base_mujoco_env_filename = rospy.get_param("~base_mujoco_env_filename", "ur10_fh_environment.xml")
+        self._generated_mujoco_env_filename = rospy.get_param("~generated_mujoco_env_filename", "test.xml")
         self._base_config_xml = xmlTool.parse('{}/{}'.format(self._xml_config_dir, base_mujoco_env_filename))
         self._obj_names_list = []
         self._subprocess = []
         rospy.Service("mujoco/spawn_sim_environment", SpawnObjects, self._spawn_sim_environment_service)
         rospy.Service("mujoco/terminate_sim", Trigger, self._terminate_sim_service)
+        absolute_mesh_dir_path = rospy.get_param("~mesh_directory", self._xml_config_dir + "/meshes")
+        self._mesh_dir_path = os.path.relpath(absolute_mesh_dir_path, self._xml_config_dir)
 
     def _spawn_sim_environment_service(self, req):
         """
@@ -61,7 +63,8 @@ class SpawnSimulation(object):
         obj_instances_nr = self._obj_names_list.count(obj_name)
         obj_name = obj_name + "_{}".format(obj_instances_nr)
 
-        mesh_name = self._mesh_directory + obj_name[:-2] + '.stl'
+        mesh_name = self._mesh_dir_path + '/' + obj_name[:-2] + '.stl'
+
         obj_position = [obj_pose.position.x, obj_pose.position.y, obj_pose.position.z]
         obj_orientation = [obj_pose.orientation.w, obj_pose.orientation.x,
                            obj_pose.orientation.y, obj_pose.orientation.z]
