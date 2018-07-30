@@ -1,10 +1,12 @@
 <launch>
   <!-- meshes directory defined inside mujoco_models/models/meshes folder -->
   <arg name="mesh_directory" default="arm_and_hand_meshes/"/> 
-  <arg name="mujoco_world_filename" default="test.xml"/>
+  <arg name="generated_mujoco_env_filename" default="test.xml"/>
+  <arg name="base_mujoco_env_filename" default="ur10_fh_environment.xml" />
 
   <node name="mujoco_simulation_spawner" pkg="mujoco_models" type="spawn_simulation.py" output="screen">
     <param name="mesh_directory" value="$(arg mesh_directory)"/>
-    <param name="mujoco_world_filename" value="$(arg mujoco_world_filename)"/>
+    <param name="generated_mujoco_env_filename" value="$(arg generated_mujoco_env_filename)"/>
+    <param name="base_mujoco_env_filename" value="$(arg base_mujoco_env_filename)"/>
   </node>
 </launch>
