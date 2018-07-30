@@ -1,6 +1,6 @@
 <launch>
   <!-- meshes directory defined inside mujoco_models/models/meshes folder -->
-  <arg name="mesh_directory" default="arm_and_hand_meshes/"/> 
+  <arg name="mesh_directory" default="$(find mujoco_models)/models/meshes/arm_and_hand_meshes/"/> 
   <arg name="generated_mujoco_env_filename" default="test.xml"/>
   <arg name="base_mujoco_env_filename" default="ur10_fh_environment.xml" />
 
