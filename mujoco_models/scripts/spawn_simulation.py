@@ -7,12 +7,10 @@ import rospy
 import rospkg
 import roslaunch
 import subprocess
-import os
-import signal
 import xml.etree.ElementTree as xmlTool
 from xml.dom import minidom
 from mujoco_ros_msgs.srv import SpawnObjects, SpawnObjectsResponse
-from std_srvs.srv import Trigger
+from std_srvs.srv import Trigger, TriggerResponse
 
 
 class SpawnSimulation(object):
@@ -27,7 +25,7 @@ class SpawnSimulation(object):
         self._mesh_directory = rospy.get_param("~mesh_directory")
         self._mujoco_world_filename = rospy.get_param("~mujoco_world_filename")
         self._obj_names_list = []
-        self._process_pid = 0
+        self._subprocess = []
         rospy.Service("mujoco/spawn_sim_environment", SpawnObjects, self._spawn_sim_environment_service)
         rospy.Service("mujoco/terminate_sim", Trigger, self._terminate_sim_service)
 
@@ -36,16 +34,25 @@ class SpawnSimulation(object):
         Service to receive request of spawning mujoco environment
         with list of objects
         """
-        spawned = True
         for obj in req.objects.objects:
             self._obj_names_list.append(obj.type.key)
             self._append_object_to_xml(obj.type.key, obj.pose.pose.pose)
 
-        process = subprocess.Popen("roslaunch mujoco_ros_control mujoco_simulation.launch sim:=true \
-                                   grasp_controller:=true robot_model_path:={}/{}".format(self._xml_config_dir,
-                                   self._mujoco_world_filename), shell=True)
-        self._process_pid = os.getpgid(process.pid)
-        return SpawnObjectsResponse(spawned)
+        rospy.loginfo("Starting simulation..")
+        try:
+            process = subprocess.Popen(['xterm -e roslaunch mujoco_ros_control mujoco_simulation.launch sim:=true \
+                                        grasp_controller:=true robot_model_path:={}/{}'.format(self._xml_config_dir,
+                                        self._mujoco_world_filename)], shell=True)
+        except:
+            rospy.logerr("Could not spawn simulation")
+            process.kill()
+            success = False
+        else:
+            rospy.loginfo("Simulation successfully spawned")
+            success = True
+            self._subprocess.append(process)
+        return SpawnObjectsResponse(success)
+           
 
     def _append_object_to_xml(self, obj_name, obj_pose):
         """
@@ -64,10 +71,10 @@ class SpawnSimulation(object):
         # append new body to xml file
         for child in self._base_config_xml.getroot():
             if child.tag == "asset":
-                rospy.loginfo("Setting asset..")
+                rospy.loginfo("Setting asset for {} ..".format(obj_name))
                 mesh_tag = xmlTool.SubElement(child, "mesh", {'name': obj_name, 'file': mesh_name})
             if child.tag == "worldbody":
-                rospy.loginfo("Setting body..")
+                rospy.loginfo("Setting body for {} ..".format(obj_name))
                 body_tag = xmlTool.SubElement(child, "body", {'name': obj_name, 'pos': obj_position_string,
                                                               'quat': obj_orientation_string})
                 joint_tag = xmlTool.SubElement(body_tag, "freejoint")
@@ -80,12 +87,18 @@ class SpawnSimulation(object):
         """
         Service to terminate simulation
         """
-        success = True
-        os.killpg(self._process_pid, signal.SIGTERM)
-        # except:
-        #     rospy.logerr("Could not kill Mujoco simulation")
-        #     success = False
-        # return TriggerResponse(success)
+        rospy.loginfo("Terminating simulation..")
+        try:
+            for process in self._subprocess:
+                process.kill()
+        except:
+            success = False
+            msg = "Could not terminate simulation"
+        else:
+            success = True
+            msg = "Simulation correctly terminated"
+            rospy.loginfo("Simulation terminated")
+        return TriggerResponse(success, msg)
 
 
 if __name__ == '__main__':

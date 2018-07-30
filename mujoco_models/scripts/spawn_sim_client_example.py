@@ -23,9 +23,9 @@ class SpawnSimClient(object):
         rospy.wait_for_service("mujoco/spawn_sim_environment", 15)
         try:
             response = self._sim_service(request)
-            if response is True:
-                rospy.loginfo("Sim environment successfully loaded!")
-            return response.spawned
+            if response.success is True:
+                rospy.loginfo("Sim environment successfully spawned!")
+            return response.success
         except rospy.ServiceException,   e:
             rospy.logerr("Service Call Failed:  %s" % e)
 
