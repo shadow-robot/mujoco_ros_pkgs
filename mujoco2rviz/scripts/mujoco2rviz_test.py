@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from mujoco2rviz.mujoco2marker import Mujoco2Marker
+from mujoco2rviz.mujoco2rviz_collision import Mujoco2Marker
 import rospy
 
 if __name__ == '__main__':
