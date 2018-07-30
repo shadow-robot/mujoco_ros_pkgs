@@ -1,0 +1,14 @@
+<mujoco>
+	<include file="shared_options.xml" />
+    <asset>
+        <include file="shared_asset.xml" />
+    <mesh file="meshes/arm_and_hand_meshes/finger_base_link.stl" name="finger_base_link_1" /><mesh file="meshes/arm_and_hand_meshes/finger_base_link.stl" name="finger_base_link_2" /></asset>
+	<worldbody>
+        <geom condim="3" material="mat_plane" name="floor" pos="0 0 0.1" size="5 5 .125" type="plane" />
+        <body name="floor" pos="0 0 0.1" />
+
+        <include file="robot_ur10_fh_model.xml" />
+
+		<light ambient="0.2 0.2 0.2" castshadow="false" diffuse="0.8 0.8 0.8" dir="0 0 -1" directional="true" name="light0" pos="0 0 4" specular="0.3 0.3 0.3" />
+    <body name="finger_base_link_1" pos="0.1 0.7 0.175" quat="1.0 0.0 0.0 0.0"><freejoint /><geom condim="4" contype="1" friction="1.7 0.8 1" mesh="finger_base_link_1" rgba="0.7 0.7 0.7 1" type="mesh" /></body><body name="finger_base_link_2" pos="0.3 1.0 0.175" quat="1.0 0.0 0.0 0.0"><freejoint /><geom condim="4" contype="1" friction="1.7 0.8 1" mesh="finger_base_link_2" rgba="0.7 0.7 0.7 1" type="mesh" /></body></worldbody>
+</mujoco>

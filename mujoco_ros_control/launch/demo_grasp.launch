@@ -15,8 +15,8 @@
   <arg name="arm_positions_file" default="$(find sr_utl5)/config/arm_positions.yaml" />
   <arg name="cylinder" default="false" />
   <arg name="box" default="false" />
-  <arg name="robot_model_path" default="$(find mujoco_models)/urdf/ur10_fh_environment_box.xml" if="$(arg box)" />
-  <arg name="robot_model_path" default="$(find mujoco_models)/urdf/ur10_fh_environment_cylinder.xml" if="$(arg cylinder)" />
+  <arg name="robot_model_path" default="$(find mujoco_models)/models/ur10_fh_environment_box.xml" unless="$(arg cylinder)" />
+  <arg name="robot_model_path" default="$(find mujoco_models)/models/ur10_fh_environment_cylinder.xml" unless="$(arg box)" />
 
   <!-- Robot stuff -->
   <include file="$(find fh_robot_launch)/launch/fh_ur10_and_fh2_mujoco.launch">
