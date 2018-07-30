@@ -42,7 +42,7 @@ class SpawnSimulation(object):
 
         rospy.loginfo("Starting simulation..")
         try:
-            process = subprocess.Popen(['xterm -e roslaunch mujoco_ros_control mujoco_simulation.launch sim:=true \
+            process = subprocess.Popen(['xterm -e roslaunch fh_robot_launch fh_ur10_and_fh2_mujoco.launch sim:=true \
                                         grasp_controller:=true robot_model_path:={}/{}'.format(self._xml_config_dir,
                                         self._generated_mujoco_env_filename)], shell=True)
         except OSError as e:
