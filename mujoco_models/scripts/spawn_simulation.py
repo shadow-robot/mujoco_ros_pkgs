@@ -54,7 +54,6 @@ class SpawnSimulation(object):
             success = True
             self._subprocess.append(process)
         return SpawnObjectsResponse(success)
-           
 
     def _append_object_to_xml(self, obj_name, obj_pose):
         """
