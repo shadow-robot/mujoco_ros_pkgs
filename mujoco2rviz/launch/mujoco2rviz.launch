@@ -1,0 +1,6 @@
+<launch>
+    <node name="mujoco2rviz" pkg="mujoco2rviz" type="mujoco2rviz_test.py" output="screen">
+        <env name="GAZEBO_MODEL_PATH" value="$(find sr_utl5)/models/:$(find sr_description_common)/models/" />
+        <env name="MESH_WORKSPACE_PATH" value="$(find sr_description_common)/models/" />
+    </node>
+</launch>
