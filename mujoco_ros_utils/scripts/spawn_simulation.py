@@ -19,7 +19,6 @@ class SpawnSimulation(object):
     """
 
     def __init__(self):
-
         self._xml_config_dir = rospkg.RosPack().get_path("mujoco_models") + "/models"
         base_mujoco_env_filename = rospy.get_param("~base_mujoco_env_filename", "ur10_fh_environment.xml")
         self._generated_mujoco_env_filename = rospy.get_param("~generated_mujoco_env_filename", "test.xml")
