@@ -15,7 +15,7 @@ class Mujoco2Marker():
     def __init__(self):
         self.model_cache = {}
         self.description_repo_path = rospy.get_param("description_repo_path",
-                                                     rospkg.RosPack().get_path('sr_description_common'))
+                                                     rospkg.RosPack().get_path('sr_utl5'))
         self.objects_states_subscriber = rospy.Subscriber('mujoco/free_objects_states', FreeObjectsStates, self.objects_states_cb)
         self.collision_object_publisher = rospy.Publisher('/collision_object', CollisionObject, queue_size=5,
                                                           latch=True)
@@ -23,12 +23,14 @@ class Mujoco2Marker():
     def objects_states_cb(self, objects_states_msg):
         for model_instance_name, model_instance_pose in zip(objects_states_msg.name, objects_states_msg.pose):
             if not model_instance_name in self.model_cache:
-                print model_instance_name, model_instance_pose
-                self.model_cache[model_instance_name] = self.add_new_collision_object(model_instance_name, model_instance_pose)
+                try:
+                    self.model_cache[model_instance_name] = self.add_new_collision_object(model_instance_name, model_instance_pose)
+                except:
+                    rospy.logwarn("Failed to add new collision object")
 
             self.collision_object_publisher.publish(self.model_cache[model_instance_name])
 
-        #     self.sdf2moveit.update_collision_object_with_pose(self.model_cache[model_instance_name], model_instance_name, objects_states_msg.pose[model_idx])
+        # self.sdf2moveit.update_collision_object_with_pose(self.model_cache[model_instance_name], model_instance_name, objects_states_msg.pose[model_idx])
 
         # for model_instance_name in list(self.model_cache):
         #     if model_instance_name not in objects_states_msg.name:
@@ -41,10 +43,11 @@ class Mujoco2Marker():
         collision_object.header.frame_id = 'world'
         collision_object.id = '{}__link'.format(model_instance_name)
         if add:
-            object_mesh_path = self.get_object_mesh_path(self.get_object_type(model_instance_name))
-            print object_mesh_path
+            object_type = self.get_object_type(model_instance_name)
+            object_mesh_path = self.get_object_mesh_path(object_type)
             collision_object.operation = CollisionObject.ADD
-            collision_object.meshes = [self.stl_to_mesh(object_mesh_path)]
+            object_mesh = self.stl_to_mesh(object_mesh_path)
+            collision_object.meshes = [object_mesh]
             collision_object.mesh_poses = [model_pose]
         else:
             collision_object.operation = CollisionObject.REMOVE

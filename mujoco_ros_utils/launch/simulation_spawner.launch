@@ -1,5 +1,5 @@
 <launch>
-  <arg name="mesh_directory" default="$(find sr_utl5)/models/:$(find sr_description_common)/models/"/> 
+  <arg name="mesh_directory" default="$(find sr_utl5)/models/"/> 
   <arg name="generated_mujoco_env_filename" default="test.xml"/>
   <arg name="base_mujoco_env_filename" default="ur10_fh_environment.xml" />
 
