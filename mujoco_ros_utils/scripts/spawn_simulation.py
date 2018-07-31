@@ -28,32 +28,46 @@ class SpawnSimulation(object):
         self._subprocess = []
         rospy.Service("mujoco/spawn_sim_environment", SpawnObjects, self._spawn_sim_environment_service)
         rospy.Service("mujoco/terminate_sim", Trigger, self._terminate_sim_service)
+
+    def _get_file_mesh_directory(self, mesh_name):
+        """
+        Search for stl file of the object in the mesh directory
+        specified by the user
+        """
         absolute_mesh_dir_path = rospy.get_param("~mesh_directory", self._xml_config_dir + "/meshes")
-        self._mesh_dir_path = os.path.relpath(absolute_mesh_dir_path, self._xml_config_dir)
+        for dir, sub_dirs, files in os.walk(absolute_mesh_dir_path):
+            for file in files:
+                if file == mesh_name:
+                    rospy.loginfo("Mesh found")
+                    mesh_directory_path = os.path.relpath(dir, self._xml_config_dir)
+                    return mesh_directory_path
 
     def _spawn_sim_environment_service(self, req):
         """
         Service to receive request of spawning mujoco environment
         with list of objects
         """
-        for obj in req.objects.objects:
-            self._obj_names_list.append(obj.type.key)
-            self._append_object_to_xml(obj.type.key, obj.pose.pose.pose)
-
-        rospy.loginfo("Starting simulation..")
         try:
-            process = subprocess.Popen(['xterm -e roslaunch fh_robot_launch fh_ur10_and_fh2_mujoco.launch sim:=true \
-                                        grasp_controller:=true robot_model_path:={}/{}'.format(self._xml_config_dir,
-                                        self._generated_mujoco_env_filename)], shell=True)
-        except OSError as e:
-            rospy.logerr("Could not spawn simulation")
-            process.kill()
-            success = False
+            for obj in req.objects.objects:
+                self._obj_names_list.append(obj.type.key)
+                self._append_object_to_xml(obj.type.key, obj.pose.pose.pose)
+        except ValueError:
+            rospy.logerr("Could not load sim objects, mesh not found")
         else:
-            rospy.loginfo("Simulation successfully spawned")
-            success = True
-            self._subprocess.append(process)
-        return SpawnObjectsResponse(success)
+            rospy.loginfo("Starting simulation..")
+            try:
+                process = subprocess.Popen(['xterm -e roslaunch fh_robot_launch fh_ur10_and_fh2_mujoco.launch sim:=true \
+                                            grasp_controller:=true robot_model_path:={}/{}'.format(self._xml_config_dir,
+                                            self._generated_mujoco_env_filename)], shell=True)
+            except OSError as e:
+                rospy.logerr("Could not spawn simulation")
+                process.kill()
+                success = False
+            else:
+                rospy.loginfo("Simulation successfully spawned")
+                success = True
+                self._subprocess.append(process)
+            return SpawnObjectsResponse(success)
 
     def _append_object_to_xml(self, obj_name, obj_pose):
         """
@@ -62,7 +76,10 @@ class SpawnSimulation(object):
         obj_instances_nr = self._obj_names_list.count(obj_name)
         obj_name = obj_name + "_{}".format(obj_instances_nr)
 
-        mesh_name = self._mesh_dir_path + '/' + obj_name[:-2] + '.stl'
+        mesh_name = obj_name[:-2] + '.stl'
+        mesh_directory_name = self._get_file_mesh_directory(mesh_name)
+        if mesh_directory_name is None:
+            raise ValueError
 
         obj_position = [obj_pose.position.x, obj_pose.position.y, obj_pose.position.z]
         obj_orientation = [obj_pose.orientation.w, obj_pose.orientation.x,
@@ -75,7 +92,8 @@ class SpawnSimulation(object):
         # append new body to xml file
         for child in self._base_config_xml.getroot():
             if child.tag == "asset":
-                mesh_tag = xmlTool.SubElement(child, "mesh", {'name': obj_name, 'file': mesh_name})
+                mesh_tag = xmlTool.SubElement(child, "mesh", {'name': obj_name, 'file': mesh_directory_name +
+                                                              '/' + mesh_name})
             if child.tag == "worldbody":
                 body_tag = xmlTool.SubElement(child, "body", {'name': obj_name, 'pos': obj_position_string,
                                                               'quat': obj_orientation_string})
