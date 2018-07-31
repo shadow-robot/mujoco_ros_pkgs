@@ -102,10 +102,11 @@ class SpawnSimulation(object):
             if child.tag == "worldbody":
                 body_tag = xmlTool.SubElement(child, "body", {'name': obj_name, 'pos': obj_position_string,
                                                               'quat': obj_orientation_string})
-                joint_tag = xmlTool.SubElement(body_tag, "freejoint")
+                joint_tag = xmlTool.SubElement(body_tag, "joint", {'type': 'free', 'armature': '0.01'})
                 geom_tag = xmlTool.SubElement(body_tag, "geom", {'type': 'mesh', 'rgba': '0.7 0.7 0.7 1',
                                                                  'mesh': obj_name, 'condim': '4',
-                                                                 'friction': '1.7 0.8 1', 'contype': '1'})
+                                                                 'friction': '1.5 0.5 0.1', 'solimp': '0.99 0.99 0.01',
+                                                                 'solref': '0.01 1', 'contype': '1'})
         self._base_config_xml.write("{}/{}".format(self._xml_config_dir, self._generated_mujoco_env_filename))
 
     def _terminate_sim_service(self, req):
