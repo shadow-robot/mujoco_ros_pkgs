@@ -5,6 +5,7 @@ import pyassimp
 from shape_msgs.msg import Mesh, MeshTriangle
 from geometry_msgs.msg import Point
 
+
 def compare_poses(pose_1, pose_2, epsilon_translation=0.001, epsilon_rotation=0.01):
     poses_equal = True
     if abs(pose_1.position.x - pose_2.position.x) > epsilon_translation or \
