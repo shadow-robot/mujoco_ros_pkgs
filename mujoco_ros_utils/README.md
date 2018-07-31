@@ -20,7 +20,7 @@ This launch file can be called with the following arguments:
 + **base_mujoco_env_filename**: name of the base muojoco file (default loads basic ur10 + hand H environment)
 
 
-This launch file launches the [spawn_simulation](https://github.com/shadow-robot/mujoco_ros_pkgs/blob/F%23SRC-1866_object_spawn_service/mujoco_ros_utils/scripts/spawn_simulation.py) node 
+This launch file launches the [spawn_simulation](https://github.com/shadow-robot/mujoco_ros_pkgs/blob/kinetic-devel/mujoco_ros_utils/scripts/spawn_simulation.py) node 
 which runs two services:
 
 + **/mujoco/spawn_sim_environment**: this service requests an array of objects (msg type [RecognizedObjectsArray](http://docs.ros.org/kinetic/api/object_recognition_msgs/html/msg/RecognizedObjectArray.html)).
@@ -35,7 +35,7 @@ It responds with a boolean returning whether the simulation has been correctly t
 
 ### Client example
 
-An example on how to interact with the spawn_simulation node can be found [here](https://github.com/shadow-robot/mujoco_ros_pkgs/blob/F%23SRC-1866_object_spawn_service/mujoco_ros_utils/scripts/spawn_sim_client_example.py).</br>
+An example on how to interact with the spawn_simulation node can be found [here](https://github.com/shadow-robot/mujoco_ros_pkgs/blob/kinetic-devel/mujoco_ros_utils/scripts/spawn_sim_client_example.py).</br>
 This can be tested by running the following command:
 ```
 ./spawn_sim_client_example.py
@@ -44,7 +44,7 @@ This can be tested by running the following command:
 In this script 2 objects (finger_base_links) are defined with name and pose and pushed to an array of type RecognizedObjectsArray.</br> 
 The request is then sent to the **/mujoco/spawn_sim_environment** service and the simulation is spawned with the objects in the requested pose as shown in the picture below:
 
-![alt text](https://github.com/shadow-robot/mujoco_ros_pkgs/blob/F%23SRC-1866_object_spawn_service/mujoco_ros_utils/spaw_objects_example.png)
+![alt text](https://github.com/shadow-robot/mujoco_ros_pkgs/blob/kinetic-devel/mujoco_ros_utils/spaw_objects_example.png)
 
 
 
