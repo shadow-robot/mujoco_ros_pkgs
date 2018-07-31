@@ -4,10 +4,10 @@ Package containing utilities to use mujoco with ROS
 
 ## Spawn simulation with objects
 
-This utils allows the user to automatically spawn instances of the Mujoco simulation with different objects.
+This utility allows the user to automatically spawn instances of the Mujoco simulation with different objects.
 
 ### Launch
-To start the utils run the following command:
+To start the spawner run the following command:
 
 ```
 roslaunch mujoco_ros_utils simulation_spawner.launch
@@ -15,9 +15,9 @@ roslaunch mujoco_ros_utils simulation_spawner.launch
 
 This launch file can be called with the following arguments:
 
-+ **mesh_directory**: absolute path to the directory containing the meshes of objects that user wants to spawn(default is mujoco_models folder)
-+ **generated_mujoco_env_filename**: name of the generated mujoco file (default is called test.xml)
-+ **base_mujoco_env_filename**: name of the base muojoco file (default loads ur10 + hand H)
++ **mesh_directory**: absolute path to the directory containing the meshes of objects that user wants to spawn (default is mujoco_models folder)
++ **generated_mujoco_env_filename**: name of the generated mujoco file (default is called ur10_fh_environment_with_objects.xml)
++ **base_mujoco_env_filename**: name of the base muojoco file (default loads basic ur10 + hand H environment)
 
 
 This launch file launches the [spawn_simulation](https://github.com/shadow-robot/mujoco_ros_pkgs/blob/F%23SRC-1866_object_spawn_service/mujoco_ros_utils/scripts/spawn_simulation.py) node 
@@ -42,8 +42,7 @@ This can be tested by running the following command:
 ```
 
 In this script 2 objects (finger_base_links) are defined with name and pose and pushed to an array of type RecognizedObjectsArray.</br> 
-The request is then sent to the **/mujoco/spawn_sim_environment** service and the simulation is spawned with the objects in 
-the requested pose as shown in the picture below:
+The request is then sent to the **/mujoco/spawn_sim_environment** service and the simulation is spawned with the objects in the requested pose as shown in the picture below:
 
 ![alt text](https://github.com/shadow-robot/mujoco_ros_pkgs/blob/F%23SRC-1866_object_spawn_service/mujoco_ros_utils/spaw_objects_example.png)
 
