@@ -1,5 +1,5 @@
 <mujoco model="hand_H_robot">
-        <body name="ra_base_link" pos="0 0 0">
+        <body name="ra_base_link" pos="0 0 0.1">
             <inertial pos="0 0 0" quat="0.5 0.5 -0.5 0.5" mass="4" diaginertia="0.01125 0.00610633 0.00610633" />
             <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="base" />
             <body name="ra_shoulder_link" pos="0 0 0.1273">
