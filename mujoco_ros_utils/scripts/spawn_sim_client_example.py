@@ -18,7 +18,7 @@ class SpawnSimClient(object):
 
     def _request_sim(self, request):
         '''
-        Request to spawn simulation
+        Service client that sends request to spawn simulation
         '''
         rospy.wait_for_service("mujoco/spawn_sim_environment", 15)
         try:

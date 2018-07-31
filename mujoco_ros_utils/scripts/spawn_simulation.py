@@ -33,19 +33,23 @@ class SpawnSimulation(object):
         """
         Search for stl file of the object in the mesh directory
         specified by the user
+        @param mesh_name - string
         """
         absolute_mesh_dir_path = rospy.get_param("~mesh_directory", self._xml_config_dir + "/meshes")
         for dir, sub_dirs, files in os.walk(absolute_mesh_dir_path):
             for file in files:
-                if file == mesh_name:
+                if mesh_name == file:
                     rospy.loginfo("Mesh found")
                     mesh_directory_path = os.path.relpath(dir, self._xml_config_dir)
                     return mesh_directory_path
+                else:
+                    pass
 
     def _spawn_sim_environment_service(self, req):
         """
         Service to receive request of spawning mujoco environment
         with list of objects
+        @param req - SpawnObject.srv request RecognizedObjectArray msg
         """
         try:
             for obj in req.objects.objects:
@@ -72,6 +76,8 @@ class SpawnSimulation(object):
     def _append_object_to_xml(self, obj_name, obj_pose):
         """
         Write the xml mujoco file of the requested environment
+        @param obj_name - string
+        @param obj_pose - geometry_msgs/Pose
         """
         obj_instances_nr = self._obj_names_list.count(obj_name)
         obj_name = obj_name + "_{}".format(obj_instances_nr)
