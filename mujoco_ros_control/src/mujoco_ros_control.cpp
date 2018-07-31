@@ -236,6 +236,8 @@ void MujocoRosControl::check_objects_in_scene()
     if (joint_type == 0)
     {
       object_id = mujoco_model->jnt_bodyid[i];
+      int geom_addr = mujoco_model->body_geomadr[object_id];
+      ROS_INFO_STREAM("Object id: " << object_id << ", Object's geom address: " << geom_addr << ", Object_type: " << mujoco_model->geom_type[geom_addr]);
       objects_in_scene_.push_back(object_id);
       ROS_INFO_STREAM("Free object found: " << mj_id2name(mujoco_model, 1, object_id));
     }
