@@ -3,13 +3,12 @@
 import rospy
 import rospkg
 import re
-from shape_msgs.msg import Mesh, MeshTriangle
+
 import argparse
-import pyassimp
-from geometry_msgs.msg import Pose, Point
+from geometry_msgs.msg import Pose
 from moveit_msgs.msg import CollisionObject
 from mujoco_ros_msgs.msg import FreeObjectsStates
-from visualization_msgs.msg import Marker
+from mujoco2rviz.utilities import compare_poses, stl_to_mesh, get_object_mesh_path, get_object_type_from_name
 
 class Mujoco2Marker():
     def __init__(self):
@@ -19,71 +18,41 @@ class Mujoco2Marker():
         self.objects_states_subscriber = rospy.Subscriber('mujoco/free_objects_states', FreeObjectsStates, self.objects_states_cb)
         self.collision_object_publisher = rospy.Publisher('/collision_object', CollisionObject, queue_size=5,
                                                           latch=True)
+        self.publish_objects_to_rviz()
 
     def objects_states_cb(self, objects_states_msg):
+        '''
+
+        '''
         for model_instance_name, model_instance_pose in zip(objects_states_msg.name, objects_states_msg.pose):
             if not model_instance_name in self.model_cache:
                 try:
-                    self.model_cache[model_instance_name] = self.add_new_collision_object(model_instance_name, model_instance_pose)
+                    self.model_cache[model_instance_name] = self.create_collision_object(model_instance_name, model_instance_pose)
+                    rospy.loginfo("Added object {} to rviz".format(model_instance_name))
                 except:
-                    rospy.logwarn("Failed to add new collision object")
+                    rospy.logwarn("Failed to add {} collision object".format(model_instance_name))
 
-            self.collision_object_publisher.publish(self.model_cache[model_instance_name])
+            if not compare_poses(model_instance_pose, self.model_cache[model_instance_name].mesh_poses[0]):
+                object_to_be_temporarily_removed = self.create_collision_object(model_instance_name, model_instance_pose, False)
+                self.collision_object_publisher.publish(object_to_be_temporarily_removed)
+                self.model_cache[model_instance_name].mesh_poses[0] = model_instance_pose
 
-        # self.sdf2moveit.update_collision_object_with_pose(self.model_cache[model_instance_name], model_instance_name, objects_states_msg.pose[model_idx])
+    def publish_objects_to_rviz(self):
+        while not rospy.is_shutdown():
+            for model_instance_name in self.model_cache.keys():
+                self.collision_object_publisher.publish(self.model_cache[model_instance_name])
 
-        # for model_instance_name in list(self.model_cache):
-        #     if model_instance_name not in objects_states_msg.name:
-        #         rospy.loginfo("Object %s deleted from gazebo" % model_instance_name)
-        #         self.sdf2moveit.delete_collision_object(model_instance_name)
-        #         del self.model_cache[model_instance_name]
-
-    def add_new_collision_object(self, model_instance_name, model_pose, add=True):
+    def create_collision_object(self, model_instance_name, model_pose, add=True):
         collision_object = CollisionObject()
         collision_object.header.frame_id = 'world'
         collision_object.id = '{}__link'.format(model_instance_name)
         if add:
-            object_type = self.get_object_type(model_instance_name)
-            object_mesh_path = self.get_object_mesh_path(object_type)
+            object_type = get_object_type_from_name(model_instance_name)
+            object_mesh_path = get_object_mesh_path(object_type, self.description_repo_path)
             collision_object.operation = CollisionObject.ADD
-            object_mesh = self.stl_to_mesh(object_mesh_path)
+            object_mesh = stl_to_mesh(object_mesh_path)
             collision_object.meshes = [object_mesh]
             collision_object.mesh_poses = [model_pose]
         else:
             collision_object.operation = CollisionObject.REMOVE
         return collision_object
-
-    def get_object_mesh_path(self, object_name):
-        return '{}/models/{}/meshes/{}.stl'.format(self.description_repo_path, object_name, object_name)
-
-    def get_object_type(self, object_instance):
-        object_type = re.sub('_[0-9]*$', '', object_instance)
-        object_type = re.sub('@.*$', '', object_type)
-        return object_type
-
-    def stl_to_mesh(self, filename, scale=(1, 1, 1)):
-        mesh = Mesh()
-        scene = pyassimp.load(filename)
-        first_face = scene.meshes[0].faces[0]
-        if hasattr(first_face, '__len__'):
-            for face in scene.meshes[0].faces:
-                if len(face) == 3:
-                    triangle = MeshTriangle()
-                    triangle.vertex_indices = [face[0], face[1], face[2]]
-                    mesh.triangles.append(triangle)
-        elif hasattr(first_face, 'indices'):
-            for face in scene.meshes[0].faces:
-                if len(face.indices) == 3:
-                    triangle = MeshTriangle()
-                    triangle.vertex_indices = [face.indices[0], face.indices[1], face.indices[2]]
-                    mesh.triangles.append(triangle)
-        else:
-            raise MoveItCommanderException("Unable to build triangles from mesh due to mesh object structure")
-        for vertex in scene.meshes[0].vertices:
-            point = Point()
-            point.x = vertex[0] * scale[0]
-            point.y = vertex[1] * scale[1]
-            point.z = vertex[2] * scale[2]
-            mesh.vertices.append(point)
-        pyassimp.release(scene)
-        return mesh
