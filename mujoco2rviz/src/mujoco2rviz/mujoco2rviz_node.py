@@ -19,34 +19,32 @@ class Mujoco2Rviz():
         self.collision_object_publisher = rospy.Publisher('/collision_object', CollisionObject, queue_size=5,
                                                           latch=True)
 
-        self.pose = Pose()
-        self.pose.position.x = 0.5
-        self.pose.position.y = 0.5
-        self.pose.position.z = 0.5
-        self.pose.orientation.x = 0
-        self.pose.orientation.y = 0
-        self.pose.orientation.z = 0
-        self.pose.orientation.w = 1
-
         self.publish_objects_to_rviz()
 
     def objects_states_cb(self, objects_states_msg):
-        # create collision object if name is not present in model_cache
-        for model_instance_name, model_instance_pose in zip(objects_states_msg.name, objects_states_msg.pose):
-            if model_instance_name == 'box':
-                self.model_cache[model_instance_name] = self.create_collision_object_from_primitive(model_instance_name, self.pose, 'box', [0.1, 0.1, 0.1])
-            # if not model_instance_name in self.model_cache:
-            #     try:
-            #         self.model_cache[model_instance_name] = self.create_collision_object_from_mesh(model_instance_name, model_instance_pose)
-            #         rospy.loginfo("Added object {} to rviz".format(model_instance_name))
-            #     except:
-            #         rospy.logwarn("Failed to add {} collision object".format(model_instance_name))
+        for model_idx, model_instance_name in enumerate(objects_states_msg.name):
+            # create collision object if name is not present in model_cache
+            if not model_instance_name in self.model_cache:
+                try:
+                    if 'mesh' == objects_states_msg.type[model_idx]:
+                        self.model_cache[model_instance_name] = self.create_collision_object_from_mesh(model_instance_name, objects_states_msg.pose[model_idx])
+                    else:
+                        self.model_cache[model_instance_name] = self.create_collision_object_from_primitive(model_instance_name, objects_states_msg.pose[model_idx], objects_states_msg.type[model_idx], objects_states_msg.size[model_idx].data)
+                    rospy.loginfo("Added object {} to rviz".format(model_instance_name))
+                except:
+                    rospy.logwarn("Failed to add {} collision object".format(model_instance_name))
 
-            # # check if model moved, temporarily remove it from scene and update pose in model_cache
-            # if not compare_poses(model_instance_pose, self.model_cache[model_instance_name].mesh_poses[0]):
-            #     object_to_be_temporarily_removed = self.create_collision_object_from_mesh(model_instance_name, model_instance_pose, False)
-            #     self.collision_object_publisher.publish(object_to_be_temporarily_removed)
-            #     self.model_cache[model_instance_name].mesh_poses[0] = model_instance_pose
+            # check if mjodel moved, temporarily remove it from scene and update pose in model_cache
+            if 'mesh' == objects_states_msg.type[model_idx]:
+                if not compare_poses(objects_states_msg.pose[model_idx], self.model_cache[model_instance_name].mesh_poses[0]):
+                    object_to_be_temporarily_removed = self.create_collision_object_from_mesh(model_instance_name, objects_states_msg.pose[model_idx], False)
+                    self.collision_object_publisher.publish(object_to_be_temporarily_removed)
+                    self.model_cache[model_instance_name].mesh_poses[0] = objects_states_msg.pose[model_idx]
+            else:
+                if not compare_poses(objects_states_msg.pose[model_idx], self.model_cache[model_instance_name].primitive_poses[0]):
+                    object_to_be_temporarily_removed = self.create_collision_object_from_primitive(model_instance_name, objects_states_msg.pose[model_idx], objects_states_msg.type[model_idx], objects_states_msg.size[model_idx].data, False)
+                    self.collision_object_publisher.publish(object_to_be_temporarily_removed)
+                    self.model_cache[model_instance_name].primitive_poses[0] = objects_states_msg.pose[model_idx]
 
     def publish_objects_to_rviz(self):
         while not rospy.is_shutdown():
@@ -75,15 +73,19 @@ class Mujoco2Rviz():
         collision_object.id = '{}__link'.format(model_instance_name)
         if add:
             collision_object.operation = CollisionObject.ADD
+            if 'box' == type:
+                primitive.type = SolidPrimitive.BOX
+                primitive.dimensions = [i * 2 for i in size]
+            elif 'cylinder' == type:
+                primitive.type = SolidPrimitive.CYLINDER
+                primitive.dimensions = [size[1] * 2, size[0]]
+            elif 'sphere' == type:
+                primitive.type = SolidPrimitive.SPHERE
+                primitive.dimensions = [size[0]]
+            collision_object.primitives.append(primitive)
+            collision_object.primitive_poses.append(model_pose)
         else:
             collision_object.operation = CollisionObject.REMOVE
-
-        if 'box' == type:
-            primitive.type = SolidPrimitive.BOX
-            primitive.dimensions = size
-
-        collision_object.primitives.append(primitive)
-        collision_object.primitive_poses.append(model_pose)
         return collision_object
 
 if __name__ == '__main__':

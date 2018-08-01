@@ -47,7 +47,7 @@ class SpawnSimClient(object):
         rec_object_2 = RecognizedObject()
         rec_object_2.type.key = "utl5_large"
         rec_object_2.pose.pose.pose.position.x = 0.3
-        rec_object_2.pose.pose.pose.position.y = 1
+        rec_object_2.pose.pose.pose.position.y = 0.7
         rec_object_2.pose.pose.pose.position.z = 0.001
         rec_object_2.pose.pose.pose.orientation.x = 0
         rec_object_2.pose.pose.pose.orientation.y = 0
