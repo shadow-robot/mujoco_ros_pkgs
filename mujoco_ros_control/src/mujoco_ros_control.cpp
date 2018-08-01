@@ -237,7 +237,11 @@ void MujocoRosControl::check_objects_in_scene()
     {
       object_id = mujoco_model->jnt_bodyid[i];
       int geom_addr = mujoco_model->body_geomadr[object_id];
-      ROS_INFO_STREAM("Object id: " << object_id << ", Object's geom address: " << geom_addr << ", Object_type: " << mujoco_model->geom_type[geom_addr]);
+      double geom_size = mujoco_model->geom_size[3 * geom_addr];
+      double geom_size_2 = mujoco_model->geom_size[3 * geom_addr + 1];
+      double geom_size_3 = mujoco_model->geom_size[3 * geom_addr + 2];
+      ROS_INFO_STREAM("Object_type: " << mujoco_model->geom_type[geom_addr] <<
+                      ", object size: " << geom_size << ", object size 2: " << geom_size_2 << ", object size 3: " << geom_size_3);
       objects_in_scene_.push_back(object_id);
       ROS_INFO_STREAM("Free object found: " << mj_id2name(mujoco_model, 1, object_id));
     }
