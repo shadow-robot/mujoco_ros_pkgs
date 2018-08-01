@@ -4,6 +4,7 @@ project(mujoco_ros_msgs)
 set(MSG_DEPS
   std_msgs
   geometry_msgs
+  object_recognition_msgs
 )
 
 find_package(catkin REQUIRED COMPONENTS roslib genmsg message_generation ${MSG_DEPS})
@@ -11,6 +12,11 @@ find_package(catkin REQUIRED COMPONENTS roslib genmsg message_generation ${MSG_D
 add_message_files(
   FILES
   FreeObjectsStates.msg
+)
+
+add_service_files(
+  FILES
+  SpawnObjects.srv
 )
 
 generate_messages(DEPENDENCIES ${MSG_DEPS})

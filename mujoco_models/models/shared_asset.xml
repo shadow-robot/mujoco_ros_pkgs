@@ -1,0 +1,30 @@
+<mujoco>
+    <texture type="skybox" builtin="gradient" width="128" height="128" rgb1=".4 .6 .8" 
+        rgb2="0 0 0"/>  
+    <texture name="texgeom" type="cube" builtin="flat" mark="cross" width="127" height="1278" 
+        rgb1="0.8 0.6 0.4" rgb2="0.8 0.6 0.4" markrgb="1 1 1" random="0.01"/>  
+    <texture name="texplane" type="2d" builtin="checker" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" 
+        width="512" height="512"/>  
+    <material name='mat_plane' reflectance='0.3' texture="texplane" texrepeat="1 1" texuniform="true"/>
+    <material name="block_mat" specular="0" shininess="0.5" reflectance="0" rgba="0.2 0.2 0.2 1"></material>
+    <material name='geom' texture="texgeom" texuniform="true"/>
+    <mesh name="base" file="meshes/arm_and_hand_meshes/base.stl" />
+    <mesh name="shoulder" file="meshes/arm_and_hand_meshes/shoulder.stl" />
+    <mesh name="upperarm_body_link" file="meshes/arm_and_hand_meshes/upperarm_body.stl" />
+    <mesh name="upperarm_bottom_link" file="meshes/arm_and_hand_meshes/upperarm_bottom_link.stl" />
+    <mesh name="upperarm_top_link" file="meshes/arm_and_hand_meshes/upperarm_top_link.stl" />
+    <mesh name="forearm_body_link" file="meshes/arm_and_hand_meshes/forearm_body_link.stl" />
+    <mesh name="forearm_bottom_link" file="meshes/arm_and_hand_meshes/forearm_bottom_link.stl" />
+    <mesh name="forearm_top_link" file="meshes/arm_and_hand_meshes/forearm_top_link.stl" />
+    <mesh name="wrist1_link" file="meshes/arm_and_hand_meshes/wrist1_link.stl" />
+    <mesh name="wrist1_base" file="meshes/arm_and_hand_meshes/wrist1_base.stl" />
+    <mesh name="wrist2_link" file="meshes/arm_and_hand_meshes/wrist2_link.stl" />
+    <mesh name="wrist2_base" file="meshes/arm_and_hand_meshes/wrist2_base.stl" />
+    <mesh name="wrist3" file="meshes/arm_and_hand_meshes/wrist3.stl" />
+    <mesh name="mount_link_50_4_M6_col" file="meshes/arm_and_hand_meshes/mount_link_50_4_M6.stl" />
+    <mesh name="palm_link_col" file="meshes/arm_and_hand_meshes/palm_link.stl" />
+    <mesh name="finger_base_back_link" file="meshes/arm_and_hand_meshes/finger_base_back_link.stl" />
+    <mesh name="finger_base_front_link" file="meshes/arm_and_hand_meshes/finger_base_front_link.stl" />
+    <mesh name="finger_prox_link_col" file="meshes/arm_and_hand_meshes/finger_prox_link.stl" />
+    <mesh name="finger_dist_link" file="meshes/arm_and_hand_meshes/finger_dist_link.stl" />
+</mujoco>

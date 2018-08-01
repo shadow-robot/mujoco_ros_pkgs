@@ -1,5 +1,5 @@
 <mujoco>
-    <compiler angle="radian" inertiafromgeom="true" coordinate="local" meshdir="meshes/visual/"></compiler>
+    <compiler angle="radian" inertiafromgeom="true" coordinate="local" meshdir=""></compiler>
 
     <visual>
         <map fogstart="3" fogend="5" force="0.1" znear="0.5"/>
