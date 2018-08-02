@@ -33,12 +33,12 @@ class Mujoco2Rviz():
             # check if model moved, temporarily remove it from scene and update pose in model_cache
             if 'mesh' == objects_states_msg.type[model_idx]:
                 if not compare_poses(objects_states_msg.pose[model_idx], self.model_cache[model_instance_name].mesh_poses[0]):
-                    self.remove_object_from_scene(model_instance_name)
                     self.model_cache[model_instance_name].mesh_poses[0] = objects_states_msg.pose[model_idx]
+                    self.model_cache[model_instance_name].operation = CollisionObject.MOVE
             else:
                 if not compare_poses(objects_states_msg.pose[model_idx], self.model_cache[model_instance_name].primitive_poses[0]):
-                    self.remove_object_from_scene(model_instance_name)
                     self.model_cache[model_instance_name].primitive_poses[0] = objects_states_msg.pose[model_idx]
+                    self.model_cache[model_instance_name].operation = CollisionObject.MOVE
 
     def publish_objects_to_rviz(self):
         while not rospy.is_shutdown():
@@ -84,21 +84,13 @@ class Mujoco2Rviz():
         collision_object.primitive_poses.append(model_pose)
         return collision_object
 
-    def create_collision_object_base(self, model_instance_name, operation='add'):
+    def create_collision_object_base(self, model_instance_name):
         collision_object = CollisionObject()
+        collision_object.header.frame_id = 'world'
         collision_object.id = '{}__link'.format(model_instance_name)
-        if 'add' == operation:
-            collision_object.operation = CollisionObject.ADD
-        elif 'remove' == operation:
-            collision_object.operation = CollisionObject.REMOVE
-        else:
-            rospy.logerr("Operation {} not available".format(operation))
-            return None
+        collision_object.operation = CollisionObject.ADD
         return collision_object
 
-    def remove_object_from_scene(self, model_instance_name):
-        object_to_be_removed = self.create_collision_object_base(model_instance_name, 'remove')
-        self.collision_object_publisher.publish(object_to_be_removed)
 
 if __name__ == '__main__':
     rospy.init_node('mujoco_to_rviz', anonymous=True)
