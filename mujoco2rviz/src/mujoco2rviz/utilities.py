@@ -52,6 +52,5 @@ def get_object_name_from_instance(object_instance):
     object_type = re.sub('@.*$', '', object_type)
     return object_type
 
-
 def get_object_mesh_path(object_name, description_repo_path):
     return '{}/models/{}/meshes/{}.stl'.format(description_repo_path, object_name, object_name)
