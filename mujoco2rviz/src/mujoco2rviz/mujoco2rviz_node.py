@@ -18,7 +18,8 @@ class Mujoco2Rviz():
         self.model_cache = {}
         self.description_repo_path = rospy.get_param('~description_repo_path',
                                                      rospkg.RosPack().get_path('sr_description_common'))
-        self.objects_states_subscriber = rospy.Subscriber('mujoco/free_objects_states', FreeObjectsStates, self.objects_states_cb)
+        self.objects_states_subscriber = rospy.Subscriber('mujoco/free_objects_states', FreeObjectsStates,
+                                                          self.objects_states_cb)
         self.collision_object_publisher = rospy.Publisher('/collision_object', CollisionObject, queue_size=5,
                                                           latch=True)
         self.publish_objects_to_rviz()
@@ -26,20 +27,23 @@ class Mujoco2Rviz():
     def objects_states_cb(self, objects_states_msg):
         for model_idx, model_instance_name in enumerate(objects_states_msg.name):
             # create collision object if name is not present in model_cache
-            if not model_instance_name in self.model_cache:
+            if model_instance_name not in self.model_cache:
                 try:
-                    self.model_cache[model_instance_name] = self.create_collision_object_from_mujoco_msg(objects_states_msg, model_idx)
+                    self.model_cache[model_instance_name] = self.create_collision_object_from_msg(objects_states_msg,
+                                                                                                         model_idx)
                     rospy.loginfo("Added object {} to rviz".format(model_instance_name))
                 except:
                     rospy.logwarn("Failed to add {} collision object".format(model_instance_name))
 
             # check if model moved, if true update pose in model_cache
             if 'mesh' == objects_states_msg.type[model_idx]:
-                if not compare_poses(objects_states_msg.pose[model_idx], self.model_cache[model_instance_name].mesh_poses[0]):
+                if not compare_poses(objects_states_msg.pose[model_idx],
+                                     self.model_cache[model_instance_name].mesh_poses[0]):
                     self.model_cache[model_instance_name].operation = CollisionObject.MOVE
                     self.model_cache[model_instance_name].mesh_poses[0] = objects_states_msg.pose[model_idx]
             else:
-                if not compare_poses(objects_states_msg.pose[model_idx], self.model_cache[model_instance_name].primitive_poses[0]):
+                if not compare_poses(objects_states_msg.pose[model_idx],
+                                     self.model_cache[model_instance_name].primitive_poses[0]):
                     self.model_cache[model_instance_name].operation = CollisionObject.MOVE
                     self.model_cache[model_instance_name].primitive_poses[0] = objects_states_msg.pose[model_idx]
 
@@ -48,7 +52,7 @@ class Mujoco2Rviz():
             for model_instance_name in self.model_cache.keys():
                 self.collision_object_publisher.publish(self.model_cache[model_instance_name])
 
-    def create_collision_object_from_mujoco_msg(self, message, model_idx):
+    def create_collision_object_from_msg(self, message, model_idx):
         if 'mesh' == message.type[model_idx]:
             collision_object = self.create_collision_object_from_mesh(message.name[model_idx],
                                                                       message.pose[model_idx])
@@ -101,4 +105,3 @@ class Mujoco2Rviz():
 if __name__ == '__main__':
     rospy.init_node('mujoco_to_rviz', anonymous=True)
     m2m = Mujoco2Rviz()
-    

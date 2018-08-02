@@ -213,7 +213,7 @@ bool MujocoRosControl::parse_transmissions(const std::string& urdf_string)
 std::string MujocoRosControl::geom_type_to_string(int geom_type)
 {
   std::string result;
-  switch(geom_type)
+  switch (geom_type)
   {
     case 0 :
       result = "plane";

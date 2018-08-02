@@ -14,12 +14,12 @@ from geometry_msgs.msg import Point
 def compare_poses(pose_1, pose_2, epsilon_translation=0.001, epsilon_rotation=0.01):
     poses_equal = True
     if abs(pose_1.position.x - pose_2.position.x) > epsilon_translation or \
-        abs(pose_1.position.y - pose_2.position.y) > epsilon_translation or \
-        abs(pose_1.position.z - pose_2.position.z) > epsilon_translation or \
-        abs(pose_1.orientation.x - pose_2.orientation.x) > epsilon_rotation or \
-        abs(pose_1.orientation.y - pose_2.orientation.y) > epsilon_rotation or \
-        abs(pose_1.orientation.z - pose_2.orientation.z) > epsilon_rotation or \
-        abs(pose_1.orientation.w - pose_2.orientation.w) > epsilon_rotation:
+       abs(pose_1.position.y - pose_2.position.y) > epsilon_translation or \
+       abs(pose_1.position.z - pose_2.position.z) > epsilon_translation or \
+       abs(pose_1.orientation.x - pose_2.orientation.x) > epsilon_rotation or \
+       abs(pose_1.orientation.y - pose_2.orientation.y) > epsilon_rotation or \
+       abs(pose_1.orientation.z - pose_2.orientation.z) > epsilon_rotation or \
+       abs(pose_1.orientation.w - pose_2.orientation.w) > epsilon_rotation:
         poses_equal = False
     return poses_equal
 
@@ -56,6 +56,7 @@ def get_object_name_from_instance(object_instance):
     object_type = re.sub('_[0-9]*$', '', object_instance)
     object_type = re.sub('@.*$', '', object_type)
     return object_type
+
 
 def get_object_mesh_path(object_name, description_repo_path):
     file_name = '{}.stl'.format(object_name)
