@@ -1,6 +1,5 @@
 <launch>
     <arg name="description_repo_path" default="$(find sr_utl5)"/>
-
     <node name="mujoco2rviz" pkg="mujoco2rviz" type="mujoco2rviz_node.py" output="screen">
         <param name="description_repo_path" value="$(arg description_repo_path)"/>
     </node>

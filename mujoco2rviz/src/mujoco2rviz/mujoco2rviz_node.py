@@ -7,7 +7,7 @@ from geometry_msgs.msg import Pose
 from moveit_msgs.msg import CollisionObject
 from mujoco_ros_msgs.msg import FreeObjectsStates
 from shape_msgs.msg import SolidPrimitive
-from mujoco2rviz.utilities import compare_poses, stl_to_mesh, get_object_mesh_path, get_object_type_from_name
+from mujoco2rviz.utilities import compare_poses, stl_to_mesh, get_object_mesh_path, get_object_name_from_instance
 
 
 class Mujoco2Rviz():
@@ -25,10 +25,7 @@ class Mujoco2Rviz():
             # create collision object if name is not present in model_cache
             if not model_instance_name in self.model_cache:
                 try:
-                    if 'mesh' == objects_states_msg.type[model_idx]:
-                        self.model_cache[model_instance_name] = self.create_collision_object_from_mesh(model_instance_name, objects_states_msg.pose[model_idx])
-                    else:
-                        self.model_cache[model_instance_name] = self.create_collision_object_from_primitive(model_instance_name, objects_states_msg.pose[model_idx], objects_states_msg.type[model_idx], objects_states_msg.size[model_idx].data)
+                    self.model_cache[model_instance_name] = self.create_collision_object_from_mujoco_msg(objects_states_msg, model_idx)
                     rospy.loginfo("Added object {} to rviz".format(model_instance_name))
                 except:
                     rospy.logwarn("Failed to add {} collision object".format(model_instance_name))
@@ -48,47 +45,62 @@ class Mujoco2Rviz():
             for model_instance_name in self.model_cache.keys():
                 self.collision_object_publisher.publish(self.model_cache[model_instance_name])
 
+    def create_collision_object_from_mujoco_msg(self, message, model_idx):
+        if 'mesh' == message.type[model_idx]:
+            collision_object = self.create_collision_object_from_mesh(message.name[model_idx],
+                                                                      message.pose[model_idx])
+        else:
+            collision_object = self.create_collision_object_from_primitive(message.name[model_idx],
+                                                                           message.pose[model_idx],
+                                                                           message.type[model_idx],
+                                                                           message.size[model_idx].data)
+        return collision_object
+
     def create_collision_object_from_mesh(self, model_instance_name, model_pose):
-        collision_object = CollisionObject()
-        collision_object.header.frame_id = 'world'
-        collision_object.id = '{}__link'.format(model_instance_name)
-        object_type = get_object_type_from_name(model_instance_name)
+        collision_object = self.create_collision_object_base(model_instance_name)
+        object_type = get_object_name_from_instance(model_instance_name)
         object_mesh_path = get_object_mesh_path(object_type, self.description_repo_path)
-        collision_object.operation = CollisionObject.ADD
         object_mesh = stl_to_mesh(object_mesh_path)
         collision_object.meshes = [object_mesh]
         collision_object.mesh_poses = [model_pose]
         return collision_object
 
-    def create_collision_object_from_primitive(self, model_instance_name, model_pose, type, size):
-        collision_object = CollisionObject()
+    def create_collision_object_from_primitive(self, model_instance_name, model_pose, model_type, size):
+        collision_object = self.create_collision_object_base(model_instance_name)
         primitive = SolidPrimitive()
-        collision_object.header.frame_id = 'world'
-        collision_object.id = '{}__link'.format(model_instance_name)
-        collision_object.operation = CollisionObject.ADD
-        if 'box' == type:
+        if 'box' == model_type:
             primitive.type = SolidPrimitive.BOX
             primitive.dimensions = [i * 2 for i in size]
-        elif 'cylinder' == type:
+        elif 'cylinder' == model_type:
             primitive.type = SolidPrimitive.CYLINDER
             primitive.dimensions = [size[1] * 2, size[0]]
-        elif 'sphere' == type:
+        elif 'sphere' == model_type:
             primitive.type = SolidPrimitive.SPHERE
             primitive.dimensions = [size[0]]
+        else:
+            rospy.logerr("Primitive type {} not supported".format(model_type))
+            return None
         collision_object.primitives.append(primitive)
         collision_object.primitive_poses.append(model_pose)
         return collision_object
 
-    def create_collision_object_to_remove(self, model_instance_name):
+    def create_collision_object_base(self, model_instance_name, operation='add'):
         collision_object = CollisionObject()
         collision_object.id = '{}__link'.format(model_instance_name)
-        collision_object.operation = CollisionObject.REMOVE
+        if 'add' == operation:
+            collision_object.operation = CollisionObject.ADD
+        elif 'remove' == operation:
+            collision_object.operation = CollisionObject.REMOVE
+        else:
+            rospy.logerr("Operation {} not available".format(operation))
+            return None
         return collision_object
 
     def remove_object_from_scene(self, model_instance_name):
-        object_to_be_removed = self.create_collision_object_to_remove(model_instance_name)
+        object_to_be_removed = self.create_collision_object_base(model_instance_name, 'remove')
         self.collision_object_publisher.publish(object_to_be_removed)
 
 if __name__ == '__main__':
     rospy.init_node('mujoco_to_rviz', anonymous=True)
     m2m = Mujoco2Rviz()
+    

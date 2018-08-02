@@ -47,7 +47,7 @@ def stl_to_mesh(filename, scale=(1, 1, 1)):
     return mesh
 
 
-def get_object_type_from_name(object_instance):
+def get_object_name_from_instance(object_instance):
     object_type = re.sub('_[0-9]*$', '', object_instance)
     object_type = re.sub('@.*$', '', object_type)
     return object_type
