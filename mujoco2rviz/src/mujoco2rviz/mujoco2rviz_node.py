@@ -30,15 +30,15 @@ class Mujoco2Rviz():
                 except:
                     rospy.logwarn("Failed to add {} collision object".format(model_instance_name))
 
-            # check if model moved, temporarily remove it from scene and update pose in model_cache
+            # check if model moved, if true update pose in model_cache
             if 'mesh' == objects_states_msg.type[model_idx]:
                 if not compare_poses(objects_states_msg.pose[model_idx], self.model_cache[model_instance_name].mesh_poses[0]):
-                    self.model_cache[model_instance_name].mesh_poses[0] = objects_states_msg.pose[model_idx]
                     self.model_cache[model_instance_name].operation = CollisionObject.MOVE
+                    self.model_cache[model_instance_name].mesh_poses[0] = objects_states_msg.pose[model_idx]
             else:
                 if not compare_poses(objects_states_msg.pose[model_idx], self.model_cache[model_instance_name].primitive_poses[0]):
-                    self.model_cache[model_instance_name].primitive_poses[0] = objects_states_msg.pose[model_idx]
                     self.model_cache[model_instance_name].operation = CollisionObject.MOVE
+                    self.model_cache[model_instance_name].primitive_poses[0] = objects_states_msg.pose[model_idx]
 
     def publish_objects_to_rviz(self):
         while not rospy.is_shutdown():
