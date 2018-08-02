@@ -19,7 +19,6 @@ class SpawnSimulation(object):
     """
 
     def __init__(self):
-
         self._xml_config_dir = rospkg.RosPack().get_path("mujoco_models") + "/models"
         base_mujoco_env_filename = rospy.get_param("~base_mujoco_env_filename", "ur10_fh_environment.xml")
         self._generated_mujoco_env_filename = rospy.get_param("~generated_mujoco_env_filename", "test.xml")
@@ -33,19 +32,23 @@ class SpawnSimulation(object):
         """
         Search for stl file of the object in the mesh directory
         specified by the user
+        @param mesh_name - string
         """
         absolute_mesh_dir_path = rospy.get_param("~mesh_directory", self._xml_config_dir + "/meshes")
         for dir, sub_dirs, files in os.walk(absolute_mesh_dir_path):
             for file in files:
-                if file == mesh_name:
+                if mesh_name == file:
                     rospy.loginfo("Mesh found")
                     mesh_directory_path = os.path.relpath(dir, self._xml_config_dir)
                     return mesh_directory_path
+                else:
+                    pass
 
     def _spawn_sim_environment_service(self, req):
         """
         Service to receive request of spawning mujoco environment
         with list of objects
+        @param req - SpawnObject.srv request RecognizedObjectArray msg
         """
         try:
             for obj in req.objects.objects:
@@ -72,6 +75,8 @@ class SpawnSimulation(object):
     def _append_object_to_xml(self, obj_name, obj_pose):
         """
         Write the xml mujoco file of the requested environment
+        @param obj_name - string
+        @param obj_pose - geometry_msgs/Pose
         """
         obj_instances_nr = self._obj_names_list.count(obj_name)
         obj_name = obj_name + "_{}".format(obj_instances_nr)
@@ -97,10 +102,11 @@ class SpawnSimulation(object):
             if child.tag == "worldbody":
                 body_tag = xmlTool.SubElement(child, "body", {'name': obj_name, 'pos': obj_position_string,
                                                               'quat': obj_orientation_string})
-                joint_tag = xmlTool.SubElement(body_tag, "freejoint")
+                joint_tag = xmlTool.SubElement(body_tag, "joint", {'type': 'free', 'armature': '0.01'})
                 geom_tag = xmlTool.SubElement(body_tag, "geom", {'type': 'mesh', 'rgba': '0.7 0.7 0.7 1',
                                                                  'mesh': obj_name, 'condim': '4',
-                                                                 'friction': '1.7 0.8 1', 'contype': '1'})
+                                                                 'friction': '1.5 0.5 0.1', 'solimp': '0.99 0.99 0.01',
+                                                                 'solref': '0.01 1', 'contype': '1'})
         self._base_config_xml.write("{}/{}".format(self._xml_config_dir, self._generated_mujoco_env_filename))
 
     def _terminate_sim_service(self, req):
