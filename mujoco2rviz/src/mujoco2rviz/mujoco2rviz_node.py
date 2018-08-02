@@ -60,7 +60,10 @@ class Mujoco2Rviz():
         collision_object = self.create_collision_object_base(model_instance_name)
         object_type = get_object_name_from_instance(model_instance_name)
         object_mesh_path = get_object_mesh_path(object_type, self.description_repo_path)
-        object_mesh = stl_to_mesh(object_mesh_path)
+        try:
+            object_mesh = stl_to_mesh(object_mesh_path)
+        except:
+            rospy.logwarn("Failed to transform mesh")
         collision_object.meshes = [object_mesh]
         collision_object.mesh_poses = [model_pose]
         return collision_object
