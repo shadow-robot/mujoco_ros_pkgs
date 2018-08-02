@@ -30,7 +30,7 @@ class Mujoco2Rviz():
             if model_instance_name not in self.model_cache:
                 try:
                     self.model_cache[model_instance_name] = self.create_collision_object_from_msg(objects_states_msg,
-                                                                                                         model_idx)
+                                                                                                  model_idx)
                     rospy.loginfo("Added object {} to rviz".format(model_instance_name))
                 except:
                     rospy.logwarn("Failed to add {} collision object".format(model_instance_name))
