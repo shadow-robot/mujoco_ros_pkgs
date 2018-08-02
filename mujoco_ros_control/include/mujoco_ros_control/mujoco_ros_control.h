@@ -72,6 +72,9 @@ protected:
   // get the URDF XML from the parameter server
   std::string get_urdf(std::string param_name) const;
 
+  // setup initial sim environment
+  void setup_sim_environment(float initial_pos[]);
+
   // parse transmissions from URDF
   bool parse_transmissions(const std::string& urdf_string);
 

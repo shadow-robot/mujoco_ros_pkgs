@@ -27,7 +27,6 @@ MujocoRosControl::~MujocoRosControl()
 
   // deallocate existing mjData
   mj_deleteData(mujoco_data);
-
   mj_deactivate();
 }
 
@@ -134,7 +133,25 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     }
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 
-    mj_resetData(mujoco_model, mujoco_data);
+    // home pose of the arm
+    float initial_robot_qpos_[] = {0.8, -1.726, 1.347, -1.195, -1.584, 1.830, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    // set up the initial simulation environment
+    setup_sim_environment(initial_robot_qpos_);
+}
+
+void MujocoRosControl::setup_sim_environment(float initial_robot_qpos[])
+{
+  for (int i=0; i < n_dof_-objects_in_scene_.size(); i++)
+  {
+    mujoco_data->qpos[i] = initial_robot_qpos[i];
+  }
+
+  // compute forward kinematics for new pos
+  mj_forward(mujoco_model, mujoco_data);
+
+  // run simulation to setup the new pos
+  mj_step(mujoco_model, mujoco_data);
 }
 
 void MujocoRosControl::update()
@@ -167,6 +184,7 @@ void MujocoRosControl::update()
   robot_hw_sim_->write(sim_time_ros, sim_time_ros - last_write_sim_time_ros_);
 
   last_write_sim_time_ros_ = sim_time_ros;
+
   mj_step2(mujoco_model, mujoco_data);
 
   publish_objects_in_scene();
@@ -219,7 +237,7 @@ void MujocoRosControl::publish_sim_time()
   ros::Time current_time = (ros::Time)mujoco_data->time;
   rosgraph_msgs::Clock ros_time_;
   ros_time_.clock.fromSec(current_time.toSec());
-  //  publish time to ros
+  // publish time to ros
   last_pub_clock_time_ = sim_time;
   pub_clock_.publish(ros_time_);
 }
@@ -295,22 +313,6 @@ int main(int argc, char** argv)
     // spin
     ros::AsyncSpinner spinner(1);
     spinner.start();
-
-    // let everything settle
-    while (mujoco_ros_control.mujoco_data->time < 50)
-    {
-      mj_step1(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
-      for (int i=0; i < mujoco_ros_control.n_dof_-mujoco_ros_control.objects_in_scene_.size(); i++)
-      {
-        mujoco_ros_control.mujoco_data->ctrl[i] = mujoco_ros_control.mujoco_data->qfrc_bias[i];
-      }
-      mj_step2(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
-    }
-
-    for (int i=0; i < mujoco_ros_control.n_dof_ - mujoco_ros_control.objects_in_scene_.size(); i++)
-    {
-      mujoco_ros_control.mujoco_data->qpos[i] = 0;
-    }
 
     // run main loop, target real-time simulation and 60 fps rendering
     while ( !glfwWindowShouldClose(window) )
