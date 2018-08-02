@@ -184,7 +184,6 @@ void MujocoRosControl::update()
   robot_hw_sim_->write(sim_time_ros, sim_time_ros - last_write_sim_time_ros_);
 
   last_write_sim_time_ros_ = sim_time_ros;
-
   mj_step2(mujoco_model, mujoco_data);
 
   publish_objects_in_scene();
