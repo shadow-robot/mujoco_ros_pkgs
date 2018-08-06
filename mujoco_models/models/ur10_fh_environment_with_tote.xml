@@ -1,0 +1,27 @@
+<mujoco>
+	<include file="shared_options.xml" />
+    <asset>
+        <include file="shared_asset.xml" />
+        <mesh file="../../../../../base_deps/src/common_resources/sr_description_common/models/tote/mujoco_meshes/tote_left_large.stl" name="tote_left_large"/>
+        <mesh file="../../../../../base_deps/src/common_resources/sr_description_common/models/tote/mujoco_meshes/tote_front_small.stl" name="tote_front_small" />
+        <mesh file="../../../../../base_deps/src/common_resources/sr_description_common/models/tote/mujoco_meshes/tote_back_small.stl" name="tote_back_small" />
+        <mesh file="../../../../../base_deps/src/common_resources/sr_description_common/models/tote/mujoco_meshes/tote_right_large.stl" name="tote_right_large" />
+        <mesh file="../../../../../base_deps/src/common_resources/sr_description_common/models/tote/mujoco_meshes/tote_base.stl" name="tote_base" />
+    </asset>
+	<worldbody>
+        <geom condim="3" material="mat_plane" name="floor" pos="0 0 0" size="5 5 .125" type="plane" />
+        <body name="floor" pos="0 0 0" />
+        
+        <body name="tote" pos="-0.7 0.7 0">
+          <geom type="mesh" mesh="tote_left_large" />
+          <geom type="mesh" mesh="tote_right_large" />
+          <geom type="mesh" mesh="tote_back_small" />
+          <geom type="mesh" mesh="tote_front_small" />
+          <geom type="mesh" mesh="tote_base"/>
+        </body>
+
+        <include file="robot_ur10_fh_model.xml" />
+     
+		<light ambient="0.2 0.2 0.2" castshadow="false" diffuse="0.8 0.8 0.8" dir="0 0 -1" directional="true" name="light0" pos="0 0 4" specular="0.3 0.3 0.3" />
+    </worldbody>
+</mujoco>

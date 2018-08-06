@@ -35,6 +35,7 @@ class SpawnSimulation(object):
         @param mesh_name - string
         """
         absolute_mesh_dir_path = rospy.get_param("~mesh_directory", self._xml_config_dir + "/meshes")
+        rospy.loginfo("Looking for mesh in path {}".format(absolute_mesh_dir_path))
         for dir, sub_dirs, files in os.walk(absolute_mesh_dir_path):
             for file in files:
                 if mesh_name == file:
@@ -55,12 +56,12 @@ class SpawnSimulation(object):
                 self._obj_names_list.append(obj.type.key)
                 self._append_object_to_xml(obj.type.key, obj.pose.pose.pose)
         except ValueError:
-            rospy.logerr("Could not load sim objects, mesh not found")
+            rospy.logerr("Could not load objects")
         else:
             rospy.loginfo("Starting simulation..")
             try:
                 process = subprocess.Popen(['xterm -e roslaunch fh_robot_launch fh_ur10_and_fh2_mujoco.launch sim:=true \
-                                            grasp_controller:=true robot_model_path:={}/{}'.format(self._xml_config_dir,
+                                            grasp_controller:=true scene:=true scene_file:="$(find mujoco_models)/mujoco.scene" robot_model_path:={}/{}'.format(self._xml_config_dir,
                                             self._generated_mujoco_env_filename)], shell=True)
             except OSError as e:
                 rospy.logerr("Could not spawn simulation")
@@ -80,10 +81,10 @@ class SpawnSimulation(object):
         """
         obj_instances_nr = self._obj_names_list.count(obj_name)
         obj_name = obj_name + "_{}".format(obj_instances_nr)
-
         mesh_name = obj_name[:-2] + '.stl'
         mesh_directory_name = self._get_file_mesh_directory(mesh_name)
         if mesh_directory_name is None:
+            rospy.logerr("Could not load sim objects, mesh not found")
             raise ValueError
 
         obj_position = [obj_pose.position.x, obj_pose.position.y, obj_pose.position.z]
@@ -105,7 +106,7 @@ class SpawnSimulation(object):
                 joint_tag = xmlTool.SubElement(body_tag, "joint", {'type': 'free', 'armature': '0.01'})
                 geom_tag = xmlTool.SubElement(body_tag, "geom", {'type': 'mesh', 'rgba': '0.7 0.7 0.7 1',
                                                                  'mesh': obj_name, 'condim': '4',
-                                                                 'friction': '1.5 0.5 0.1', 'solimp': '0.99 0.99 0.01',
+                                                                 'friction': '1.7 0.5 0.1', 'solimp': '0.99 0.99 0.01',
                                                                  'solref': '0.01 1', 'contype': '1'})
         self._base_config_xml.write("{}/{}".format(self._xml_config_dir, self._generated_mujoco_env_filename))
 

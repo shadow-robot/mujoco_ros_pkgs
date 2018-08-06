@@ -37,12 +37,13 @@
   <param name="arm_group" value="$(arg arm_group)" />
   <param name="grasp_action_name" value="H0_grasp_controller/grasp_action" />
   <param name="description_repo_path" value="$(arg description_repo_path)" />
+  <param name="max_torque_to_grasp" value="0.9" />
   <rosparam command="load" file="$(arg manipulator_file)"/>
   <rosparam command="load" file="$(arg arm_positions_file)"/>
 
-  <include file="$(find sr_manipulation_launch)/launch/grasp_selector_with_db.launch">
-    <arg name="object_publisher" default="false" />
-  </include>
-  <node if="$(arg box)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="20 sgs_restful_api fill_sr_manipulation_grasp_db.launch grasps_file_path:='$(find sr_utl5)/config/grasps.yaml'" name="timed_load_grasps" output="screen"/>
+  <!-- Needed for the pipeline to work -->
+  <include file="$(find sr_manipulation_grasp_selector)/launch/grasp_selector_with_db.launch" />
+
+  <node if="$(arg box)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="20 sgs_restful_api fill_sr_manipulation_grasp_db.launch grasps_file_path:='$(find sr_manipulation_state_machine)/config/grasps.yaml'" name="timed_load_grasps" output="screen"/>
   <node if="$(arg cylinder)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="20 sgs_restful_api fill_sr_manipulation_grasp_db.launch grasps_file_path:='$(find sr_utl5)/config/grasps_cyl_power_mujoco.yaml'" name="timed_load_grasps" output="screen"/>
 </launch>
