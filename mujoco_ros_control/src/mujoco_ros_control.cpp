@@ -227,6 +227,39 @@ bool MujocoRosControl::parse_transmissions(const std::string& urdf_string)
   return true;
 }
 
+std::string MujocoRosControl::geom_type_to_string(int geom_type)
+{
+  std::string result;
+  switch (geom_type)
+  {
+    case 0 :
+      result = "plane";
+      break;
+    case 1 :
+      result = "height field";
+      break;
+    case 2 :
+      result = "sphere";
+      break;
+    case 3 :
+      result = "capsule";
+      break;
+    case 4 :
+      result = "ellipsoid";
+      break;
+    case 5 :
+      result = "cylinder";
+      break;
+    case 6 :
+      result = "box";
+      break;
+    case 7 :
+      result = "mesh";
+      break;
+  }
+  return result;
+}
+
 void MujocoRosControl::publish_sim_time()
 {
   ros::Time sim_time = (ros::Time)mujoco_data->time;
@@ -261,10 +294,23 @@ void MujocoRosControl::check_objects_in_scene()
 
 void MujocoRosControl::publish_objects_in_scene()
 {
-  mujoco_ros_msgs::FreeObjectsStates free_objects;
+  int geom_type;
+  int geom_addr;
   geometry_msgs::Pose pose;
+  std_msgs::Float64MultiArray size;
+  mujoco_ros_msgs::FreeObjectsStates free_objects;
+
   for (int i=0; i < objects_in_scene_.size(); i++)
   {
+    size.data.clear();
+    geom_addr = mujoco_model->body_geomadr[objects_in_scene_[i]];
+    geom_type = mujoco_model->geom_type[geom_addr];
+
+    for (int i=0; i < 3; i++)
+    {
+      size.data.push_back(mujoco_model->geom_size[3 * geom_addr + i]);
+    }
+
     pose.position.x = mujoco_data->xpos[3 * objects_in_scene_[i]];
     pose.position.y = mujoco_data->xpos[3 * objects_in_scene_[i] + 1];
     pose.position.z = mujoco_data->xpos[3 * objects_in_scene_[i] + 2];
@@ -274,6 +320,8 @@ void MujocoRosControl::publish_objects_in_scene()
     pose.orientation.w = mujoco_data->xquat[4 * objects_in_scene_[i]];
 
     free_objects.name.push_back(mj_id2name(mujoco_model, 1, objects_in_scene_[i]));
+    free_objects.type.push_back(geom_type_to_string(geom_type));
+    free_objects.size.push_back(size);
     free_objects.pose.push_back(pose);
   }
   objects_in_scene_publisher.publish(free_objects);

@@ -35,6 +35,7 @@
 
 // msgs
 #include "geometry_msgs/Pose.h"
+#include "std_msgs/Float64MultiArray.h"
 #include "mujoco_ros_msgs/FreeObjectsStates.h"
 
 #include <controller_manager/controller_manager.h>
@@ -86,6 +87,9 @@ protected:
 
   // publish free objects
   void publish_objects_in_scene();
+
+  // transform type id to type name
+  std::string geom_type_to_string(int geom_id);
 
   // node handles
   ros::NodeHandle robot_node_handle;
