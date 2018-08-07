@@ -13,6 +13,7 @@
 #include <urdf/model.h>
 #include <string>
 #include <vector>
+#include <map>
 #include <algorithm>
 
 namespace mujoco_ros_control
@@ -118,9 +119,10 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     const urdf::Model *const urdf_model_ptr = urdf_model.initString(urdf_string) ? &urdf_model : NULL;
 
     // get robot links from urdf
-    std::map<std::string, boost::shared_ptr<urdf::Link> > links;
-    links = urdf_model_ptr->links_;
-    for(std::map<std::string, boost::shared_ptr<urdf::Link> >::iterator it = links.begin(); it != links.end(); ++it)
+    std::map<std::string, boost::shared_ptr<urdf::Link> > robot_links;
+    robot_links = urdf_model_ptr->links_;
+    std::map<std::string, boost::shared_ptr<urdf::Link> >::iterator it;
+    for (it = robot_links.begin(); it != robot_links.end(); ++it)
     {
       robot_link_names_.push_back(it->first);
     }
@@ -302,13 +304,14 @@ void MujocoRosControl::check_objects_in_scene()
   int joint_addr;
   int joint_type;
   int num_of_joints_for_body;
-  int num_of_bodies = mujoco_model->nbody;  
+  int num_of_bodies = mujoco_model->nbody;
 
   for (int object_id=0; object_id < num_of_bodies; object_id++)
   {
     object_name = mj_id2name(mujoco_model, 1, object_id);
     num_of_joints_for_body = mujoco_model->body_jntnum[object_id];
-    if (0 == num_of_joints_for_body && !(std::find(robot_link_names_.begin(), robot_link_names_.end(), object_name) != robot_link_names_.end()))
+    if (0 == num_of_joints_for_body &&
+        !(std::find(robot_link_names_.begin(), robot_link_names_.end(), object_name) != robot_link_names_.end()))
     {
       objects_in_scene_[object_id] = STATIC;
       ROS_INFO_STREAM("Static object found: " << object_name);
@@ -333,7 +336,7 @@ void MujocoRosControl::publish_objects_in_scene()
   int geom_addr;
   geometry_msgs::Pose pose;
   std_msgs::Float64MultiArray size;
-  mujoco_ros_msgs::FreeObjectsStates objects;
+  mujoco_ros_msgs::ModelStates objects;
 
   for (std::map<int, Object_State>::iterator it = objects_in_scene_.begin(); it != objects_in_scene_.end(); it++ )
   {

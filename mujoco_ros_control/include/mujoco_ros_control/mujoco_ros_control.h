@@ -28,6 +28,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <map>
 
 // ros_control
 #include <mujoco_ros_control/robot_hw_sim.h>
@@ -36,7 +37,7 @@
 // msgs
 #include "geometry_msgs/Pose.h"
 #include "std_msgs/Float64MultiArray.h"
-#include "mujoco_ros_msgs/FreeObjectsStates.h"
+#include "mujoco_ros_msgs/ModelStates.h"
 
 #include <controller_manager/controller_manager.h>
 #include <transmission_interface/transmission_parser.h>
@@ -73,7 +74,6 @@ public:
   unsigned int n_free_joints_;
 
 protected:
-
   // free or static object
   enum Object_State { STATIC = true, FREE = false };
 
@@ -138,7 +138,7 @@ protected:
   ros::Time last_write_sim_time_ros_;
 
   // publishing
-  ros::Publisher objects_in_scene_publisher = robot_node_handle.advertise<mujoco_ros_msgs::FreeObjectsStates>
+  ros::Publisher objects_in_scene_publisher = robot_node_handle.advertise<mujoco_ros_msgs::ModelStates>
                                                                          ("/mujoco/model_states", 1000);
 };
 }  // namespace mujoco_ros_control
