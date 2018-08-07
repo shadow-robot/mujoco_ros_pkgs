@@ -16,9 +16,10 @@ from mujoco2rviz.utilities import compare_poses, stl_to_mesh, get_object_mesh_pa
 class Mujoco2Rviz():
     def __init__(self):
         self._model_cache = {}
-        self._failed_models = []
+        self._ignored_models = []
         self._description_repo_path = rospy.get_param('~description_repo_path',
                                                      rospkg.RosPack().get_path('sr_description_common'))
+        self._static_only = rospy.get_param('~static_only', True)
         self._objects_states_subscriber = rospy.Subscriber('mujoco/model_states', FreeObjectsStates,
                                                           self.objects_states_cb)
         self._collision_object_publisher = rospy.Publisher('/collision_object', CollisionObject, queue_size=5,
@@ -27,19 +28,22 @@ class Mujoco2Rviz():
 
     def objects_states_cb(self, objects_states_msg):
         for model_idx, model_instance_name in enumerate(objects_states_msg.name):
+            if self._static_only and not objects_states_msg.is_static[model_idx]:
+                continue
+
             if model_instance_name not in self._model_cache:
                 try:
-                    self._model_cache[model_instance_name] = self.create_collision_object_from_msg(objects_states_msg,
+                    self._model_cache[model_instance_name] = self._create_collision_object_from_msg(objects_states_msg,
                                                                                                   model_idx)
-                    if model_instance_name in self._failed_models:
-                        self._failed_models.remove(model_instance_name)
+                    if model_instance_name in self._ignored_models:
+                        self._ignored_models.remove(model_instance_name)
                     rospy.loginfo("Added object {} to rviz".format(model_instance_name))
                 except (TypeError, IOError) as e:
-                    if model_instance_name not in self._failed_models:
-                        self._failed_models.append(model_instance_name)
+                    if model_instance_name not in self._ignored_models:
+                        self._ignored_models.append(model_instance_name)
                         rospy.logwarn("Failed to add {} collision object: {}".format(model_instance_name, e))
 
-            if model_instance_name in self._model_cache.keys():
+            else:
                 if 'mesh' == objects_states_msg.type[model_idx]:
                     if not compare_poses(objects_states_msg.pose[model_idx],
                                         self._model_cache[model_instance_name].mesh_poses[0]):
@@ -57,19 +61,19 @@ class Mujoco2Rviz():
             for model_instance_name in self._model_cache.keys():
                 self._collision_object_publisher.publish(self._model_cache[model_instance_name])
 
-    def create_collision_object_from_msg(self, message, model_idx):
+    def _create_collision_object_from_msg(self, message, model_idx):
         if 'mesh' == message.type[model_idx]:
-            collision_object = self.create_collision_object_from_mesh(message.name[model_idx],
+            collision_object = self._create_collision_object_from_mesh(message.name[model_idx],
                                                                       message.pose[model_idx])
         else:
-            collision_object = self.create_collision_object_from_primitive(message.name[model_idx],
+            collision_object = self._create_collision_object_from_primitive(message.name[model_idx],
                                                                            message.pose[model_idx],
                                                                            message.type[model_idx],
                                                                            message.size[model_idx].data)
         return collision_object
 
-    def create_collision_object_from_mesh(self, model_instance_name, model_pose):
-        collision_object = self.create_collision_object_base(model_instance_name)
+    def _create_collision_object_from_mesh(self, model_instance_name, model_pose):
+        collision_object = self._create_collision_object_base(model_instance_name)
         object_type = get_object_name_from_instance(model_instance_name)
         object_mesh_path = get_object_mesh_path(object_type, self._description_repo_path)
         object_mesh = stl_to_mesh(object_mesh_path)
@@ -77,8 +81,8 @@ class Mujoco2Rviz():
         collision_object.mesh_poses = [model_pose]
         return collision_object
 
-    def create_collision_object_from_primitive(self, model_instance_name, model_pose, model_type, size):
-        collision_object = self.create_collision_object_base(model_instance_name)
+    def _create_collision_object_from_primitive(self, model_instance_name, model_pose, model_type, size):
+        collision_object = self._create_collision_object_base(model_instance_name)
         primitive = SolidPrimitive()
         if 'box' == model_type:
             primitive.type = SolidPrimitive.BOX
@@ -95,7 +99,7 @@ class Mujoco2Rviz():
         collision_object.primitive_poses.append(model_pose)
         return collision_object
 
-    def create_collision_object_base(self, model_instance_name):
+    def _create_collision_object_base(self, model_instance_name):
         collision_object = CollisionObject()
         collision_object.header.frame_id = 'world'
         collision_object.id = '{}__link'.format(model_instance_name)
