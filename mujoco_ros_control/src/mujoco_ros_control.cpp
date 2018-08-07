@@ -251,6 +251,9 @@ std::string MujocoRosControl::geom_type_to_string(int geom_type)
     case 7 :
       result = "mesh";
       break;
+    default:
+      result = "unknown type";
+      break;
   }
   return result;
 }
@@ -281,13 +284,7 @@ void MujocoRosControl::check_objects_in_scene()
   int joint_addr;
   int joint_type;
   int num_of_joints_for_body;
-  int num_of_bodies = mujoco_model->nbody;
-
-  for(std::vector<std::string>::iterator it = robot_link_names_.begin(); it != robot_link_names_.end(); ++it)
-  {
-      ROS_INFO_STREAM("shit in robot links: " << *it);
-  }
-  
+  int num_of_bodies = mujoco_model->nbody;  
 
   for (int object_id=0; object_id < num_of_bodies; object_id++)
   {
