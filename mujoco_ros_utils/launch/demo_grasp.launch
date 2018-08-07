@@ -15,7 +15,7 @@
   <arg name="arm_positions_file" default="$(find sr_utl5)/config/arm_positions.yaml" />
   <arg name="cylinder" default="false" />
   <arg name="box" default="false" />
-  <arg name="robot_model_path" default="$(find mujoco_models)/models/ur10_fh_environment_with_tote.xml" unless="$(arg cylinder)" />
+  <arg name="robot_model_path" default="$(find mujoco_models)/models/ur10_fh_environment_box.xml" unless="$(arg cylinder)" />
   <arg name="robot_model_path" default="$(find mujoco_models)/models/ur10_fh_environment_cylinder.xml" unless="$(arg box)" />
 
   <!-- Robot stuff -->
@@ -44,6 +44,6 @@
   <!-- Needed for the pipeline to work -->
   <include file="$(find sr_manipulation_grasp_selector)/launch/grasp_selector_with_db.launch" />
 
-  <node if="$(arg box)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="20 sgs_restful_api fill_sr_manipulation_grasp_db.launch grasps_file_path:='$(find sr_manipulation_state_machine)/config/grasps.yaml'" name="timed_load_grasps" output="screen"/>
-  <node if="$(arg cylinder)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="20 sgs_restful_api fill_sr_manipulation_grasp_db.launch grasps_file_path:='$(find sr_utl5)/config/grasps_cyl_power_mujoco.yaml'" name="timed_load_grasps" output="screen"/>
+  <node if="$(arg box)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="20 sr_manipulation_db fill_grasp_db.launch grasps_file_path:='$(find sr_manipulation_state_machine)/config/grasps.yaml'" name="timed_load_grasps" output="screen"/>
+  <node if="$(arg cylinder)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="20 sr_manipulation_db fill_grasp_db.launch grasps_file_path:='$(find sr_utl5)/config/grasps_cyl_power_mujoco.yaml'" name="timed_load_grasps" output="screen"/>
 </launch>
