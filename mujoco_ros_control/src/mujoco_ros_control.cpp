@@ -140,7 +140,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     setup_sim_environment(initial_robot_qpos_);
 }
 
-void MujocoRosControl::setup_sim_environment(float initial_robot_qpos[])
+void MujocoRosControl::setup_sim_environment(const float initial_robot_qpos[])
 {
   for (int i=0; i < n_dof_-objects_in_scene_.size(); i++)
   {
