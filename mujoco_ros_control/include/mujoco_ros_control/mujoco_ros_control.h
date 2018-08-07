@@ -72,9 +72,6 @@ public:
   // number of free joints in simulation
   unsigned int n_free_joints_;
 
-  std::vector<int> free_objects_in_scene_;
-  std::vector<int> static_objects_in_scene_;
-
 protected:
 
   // free or static object
