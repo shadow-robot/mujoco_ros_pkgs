@@ -34,6 +34,7 @@ class SpawnSimulation(object):
         specified by the user
         @param mesh_name - string
         """
+        mesh_directory_path = None
         absolute_mesh_dir_path = rospy.get_param("~mesh_directory", self._xml_config_dir + "/meshes")
         rospy.loginfo("Looking for mesh in path {}".format(absolute_mesh_dir_path))
         for dir, sub_dirs, files in os.walk(absolute_mesh_dir_path):
@@ -41,9 +42,10 @@ class SpawnSimulation(object):
                 if mesh_name == file:
                     rospy.loginfo("Mesh found")
                     mesh_directory_path = os.path.relpath(dir, self._xml_config_dir)
-                    return mesh_directory_path
-                else:
-                    pass
+        if mesh_directory_path is not None:
+            return mesh_directory_path
+        else:
+            raise IOError("Mesh {} not found".format(mesh_name))
 
     def _spawn_sim_environment_service(self, req):
         """
@@ -55,8 +57,8 @@ class SpawnSimulation(object):
             for obj in req.objects.objects:
                 self._obj_names_list.append(obj.type.key)
                 self._append_object_to_xml(obj.type.key, obj.pose.pose.pose)
-        except ValueError:
-            rospy.logerr("Could not load objects")
+        except IOError as e:
+            rospy.logerr("Could not load objects: {}".format(e))
         else:
             rospy.loginfo("Starting simulation..")
             try:
@@ -84,9 +86,6 @@ class SpawnSimulation(object):
         obj_name = obj_name + "_{}".format(obj_instances_nr)
         mesh_name = obj_name[:-2] + '.stl'
         mesh_directory_name = self._get_file_mesh_directory(mesh_name)
-        if mesh_directory_name is None:
-            rospy.logerr("Could not load sim objects, mesh {} not found".format(mesh_name))
-            raise ValueError
 
         obj_position = [obj_pose.position.x, obj_pose.position.y, obj_pose.position.z]
         obj_orientation = [obj_pose.orientation.w, obj_pose.orientation.x,
