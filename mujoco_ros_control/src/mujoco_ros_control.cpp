@@ -127,7 +127,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
       robot_link_names_.push_back(it->first);
     }
 
-    // check for free joints
+    // check for objects
     check_objects_in_scene();
 
     if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
@@ -149,10 +149,10 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 
     // home pose of the arm
-    const float initial_robot_qpos_[] = {0.8, -1.726, 1.347, -1.195, -1.584, 1.830, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const float initial_robot_qpos[] = {0.8, -1.726, 1.347, -1.195, -1.584, 1.830, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     // set up the initial simulation environment
-    setup_sim_environment(initial_robot_qpos_);
+    setup_sim_environment(initial_robot_qpos);
 }
 
 void MujocoRosControl::setup_sim_environment(const float initial_robot_qpos[])
@@ -299,8 +299,8 @@ void MujocoRosControl::publish_sim_time()
 
 void MujocoRosControl::check_objects_in_scene()
 {
-  int object_id;
   std::string object_name;
+  int object_id;
   int joint_addr;
   int joint_type;
   int num_of_joints_for_body;
@@ -334,6 +334,9 @@ void MujocoRosControl::publish_objects_in_scene()
 {
   int geom_type;
   int geom_addr;
+  const int geom_size_dim = 3;
+  const int xpos_dim = 3;
+  const int xquat_dim = 4;
   geometry_msgs::Pose pose;
   std_msgs::Float64MultiArray size;
   mujoco_ros_msgs::ModelStates objects;
@@ -344,18 +347,18 @@ void MujocoRosControl::publish_objects_in_scene()
     geom_addr = mujoco_model->body_geomadr[it->first];
     geom_type = mujoco_model->geom_type[geom_addr];
 
-    for (int i=0; i < 3; i++)
+    for (int i=0; i < geom_size_dim; i++)
     {
       size.data.push_back(mujoco_model->geom_size[3 * geom_addr + i]);
     }
 
-    pose.position.x = mujoco_data->xpos[3 * it->first];
-    pose.position.y = mujoco_data->xpos[3 * it->first + 1];
-    pose.position.z = mujoco_data->xpos[3 * it->first + 2];
-    pose.orientation.x = mujoco_data->xquat[4 * it->first + 1];
-    pose.orientation.y = mujoco_data->xquat[4 * it->first + 2];
-    pose.orientation.z = mujoco_data->xquat[4 * it->first + 3];
-    pose.orientation.w = mujoco_data->xquat[4 * it->first];
+    pose.position.x = mujoco_data->xpos[xpos_dim * it->first];
+    pose.position.y = mujoco_data->xpos[xpos_dim * it->first + 1];
+    pose.position.z = mujoco_data->xpos[xpos_dim * it->first + 2];
+    pose.orientation.x = mujoco_data->xquat[xquat_dim * it->first + 1];
+    pose.orientation.y = mujoco_data->xquat[xquat_dim * it->first + 2];
+    pose.orientation.z = mujoco_data->xquat[xquat_dim * it->first + 3];
+    pose.orientation.w = mujoco_data->xquat[xquat_dim * it->first];
 
     objects.name.push_back(mj_id2name(mujoco_model, 1, it->first));
     objects.type.push_back(geom_type_to_string(geom_type));
