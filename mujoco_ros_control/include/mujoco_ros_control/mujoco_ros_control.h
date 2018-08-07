@@ -62,12 +62,16 @@ public:
   // step update function
   void update();
 
-  unsigned int n_dof_;
-  std::vector<int> objects_in_scene_;
-
   // pointer to the mujoco model
   mjModel* mujoco_model;
   mjData* mujoco_data;
+
+  // number of degrees of freedom
+  unsigned int n_dof_;
+
+  // objects in scene
+  std::vector<int> free_objects_in_scene_;
+  std::vector<int> static_objects_in_scene_;
 
 protected:
   // get the URDF XML from the parameter server
@@ -75,6 +79,9 @@ protected:
 
   // parse transmissions from URDF
   bool parse_transmissions(const std::string& urdf_string);
+
+  // get number of degrees of freedom
+  void get_number_of_dofs();
 
   // publish simulation time to ros clock
   void publish_sim_time();
@@ -99,8 +106,10 @@ protected:
   std::string robot_description_param_;
   std::string robot_model_path_;
 
+  // vectors
   std::vector<int> mujoco_ids;
   std::vector<int>::iterator it;
+  std::vector<std::string> robot_link_names_;
 
   // transmissions in this plugin's scope
   std::vector<transmission_interface::TransmissionInfo> transmissions_;
@@ -123,7 +132,7 @@ protected:
 
   // publishing
   ros::Publisher objects_in_scene_publisher = robot_node_handle.advertise<mujoco_ros_msgs::FreeObjectsStates>
-                                                                         ("/mujoco/free_objects_states", 1000);
+                                                                         ("/mujoco/model_states", 1000);
 };
 }  // namespace mujoco_ros_control
 #endif  // MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H

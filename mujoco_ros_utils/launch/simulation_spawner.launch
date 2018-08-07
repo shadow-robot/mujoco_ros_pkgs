@@ -1,7 +1,7 @@
 <launch>
   <arg name="mesh_directory" default="$(find mujoco_models)/models/meshes/"/>
   <arg name="generated_mujoco_env_filename" default="ur10_fh_environment_with_objects.xml"/>
-  <arg name="base_mujoco_env_filename" default="ur10_fh_environment.xml" />
+  <arg name="base_mujoco_env_filename" default="ur10_fh_environment_box.xml" />
 
   <node name="mujoco_simulation_spawner" pkg="mujoco_ros_utils" type="spawn_simulation.py" output="screen">
     <param name="mesh_directory" value="$(arg mesh_directory)"/>

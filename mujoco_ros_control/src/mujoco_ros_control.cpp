@@ -13,6 +13,7 @@
 #include <urdf/model.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 namespace mujoco_ros_control
 {
@@ -96,8 +97,8 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
       return;
     }
 
-    // check for free joints
-    check_objects_in_scene();
+    // check number of dofs
+    get_number_of_dofs();
 
     // get the Mujoco simulation period
     ros::Duration mujoco_period(mujoco_model->opt.timestep);
@@ -116,8 +117,19 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     urdf::Model urdf_model;
     const urdf::Model *const urdf_model_ptr = urdf_model.initString(urdf_string) ? &urdf_model : NULL;
 
+    // get robot links from urdf
+    std::map<std::string, boost::shared_ptr<urdf::Link> > links;
+    links = urdf_model_ptr->links_;
+    for(std::map<std::string, boost::shared_ptr<urdf::Link> >::iterator it = links.begin(); it != links.end(); ++it)
+    {
+      robot_link_names_.push_back(it->first);
+    }
+
+    // check for free joints
+    check_objects_in_scene();
+
     if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
-                                 mujoco_data, urdf_model_ptr, transmissions_, objects_in_scene_.size()))
+                                 mujoco_data, urdf_model_ptr, transmissions_, free_objects_in_scene_.size()))
     {
       ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot sim interface");
       return;
@@ -243,6 +255,11 @@ std::string MujocoRosControl::geom_type_to_string(int geom_type)
   return result;
 }
 
+void MujocoRosControl::get_number_of_dofs()
+{
+  n_dof_ = mujoco_model->njnt;
+}
+
 void MujocoRosControl::publish_sim_time()
 {
   ros::Time sim_time = (ros::Time)mujoco_data->time;
@@ -260,17 +277,36 @@ void MujocoRosControl::publish_sim_time()
 void MujocoRosControl::check_objects_in_scene()
 {
   int object_id;
+  std::string object_name;
+  int joint_addr;
   int joint_type;
-  n_dof_ = mujoco_model->njnt;
+  int num_of_joints_for_body;
+  int num_of_bodies = mujoco_model->nbody;
 
-  for (int i=0; i < n_dof_; i++)
+  for(std::vector<std::string>::iterator it = robot_link_names_.begin(); it != robot_link_names_.end(); ++it)
   {
-    joint_type = mujoco_model->jnt_type[i];
-    if (joint_type == 0)
+      ROS_INFO_STREAM("shit in robot links: " << *it);
+  }
+  
+
+  for (int object_id=0; object_id < num_of_bodies; object_id++)
+  {
+    object_name = mj_id2name(mujoco_model, 1, object_id);
+    num_of_joints_for_body = mujoco_model->body_jntnum[object_id];
+    if (0 == num_of_joints_for_body && !(std::find(robot_link_names_.begin(), robot_link_names_.end(), object_name) != robot_link_names_.end()))
     {
-      object_id = mujoco_model->jnt_bodyid[i];
-      objects_in_scene_.push_back(object_id);
-      ROS_INFO_STREAM("Free object found: " << mj_id2name(mujoco_model, 1, object_id));
+      static_objects_in_scene_.push_back(object_id);
+      ROS_INFO_STREAM("Static object found: " << object_name);
+    }
+    else if (1 == num_of_joints_for_body)
+    {
+      joint_addr = mujoco_model->body_jntadr[object_id];
+      joint_type = mujoco_model->jnt_type[joint_addr];
+      if (0 == joint_type)
+      {
+        free_objects_in_scene_.push_back(object_id);
+        ROS_INFO_STREAM("Free object found: " << object_name);
+      }
     }
   }
 }
@@ -281,12 +317,12 @@ void MujocoRosControl::publish_objects_in_scene()
   int geom_addr;
   geometry_msgs::Pose pose;
   std_msgs::Float64MultiArray size;
-  mujoco_ros_msgs::FreeObjectsStates free_objects;
+  mujoco_ros_msgs::FreeObjectsStates objects;
 
-  for (int i=0; i < objects_in_scene_.size(); i++)
+  for (int i=0; i < free_objects_in_scene_.size(); i++)
   {
     size.data.clear();
-    geom_addr = mujoco_model->body_geomadr[objects_in_scene_[i]];
+    geom_addr = mujoco_model->body_geomadr[free_objects_in_scene_[i]];
     geom_type = mujoco_model->geom_type[geom_addr];
 
     for (int i=0; i < 3; i++)
@@ -294,20 +330,47 @@ void MujocoRosControl::publish_objects_in_scene()
       size.data.push_back(mujoco_model->geom_size[3 * geom_addr + i]);
     }
 
-    pose.position.x = mujoco_data->xpos[3 * objects_in_scene_[i]];
-    pose.position.y = mujoco_data->xpos[3 * objects_in_scene_[i] + 1];
-    pose.position.z = mujoco_data->xpos[3 * objects_in_scene_[i] + 2];
-    pose.orientation.x = mujoco_data->xquat[4 * objects_in_scene_[i] + 1];
-    pose.orientation.y = mujoco_data->xquat[4 * objects_in_scene_[i] + 2];
-    pose.orientation.z = mujoco_data->xquat[4 * objects_in_scene_[i] + 3];
-    pose.orientation.w = mujoco_data->xquat[4 * objects_in_scene_[i]];
+    pose.position.x = mujoco_data->xpos[3 * free_objects_in_scene_[i]];
+    pose.position.y = mujoco_data->xpos[3 * free_objects_in_scene_[i] + 1];
+    pose.position.z = mujoco_data->xpos[3 * free_objects_in_scene_[i] + 2];
+    pose.orientation.x = mujoco_data->xquat[4 * free_objects_in_scene_[i] + 1];
+    pose.orientation.y = mujoco_data->xquat[4 * free_objects_in_scene_[i] + 2];
+    pose.orientation.z = mujoco_data->xquat[4 * free_objects_in_scene_[i] + 3];
+    pose.orientation.w = mujoco_data->xquat[4 * free_objects_in_scene_[i]];
 
-    free_objects.name.push_back(mj_id2name(mujoco_model, 1, objects_in_scene_[i]));
-    free_objects.type.push_back(geom_type_to_string(geom_type));
-    free_objects.size.push_back(size);
-    free_objects.pose.push_back(pose);
+    objects.name.push_back(mj_id2name(mujoco_model, 1, free_objects_in_scene_[i]));
+    objects.type.push_back(geom_type_to_string(geom_type));
+    objects.is_static.push_back(false);
+    objects.size.push_back(size);
+    objects.pose.push_back(pose);
   }
-  objects_in_scene_publisher.publish(free_objects);
+
+  for (int i=0; i < static_objects_in_scene_.size(); i++)
+  {
+    size.data.clear();
+    geom_addr = mujoco_model->body_geomadr[static_objects_in_scene_[i]];
+    geom_type = mujoco_model->geom_type[geom_addr];
+
+    for (int i=0; i < 3; i++)
+    {
+      size.data.push_back(mujoco_model->geom_size[3 * geom_addr + i]);
+    }
+
+    pose.position.x = mujoco_data->xpos[3 * static_objects_in_scene_[i]];
+    pose.position.y = mujoco_data->xpos[3 * static_objects_in_scene_[i] + 1];
+    pose.position.z = mujoco_data->xpos[3 * static_objects_in_scene_[i] + 2];
+    pose.orientation.x = mujoco_data->xquat[4 * static_objects_in_scene_[i] + 1];
+    pose.orientation.y = mujoco_data->xquat[4 * static_objects_in_scene_[i] + 2];
+    pose.orientation.z = mujoco_data->xquat[4 * static_objects_in_scene_[i] + 3];
+    pose.orientation.w = mujoco_data->xquat[4 * static_objects_in_scene_[i]];
+
+    objects.name.push_back(mj_id2name(mujoco_model, 1, static_objects_in_scene_[i]));
+    objects.type.push_back(geom_type_to_string(geom_type));
+    objects.is_static.push_back(true);
+    objects.size.push_back(size);
+    objects.pose.push_back(pose);
+  }
+  objects_in_scene_publisher.publish(objects);
 }
 }  // namespace mujoco_ros_control
 
@@ -348,14 +411,14 @@ int main(int argc, char** argv)
     while (mujoco_ros_control.mujoco_data->time < 50)
     {
       mj_step1(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
-      for (int i=0; i < mujoco_ros_control.n_dof_-mujoco_ros_control.objects_in_scene_.size(); i++)
+      for (int i=0; i < mujoco_ros_control.n_dof_-mujoco_ros_control.free_objects_in_scene_.size(); i++)
       {
         mujoco_ros_control.mujoco_data->ctrl[i] = mujoco_ros_control.mujoco_data->qfrc_bias[i];
       }
       mj_step2(mujoco_ros_control.mujoco_model, mujoco_ros_control.mujoco_data);
     }
 
-    for (int i=0; i < mujoco_ros_control.n_dof_ - mujoco_ros_control.objects_in_scene_.size(); i++)
+    for (int i=0; i < mujoco_ros_control.n_dof_ - mujoco_ros_control.free_objects_in_scene_.size(); i++)
     {
       mujoco_ros_control.mujoco_data->qpos[i] = 0;
     }
