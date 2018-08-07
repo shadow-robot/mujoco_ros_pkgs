@@ -251,17 +251,16 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
       break;
 
       case POSITION_PID:
-        {
-          double error;
+      {
+        double error;
 
-          error = joint_position_command_[j] - joint_position_[j];
-
-          const double effort_limit = joint_effort_limits_[j];
-          const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
-                                      -effort_limit, effort_limit);
-          mujoco_data_->ctrl[j] = effort;
-        }
-        break;
+        error = joint_position_command_[j] - joint_position_[j];
+        const double effort_limit = joint_effort_limits_[j];
+        const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
+                                    -effort_limit, effort_limit);
+        mujoco_data_->ctrl[j] = effort;
+      }
+      break;
 
       case VELOCITY:
         mujoco_data_->ctrl[j] = joint_velocity_command_[j];
