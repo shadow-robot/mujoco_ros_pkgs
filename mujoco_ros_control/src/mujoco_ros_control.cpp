@@ -134,7 +134,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 
     // home pose of the arm
-    float initial_robot_qpos_[] = {0.8, -1.726, 1.347, -1.195, -1.584, 1.830, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const float initial_robot_qpos_[] = {0.8, -1.726, 1.347, -1.195, -1.584, 1.830, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     // set up the initial simulation environment
     setup_sim_environment(initial_robot_qpos_);
