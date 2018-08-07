@@ -69,11 +69,17 @@ public:
   // number of degrees of freedom
   unsigned int n_dof_;
 
-  // objects in scene
+  // number of free joints in simulation
+  unsigned int n_free_joints_;
+
   std::vector<int> free_objects_in_scene_;
   std::vector<int> static_objects_in_scene_;
 
 protected:
+
+  // free or static object
+  enum Object_State { STATIC = true, FREE = false };
+
   // get the URDF XML from the parameter server
   std::string get_urdf(std::string param_name) const;
 
@@ -110,6 +116,7 @@ protected:
   std::vector<int> mujoco_ids;
   std::vector<int>::iterator it;
   std::vector<std::string> robot_link_names_;
+  std::map<int, Object_State> objects_in_scene_;
 
   // transmissions in this plugin's scope
   std::vector<transmission_interface::TransmissionInfo> transmissions_;

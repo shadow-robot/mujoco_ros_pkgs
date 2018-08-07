@@ -34,7 +34,7 @@ class Mujoco2Rviz():
                     if model_instance_name in self._failed_models:
                         self._failed_models.remove(model_instance_name)
                     rospy.loginfo("Added object {} to rviz".format(model_instance_name))
-                except TypeError as e:
+                except (TypeError, IOError) as e:
                     if model_instance_name not in self._failed_models:
                         self._failed_models.append(model_instance_name)
                         rospy.logwarn("Failed to add {} collision object: {}".format(model_instance_name, e))
@@ -72,10 +72,7 @@ class Mujoco2Rviz():
         collision_object = self.create_collision_object_base(model_instance_name)
         object_type = get_object_name_from_instance(model_instance_name)
         object_mesh_path = get_object_mesh_path(object_type, self._description_repo_path)
-        try:
-            object_mesh = stl_to_mesh(object_mesh_path)
-        except:
-            rospy.logwarn("Failed to transform mesh")
+        object_mesh = stl_to_mesh(object_mesh_path)
         collision_object.meshes = [object_mesh]
         collision_object.mesh_poses = [model_pose]
         return collision_object

@@ -60,9 +60,13 @@ def get_object_name_from_instance(object_instance):
 
 def get_object_mesh_path(object_name, description_repo_path):
     file_name = '{}.stl'.format(object_name)
+    path_to_mesh = None
     for dir, sub_dirs, files in os.walk(description_repo_path):
         for file in files:
             if file == file_name:
-                return os.path.abspath('{}/{}'.format(dir, file_name))
-    rospy.logwarn("Mesh for {} not found!".format(object_name))
-    return None
+                path_to_mesh = os.path.abspath('{}/{}'.format(dir, file_name))
+
+    if path_to_mesh is not None:
+        return path_to_mesh
+    else:
+        raise IOError("Mesh for {} not found".format(object_name))
