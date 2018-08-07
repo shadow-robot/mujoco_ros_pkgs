@@ -84,7 +84,7 @@ class SpawnSimulation(object):
         mesh_name = obj_name[:-2] + '.stl'
         mesh_directory_name = self._get_file_mesh_directory(mesh_name)
         if mesh_directory_name is None:
-            rospy.logerr("Could not load sim objects, mesh not found")
+            rospy.logerr("Could not load sim objects, mesh {} not found".format(mesh_name))
             raise ValueError
 
         obj_position = [obj_pose.position.x, obj_pose.position.y, obj_pose.position.z]

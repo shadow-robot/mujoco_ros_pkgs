@@ -13,10 +13,10 @@
         <body name="floor" pos="0 0 0" />
         
         <body name="tote" pos="-0.7 0.7 0">
-          <geom type="mesh" mesh="tote_left_large" />
-          <geom type="mesh" mesh="tote_right_large" />
-          <geom type="mesh" mesh="tote_back_small" />
-          <geom type="mesh" mesh="tote_front_small" />
+          <geom type="mesh" mesh="tote_left_large"/>
+          <geom type="mesh" mesh="tote_right_large"/>
+          <geom type="mesh" mesh="tote_back_small"/>
+          <geom type="mesh" mesh="tote_front_small"/>
           <geom type="mesh" mesh="tote_base"/>
         </body>
 
