@@ -248,28 +248,28 @@ std::string MujocoRosControl::geom_type_to_string(int geom_type)
   switch (geom_type)
   {
     case 0 :
-      result = "plane";
+      result = mujoco_ros_msgs::ModelStates::PLANE;
       break;
     case 1 :
-      result = "height field";
+      result = mujoco_ros_msgs::ModelStates::HFIELD;
       break;
     case 2 :
-      result = "sphere";
+      result = mujoco_ros_msgs::ModelStates::SPHERE;
       break;
     case 3 :
-      result = "capsule";
+      result = mujoco_ros_msgs::ModelStates::CAPSULE;
       break;
     case 4 :
-      result = "ellipsoid";
+      result = mujoco_ros_msgs::ModelStates::ELLIPSOID;
       break;
     case 5 :
-      result = "cylinder";
+      result = mujoco_ros_msgs::ModelStates::CYLINDER;
       break;
     case 6 :
-      result = "box";
+      result = mujoco_ros_msgs::ModelStates::BOX;
       break;
     case 7 :
-      result = "mesh";
+      result = mujoco_ros_msgs::ModelStates::MESH;
       break;
     default:
       result = "unknown type";
