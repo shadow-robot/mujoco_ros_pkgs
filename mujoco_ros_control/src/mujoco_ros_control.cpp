@@ -13,6 +13,7 @@
 #include <urdf/model.h>
 #include <string>
 #include <vector>
+#include <map>
 #include <algorithm>
 
 namespace mujoco_ros_control
@@ -118,14 +119,15 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     const urdf::Model *const urdf_model_ptr = urdf_model.initString(urdf_string) ? &urdf_model : NULL;
 
     // get robot links from urdf
-    std::map<std::string, boost::shared_ptr<urdf::Link> > links;
-    links = urdf_model_ptr->links_;
-    for(std::map<std::string, boost::shared_ptr<urdf::Link> >::iterator it = links.begin(); it != links.end(); ++it)
+    std::map<std::string, boost::shared_ptr<urdf::Link> > robot_links;
+    robot_links = urdf_model_ptr->links_;
+    std::map<std::string, boost::shared_ptr<urdf::Link> >::iterator it;
+    for (it = robot_links.begin(); it != robot_links.end(); ++it)
     {
       robot_link_names_.push_back(it->first);
     }
 
-    // check for free joints
+    // check for objects
     check_objects_in_scene();
 
     if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
@@ -147,10 +149,10 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 
     // home pose of the arm
-    const float initial_robot_qpos_[] = {0.8, -1.726, 1.347, -1.195, -1.584, 1.830, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    const float initial_robot_qpos[] = {0.8, -1.726, 1.347, -1.195, -1.584, 1.830, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     // set up the initial simulation environment
-    setup_sim_environment(initial_robot_qpos_);
+    setup_sim_environment(initial_robot_qpos);
 }
 
 void MujocoRosControl::setup_sim_environment(const float initial_robot_qpos[])
@@ -246,28 +248,28 @@ std::string MujocoRosControl::geom_type_to_string(int geom_type)
   switch (geom_type)
   {
     case 0 :
-      result = "plane";
+      result = mujoco_ros_msgs::ModelStates::PLANE;
       break;
     case 1 :
-      result = "height field";
+      result = mujoco_ros_msgs::ModelStates::HFIELD;
       break;
     case 2 :
-      result = "sphere";
+      result = mujoco_ros_msgs::ModelStates::SPHERE;
       break;
     case 3 :
-      result = "capsule";
+      result = mujoco_ros_msgs::ModelStates::CAPSULE;
       break;
     case 4 :
-      result = "ellipsoid";
+      result = mujoco_ros_msgs::ModelStates::ELLIPSOID;
       break;
     case 5 :
-      result = "cylinder";
+      result = mujoco_ros_msgs::ModelStates::CYLINDER;
       break;
     case 6 :
-      result = "box";
+      result = mujoco_ros_msgs::ModelStates::BOX;
       break;
     case 7 :
-      result = "mesh";
+      result = mujoco_ros_msgs::ModelStates::MESH;
       break;
     default:
       result = "unknown type";
@@ -297,18 +299,19 @@ void MujocoRosControl::publish_sim_time()
 
 void MujocoRosControl::check_objects_in_scene()
 {
+  int num_of_bodies = mujoco_model->nbody;
   int object_id;
-  std::string object_name;
   int joint_addr;
   int joint_type;
   int num_of_joints_for_body;
-  int num_of_bodies = mujoco_model->nbody;  
+  std::string object_name;
 
   for (int object_id=0; object_id < num_of_bodies; object_id++)
   {
     object_name = mj_id2name(mujoco_model, 1, object_id);
     num_of_joints_for_body = mujoco_model->body_jntnum[object_id];
-    if (0 == num_of_joints_for_body && !(std::find(robot_link_names_.begin(), robot_link_names_.end(), object_name) != robot_link_names_.end()))
+    if (0 == num_of_joints_for_body &&
+        !(std::find(robot_link_names_.begin(), robot_link_names_.end(), object_name) != robot_link_names_.end()))
     {
       objects_in_scene_[object_id] = STATIC;
       ROS_INFO_STREAM("Static object found: " << object_name);
@@ -329,11 +332,14 @@ void MujocoRosControl::check_objects_in_scene()
 
 void MujocoRosControl::publish_objects_in_scene()
 {
+  const int geom_size_dim = 3;
+  const int xpos_dim = 3;
+  const int xquat_dim = 4;
   int geom_type;
   int geom_addr;
   geometry_msgs::Pose pose;
   std_msgs::Float64MultiArray size;
-  mujoco_ros_msgs::FreeObjectsStates objects;
+  mujoco_ros_msgs::ModelStates objects;
 
   for (std::map<int, Object_State>::iterator it = objects_in_scene_.begin(); it != objects_in_scene_.end(); it++ )
   {
@@ -341,18 +347,18 @@ void MujocoRosControl::publish_objects_in_scene()
     geom_addr = mujoco_model->body_geomadr[it->first];
     geom_type = mujoco_model->geom_type[geom_addr];
 
-    for (int i=0; i < 3; i++)
+    for (int i=0; i < geom_size_dim; i++)
     {
       size.data.push_back(mujoco_model->geom_size[3 * geom_addr + i]);
     }
 
-    pose.position.x = mujoco_data->xpos[3 * it->first];
-    pose.position.y = mujoco_data->xpos[3 * it->first + 1];
-    pose.position.z = mujoco_data->xpos[3 * it->first + 2];
-    pose.orientation.x = mujoco_data->xquat[4 * it->first + 1];
-    pose.orientation.y = mujoco_data->xquat[4 * it->first + 2];
-    pose.orientation.z = mujoco_data->xquat[4 * it->first + 3];
-    pose.orientation.w = mujoco_data->xquat[4 * it->first];
+    pose.position.x = mujoco_data->xpos[xpos_dim * it->first];
+    pose.position.y = mujoco_data->xpos[xpos_dim * it->first + 1];
+    pose.position.z = mujoco_data->xpos[xpos_dim * it->first + 2];
+    pose.orientation.x = mujoco_data->xquat[xquat_dim * it->first + 1];
+    pose.orientation.y = mujoco_data->xquat[xquat_dim * it->first + 2];
+    pose.orientation.z = mujoco_data->xquat[xquat_dim * it->first + 3];
+    pose.orientation.w = mujoco_data->xquat[xquat_dim * it->first];
 
     objects.name.push_back(mj_id2name(mujoco_model, 1, it->first));
     objects.type.push_back(geom_type_to_string(geom_type));
