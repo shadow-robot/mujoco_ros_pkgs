@@ -37,7 +37,6 @@
   <param name="arm_group" value="$(arg arm_group)" />
   <param name="grasp_action_name" value="H0_grasp_controller/grasp_action" />
   <param name="description_repo_path" value="$(arg description_repo_path)" />
-  <param name="max_torque_to_grasp" value="0.9" />
   <rosparam command="load" file="$(arg manipulator_file)"/>
   <rosparam command="load" file="$(arg arm_positions_file)"/>
 
