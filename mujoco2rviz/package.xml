@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package>
+  <name>mujoco2rviz</name>
+  <version>0.0.0</version>
+  <description>The mujoco2rviz package</description>
+
+  <maintainer email="software@shadowrobot.com">Shadow Robot software team</maintainer>
+  <license>Private</license>
+  <author email="michal@shadowrobot.com">Michal Kramarczyk</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>moveit_msgs</build_depend>
+  <build_depend>shape_msgs</build_depend>
+  <build_depend>mujoco_ros_msgs</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>moveit_msgs</run_depend>
+  <run_depend>shape_msgs</run_depend>
+  <run_depend>mujoco_ros_msgs</run_depend>
+</package>
