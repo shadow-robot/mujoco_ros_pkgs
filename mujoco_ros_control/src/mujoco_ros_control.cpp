@@ -299,12 +299,12 @@ void MujocoRosControl::publish_sim_time()
 
 void MujocoRosControl::check_objects_in_scene()
 {
-  std::string object_name;
+  int num_of_bodies = mujoco_model->nbody;
   int object_id;
   int joint_addr;
   int joint_type;
   int num_of_joints_for_body;
-  int num_of_bodies = mujoco_model->nbody;
+  std::string object_name;
 
   for (int object_id=0; object_id < num_of_bodies; object_id++)
   {
@@ -332,11 +332,11 @@ void MujocoRosControl::check_objects_in_scene()
 
 void MujocoRosControl::publish_objects_in_scene()
 {
-  int geom_type;
-  int geom_addr;
   const int geom_size_dim = 3;
   const int xpos_dim = 3;
   const int xquat_dim = 4;
+  int geom_type;
+  int geom_addr;
   geometry_msgs::Pose pose;
   std_msgs::Float64MultiArray size;
   mujoco_ros_msgs::ModelStates objects;

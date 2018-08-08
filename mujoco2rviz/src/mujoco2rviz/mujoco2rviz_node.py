@@ -44,7 +44,7 @@ class Mujoco2Rviz():
                         rospy.logwarn("Failed to add {} collision object: {}".format(model_instance_name, e))
 
             else:
-                if 'mesh' == objects_states_msg.type[model_idx]:
+                if ModelStates.MESH == objects_states_msg.type[model_idx]:
                     if not compare_poses(objects_states_msg.pose[model_idx],
                                          self._model_cache[model_instance_name].mesh_poses[0]):
                         self._model_cache[model_instance_name].operation = CollisionObject.MOVE
@@ -61,7 +61,7 @@ class Mujoco2Rviz():
                 self._collision_object_publisher.publish(self._model_cache[model_instance_name])
 
     def _create_collision_object_from_msg(self, message, model_idx):
-        if 'mesh' == message.type[model_idx]:
+        if ModelStates.MESH == message.type[model_idx]:
             collision_object = self._create_collision_object_from_mesh(message.name[model_idx],
                                                                        message.pose[model_idx])
         else:
@@ -83,13 +83,13 @@ class Mujoco2Rviz():
     def _create_collision_object_from_primitive(self, model_instance_name, model_pose, model_type, size):
         collision_object = self._create_collision_object_base(model_instance_name)
         primitive = SolidPrimitive()
-        if 'box' == model_type:
+        if ModelStates.BOX == model_type:
             primitive.type = SolidPrimitive.BOX
             primitive.dimensions = [i * 2 for i in size]
-        elif 'cylinder' == model_type:
+        elif ModelStates.CYLINDER == model_type:
             primitive.type = SolidPrimitive.CYLINDER
             primitive.dimensions = [size[1] * 2, size[0]]
-        elif 'sphere' == model_type:
+        elif ModelStates.SPHERE == model_type:
             primitive.type = SolidPrimitive.SPHERE
             primitive.dimensions = [size[0]]
         else:
