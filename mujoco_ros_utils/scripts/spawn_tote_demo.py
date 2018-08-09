@@ -32,6 +32,6 @@ class ToteDemoSpawnSimClient(SpawnSimClient):
 
 if __name__ == '__main__':
     rospy.init_node("spawn_sim_client_example_node")
-    spawn_sim =  ToteDemoSpawnSimClient()
+    spawn_sim = ToteDemoSpawnSimClient()
     spawn_sim._send_request()
     rospy.spin()
