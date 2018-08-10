@@ -18,8 +18,6 @@ mkdir /tmp/db
 
 ## Usage
 
-There are two demos, one involves the picking of a box and one the picking of a
-
 # Static objects demo
 
 There are two possible static objects demos, one with the box and one with a cylinder.
@@ -59,12 +57,12 @@ rosrun sr_utl5 pick_place_mujoco_demo.py
 
 # Spawn object and place in tote demo
 
-This demo involves picking and placing in a tote of a utl5_medium box
+This demo involves picking and placing in a tote of a utl5_medium box.
 
 First launch the following launch file by running this command on the terminal, this will start all the grasp related stuff and the mujoco service to spawn objects:
 
 ```
-roslaunch sr_manipulation_state_machine sim_test_mujoco.launch
+roslaunch mujoco_ros_utils tote_demo.launch
 ```
 
 At this point call the spawn demo client by running the following command:
@@ -76,5 +74,5 @@ rosrun mujoco_ros_utils spawn_tote_demo.py
 Once the simulation is up and running run the following command in your terminal:
 
 ```
-rosrun sr_utl5 pick_place_mujoco_demo.py
+rosrun sr_utl5 pick_place_client.py -o "utl5_medium_0" -p -0.7 0.7 0.1 0 0 0 -t 0.9
 ```

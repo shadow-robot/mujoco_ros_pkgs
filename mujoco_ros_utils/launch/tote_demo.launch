@@ -1,0 +1,33 @@
+<launch>
+  <arg name="sim" default="true" />
+  <arg name="scene" default="true" />
+  <arg name="grasp_controller" default="true" />
+  <arg name="start_home" default="$(arg sim)" />
+  <arg name="arm_group" default="right_arm_and_manipulator" />
+  <arg name="load_grasps" default="true" />
+  <arg name="manipulator_file" default="$(find sr_manipulation_state_machine)/config/manipulator_hand.yaml" />
+  <arg name="arm_positions_file" default="$(find sr_manipulation_state_machine)/config/arm_positions.yaml" />
+
+  <include file="$(find mujoco_ros_utils)/launch/simulation_spawner.launch">
+    <arg name="mesh_directory" value="$(find sr_description_common_private)" />
+    <arg name="base_mujoco_env_filename" value="ur10_fh_environment_with_tote.xml" />
+    <arg name="generated_mujoco_env_filename" value="tote_env_test.xml" />
+  </include>
+
+  <!-- Grasping stuff -->
+  <param name="arm_group" value="$(arg arm_group)" />
+  <param name="grasp_action_name" value="H0_grasp_controller/grasp_action" />
+  <rosparam command="load" file="$(arg manipulator_file)"/>
+  <rosparam command="load" file="$(arg arm_positions_file)"/>
+
+  <!-- Needed for the pipeline to work -->
+  <include file="$(find sr_manipulation_grasp_selector)/launch/grasp_selector_with_db.launch" />
+
+  <!-- Filling the grasps -->
+  <node if="$(arg load_grasps)" pkg="sr_utilities_common" type="timed_roslaunch.sh" args="5 sr_manipulation_db fill_grasp_db.launch grasps_file_path:='$(find sr_manipulation_state_machine)/config/grasps_sim_mujoco.yaml'" name="timed_load_grasps" output="screen"/>
+
+  <!-- Loading the object -->
+  <node pkg="sr_vision_mocks" type="mock_recognized_objects.py" name="mock_recognized_objects" />
+  <node pkg="sr_vision_mocks" type="spawn_object.py" args="-p 'utl5_medium' 0.4 0.7 0.005 0 0 0 -d 'sr_description_common_private'" name="spawn_object" output="screen" />
+
+</launch>
