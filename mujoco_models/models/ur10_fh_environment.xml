@@ -4,7 +4,7 @@
         <include file="shared_asset.xml" />
     </asset>
 	<worldbody>
-        <geom condim="3" material="mat_plane" name="floor" pos="0 0 0" size="5 5 0.001" solimp="0.99 0.99 0" solref="0.001 0.1" type="plane" />
+        <geom condim="3" material="mat_plane" name="floor" pos="0 0 0" size="5 5 0.001" type="plane" />
         <body name="floor" pos="0 0 0" />
 
         <include file="robot_ur10_fh_model.xml" />
