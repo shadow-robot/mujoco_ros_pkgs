@@ -6,7 +6,7 @@
         <mesh file="meshes/box/box.stl" name="box" />
     </asset>
 	<worldbody>
-        <geom name='floor' pos='0 0 0' size='5 5 0.001' type='plane' material="mat_plane" condim='3'/>
+        <geom name='floor' pos='0 0 0' size='5 5 0.001' type='plane' material="mat_plane" solimp="0.99 0.99 0" solref="0.001 0.1" condim='3'/>
         <body name='floor' pos='0 0 0'></body>
 
         <include file="robot_ur10_fh_model.xml"></include>
@@ -19,12 +19,12 @@
           <geom name='cylinder' type='cylinder' size='0.05 0.045' rgba='0.5 0 0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
         </body>
 
-        <body name='sphere' pos='0.4 0.7 0.175'>
+        <body name='sphere' pos='0.4 0.7 0.051'>
           <freejoint/>
           <geom name='sphere' type='sphere' size='0.05' rgba='0 0.7 0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
         </body>
 
-        <body name='box_mesh' pos='0.6 0.7 0.175' quat='0.707 0 0 0.707'>
+        <body name='box_mesh' pos='0.6 0.7 0.001' quat='0.707 0 0 0.707'>
           <freejoint/>
           <geom name='box_mesh' type='mesh' mesh='box' rgba='0.0 0.3 0.0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
         </body>
