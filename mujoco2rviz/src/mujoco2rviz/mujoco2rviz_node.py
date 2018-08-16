@@ -6,10 +6,12 @@
 import rospy
 import rospkg
 import re
+import signal
 from geometry_msgs.msg import Pose
 from moveit_msgs.msg import CollisionObject
 from mujoco_ros_msgs.msg import ModelStates
 from shape_msgs.msg import SolidPrimitive
+from sr_utilities_common.shutdown_handler import ShutdownHandler
 from mujoco2rviz.utilities import compare_poses, stl_to_mesh, get_object_mesh_path, get_object_name_from_instance
 
 
@@ -24,7 +26,6 @@ class Mujoco2Rviz():
                                                            self._objects_states_cb)
         self._collision_object_publisher = rospy.Publisher('/collision_object', CollisionObject, queue_size=5,
                                                            latch=True)
-        self._publish_objects_to_rviz()
 
     def _objects_states_cb(self, objects_states_msg):
         for model_idx, model_instance_name in enumerate(objects_states_msg.name):
@@ -54,11 +55,6 @@ class Mujoco2Rviz():
                                          self._model_cache[model_instance_name].primitive_poses[0]):
                         self._model_cache[model_instance_name].operation = CollisionObject.MOVE
                         self._model_cache[model_instance_name].primitive_poses[0] = objects_states_msg.pose[model_idx]
-
-    def _publish_objects_to_rviz(self):
-        while not rospy.is_shutdown():
-            for model_instance_name in self._model_cache.keys():
-                self._collision_object_publisher.publish(self._model_cache[model_instance_name])
 
     def _create_collision_object_from_msg(self, message, model_idx):
         if ModelStates.MESH == message.type[model_idx]:
@@ -105,7 +101,22 @@ class Mujoco2Rviz():
         collision_object.operation = CollisionObject.ADD
         return collision_object
 
+    def publish_objects_to_rviz(self):
+        while not rospy.is_shutdown():
+            for model_instance_name in self._model_cache.keys():
+                self._collision_object_publisher.publish(self._model_cache[model_instance_name])
+
+    def clean_up(self):
+        rospy.logwarn("Cleaning up!")
+        for model_instance_name in self._model_cache.keys():
+            self._model_cache[model_instance_name].operation = CollisionObject.REMOVE
+            self._collision_object_publisher.publish(self._model_cache[model_instance_name])
+        rospy.logwarn("All cleaned up, shutting down.")
+
 
 if __name__ == '__main__':
     rospy.init_node('mujoco_to_rviz', anonymous=True)
+
     m2m = Mujoco2Rviz()
+    sh = ShutdownHandler('clean_up()', m2m)
+    m2m.publish_objects_to_rviz()
