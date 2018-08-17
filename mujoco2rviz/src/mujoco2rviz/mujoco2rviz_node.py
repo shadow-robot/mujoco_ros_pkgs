@@ -24,7 +24,7 @@ class Mujoco2Rviz():
         self._static_only = rospy.get_param('~static_only', True)
         self._objects_states_subscriber = rospy.Subscriber('mujoco/model_states', ModelStates,
                                                            self._objects_states_cb)
-        self._collision_object_publisher = rospy.Publisher('/collision_object', CollisionObject, queue_size=5,
+        self._collision_object_publisher = rospy.Publisher('/collision_object', CollisionObject, queue_size=2,
                                                            latch=True)
 
     def _objects_states_cb(self, objects_states_msg):
@@ -101,22 +101,24 @@ class Mujoco2Rviz():
         collision_object.operation = CollisionObject.ADD
         return collision_object
 
-    def publish_objects_to_rviz(self):
+    def publish_objects_to_rviz(self, publishing_rate=20):
+        rate = rospy.Rate(publishing_rate)
         while not rospy.is_shutdown():
             for model_instance_name in self._model_cache.keys():
                 self._collision_object_publisher.publish(self._model_cache[model_instance_name])
+            rate.sleep()
 
     def clean_up(self):
-        rospy.logwarn("Cleaning up!")
+        rospy.loginfo("Cleaning up!")
         for model_instance_name in self._model_cache.keys():
             self._model_cache[model_instance_name].operation = CollisionObject.REMOVE
             self._collision_object_publisher.publish(self._model_cache[model_instance_name])
-        rospy.logwarn("All cleaned up, shutting down.")
-
+            rospy.sleep(1)
+        rospy.loginfo("All cleaned up, shutting down...")
 
 if __name__ == '__main__':
     rospy.init_node('mujoco_to_rviz', anonymous=True)
 
     m2m = Mujoco2Rviz()
-    sh = ShutdownHandler('clean_up()', m2m)
+    sh = ShutdownHandler(m2m, 'clean_up()')
     m2m.publish_objects_to_rviz()

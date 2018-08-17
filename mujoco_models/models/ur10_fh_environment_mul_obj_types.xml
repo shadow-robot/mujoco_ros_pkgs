@@ -11,22 +11,22 @@
 
         <include file="robot_ur10_fh_model.xml"></include>
 
-        <body name='box' pos='0.0 0.7 0.075'>
-          <geom name='box' type='box' size='0.025 0.05 0.075' rgba='0.5 0 0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
+        <body name='box_0' pos='0.0 0.7 0.075'>
+          <geom name='box_0' type='box' size='0.025 0.05 0.075' rgba='0.5 0 0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
         </body>
 
-        <body name='cylinder' pos='0.2 0.7 0.045'>
-          <geom name='cylinder' type='cylinder' size='0.05 0.045' rgba='0.5 0 0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
+        <body name='cylinder_0' pos='0.2 0.7 0.045'>
+          <geom name='cylinder_0' type='cylinder' size='0.05 0.045' rgba='0.5 0 0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
         </body>
 
-        <body name='sphere' pos='0.4 0.7 0.051'>
+        <body name='sphere_0' pos='0.4 0.7 0.051'>
           <freejoint/>
-          <geom name='sphere' type='sphere' size='0.05' rgba='0 0.7 0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
+          <geom name='sphere_0' type='sphere' size='0.05' rgba='0 0.7 0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
         </body>
 
-        <body name='box_mesh' pos='0.6 0.7 0.001' quat='0.707 0 0 0.707'>
+        <body name='box_1' pos='0.6 0.7 0.001' quat='0.707 0 0 0.707'>
           <freejoint/>
-          <geom name='box_mesh' type='mesh' mesh='box' rgba='0.0 0.3 0.0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
+          <geom name='box_1' type='mesh' mesh='box' rgba='0.0 0.3 0.0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
         </body>
 
 
