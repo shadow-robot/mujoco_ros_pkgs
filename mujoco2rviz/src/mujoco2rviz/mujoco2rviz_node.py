@@ -118,7 +118,6 @@ class Mujoco2Rviz():
 
 if __name__ == '__main__':
     rospy.init_node('mujoco_to_rviz', anonymous=True)
-
     m2m = Mujoco2Rviz()
     sh = ShutdownHandler(m2m, 'clean_up()')
     m2m.publish_objects_to_rviz()

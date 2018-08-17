@@ -10,6 +10,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>rospy</build_depend>
+  <build_depend>moveit_python</build_depend>
   <build_depend>mujoco_models</build_depend>
   <build_depend>mujoco_ros_msgs</build_depend>
   <build_depend>mujoco_ros_control</build_depend>
@@ -17,6 +18,7 @@
   <build_depend>mujoco2rviz</build_depend>
 
   <run_depend>rospy</run_depend>
+  <run_depend>moveit_python</run_depend>
   <run_depend>mujoco_models</run_depend>
   <run_depend>mujoco_ros_msgs</run_depend>
   <run_depend>mujoco_ros_control</run_depend>

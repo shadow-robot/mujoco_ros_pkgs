@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# Use with: roslaunch mujoco_manual_tests multiple_type_objects.launch
+
+
 import argparse
 import rospy
 from geometry_msgs.msg import Pose
