@@ -6,7 +6,6 @@
 import rospy
 import rospkg
 import re
-import signal
 from geometry_msgs.msg import Pose
 from moveit_msgs.msg import CollisionObject
 from mujoco_ros_msgs.msg import ModelStates
@@ -118,6 +117,6 @@ class Mujoco2Rviz():
 
 if __name__ == '__main__':
     rospy.init_node('mujoco_to_rviz', anonymous=True)
-    m2m = Mujoco2Rviz()
-    sh = ShutdownHandler(m2m, 'clean_up()')
-    m2m.publish_objects_to_rviz()
+    mujoco_to_rviz = Mujoco2Rviz()
+    shutdown_handler = ShutdownHandler(mujoco_to_rviz, 'clean_up()')
+    mujoco_to_rviz.publish_objects_to_rviz()
