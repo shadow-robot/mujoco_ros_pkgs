@@ -40,16 +40,16 @@ class MujocoRosControlTest(object):
         self.published_objects = rospy.wait_for_message('/mujoco/model_states', ModelStates)
         self.ignore_unknown_type_objects()
 
-        self.objects_test_case = {'box': {'type': ModelStates.BOX,
+        self.objects_test_case = {'box_0': {'type': ModelStates.BOX,
                                           'is_static': True,
                                           'pose': [0, 0.7, 0.075, 0, 0, 0, 1]},
-                                  'cylinder': {'type': ModelStates.CYLINDER,
+                                  'cylinder_0': {'type': ModelStates.CYLINDER,
                                                'is_static': True,
                                                'pose': [0.2, 0.7, 0.045, 0, 0, 0, 1]},
-                                  'sphere': {'type': ModelStates.SPHERE,
+                                  'sphere_0': {'type': ModelStates.SPHERE,
                                              'is_static': False,
                                              'pose': [0.4, 0.7, 0.05, 0, 0, 0, 1]},
-                                  'box_mesh': {'type': ModelStates.MESH,
+                                  'box_1': {'type': ModelStates.MESH,
                                                'is_static': False,
                                                'pose': [0.6, 0.7, 0, 0, 0, 0.707, 0.707]}}
 
