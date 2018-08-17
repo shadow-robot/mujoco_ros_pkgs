@@ -27,6 +27,21 @@ class Mujoco2Rviz():
         self._collision_object_publisher = rospy.Publisher('/collision_object', CollisionObject, queue_size=2,
                                                            latch=True)
 
+    def publish_objects_to_rviz(self, publishing_rate=20):
+        rate = rospy.Rate(publishing_rate)
+        while not rospy.is_shutdown():
+            for model_instance_name in self._model_cache.keys():
+                self._collision_object_publisher.publish(self._model_cache[model_instance_name])
+            rate.sleep()
+
+    def clean_up(self):
+        rospy.loginfo("Cleaning up!")
+        for model_instance_name in self._model_cache.keys():
+            self._model_cache[model_instance_name].operation = CollisionObject.REMOVE
+            self._collision_object_publisher.publish(self._model_cache[model_instance_name])
+            rospy.sleep(1)
+        rospy.loginfo("All cleaned up, shutting down...")
+
     def _objects_states_cb(self, objects_states_msg):
         for model_idx, model_instance_name in enumerate(objects_states_msg.name):
             if self._static_only and not objects_states_msg.is_static[model_idx]:
@@ -100,21 +115,6 @@ class Mujoco2Rviz():
         collision_object.id = '{}__link'.format(model_instance_name)
         collision_object.operation = CollisionObject.ADD
         return collision_object
-
-    def publish_objects_to_rviz(self, publishing_rate=20):
-        rate = rospy.Rate(publishing_rate)
-        while not rospy.is_shutdown():
-            for model_instance_name in self._model_cache.keys():
-                self._collision_object_publisher.publish(self._model_cache[model_instance_name])
-            rate.sleep()
-
-    def clean_up(self):
-        rospy.loginfo("Cleaning up!")
-        for model_instance_name in self._model_cache.keys():
-            self._model_cache[model_instance_name].operation = CollisionObject.REMOVE
-            self._collision_object_publisher.publish(self._model_cache[model_instance_name])
-            rospy.sleep(1)
-        rospy.loginfo("All cleaned up, shutting down...")
 
 if __name__ == '__main__':
     rospy.init_node('mujoco_to_rviz', anonymous=True)
