@@ -47,8 +47,8 @@ class TestMujocoRosControl(TestCase):
                                                  'is_static': True,
                                                  'pose': [0.2, 0.7, 0.045, 0, 0, 0, 1]},
                                   'sphere_0': {'type': ModelStates.SPHERE,
-                                                'is_static': False,
-                                                'pose': [0.4, 0.7, 0.05, 0, 0, 0, 1]},
+                                               'is_static': False,
+                                               'pose': [0.4, 0.7, 0.05, 0, 0, 0, 1]},
                                   'box_1': {'type': ModelStates.MESH,
                                             'is_static': False,
                                             'pose': [0.6, 0.7, 0, 0, 0, 0.707, 0.707]}}
