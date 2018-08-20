@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+#
+# Copyright (C) 2018 Shadow Robot Company Ltd - All Rights Reserved.
+# Proprietary and Confidential. Unauthorized copying of the content in this file, via any medium is strictly prohibited.
 
 # Use with: roslaunch mujoco_manual_tests multiple_type_objects.launch
 
