@@ -42,13 +42,17 @@ class Mujoco2Rviz():
         rospy.loginfo("All cleaned up, shutting down...")
 
     def _objects_states_cb(self, objects_states_msg):
-        for model_idx, model_instance_name in enumerate(objects_states_msg.name):
-            if self._static_only and not objects_states_msg.is_static[model_idx]:
+        self._add_and_publish_objects(objects_states_msg)
+        self._update_objects(objects_states_msg)
+
+    def _add_and_publish_objects(self, message):
+        for model_idx, model_instance_name in enumerate(message.name):
+            if self._static_only and not message.is_static[model_idx]:
                 continue
 
             if model_instance_name not in self._model_cache:
                 try:
-                    self._model_cache[model_instance_name] = self._create_collision_object_from_msg(objects_states_msg,
+                    self._model_cache[model_instance_name] = self._create_collision_object_from_msg(message,
                                                                                                     model_idx)
                     if model_instance_name in self._ignored_models:
                         self._ignored_models.remove(model_instance_name)
@@ -58,17 +62,19 @@ class Mujoco2Rviz():
                         self._ignored_models.append(model_instance_name)
                         rospy.logwarn("Failed to add {} collision object: {}".format(model_instance_name, e))
 
-            else:
-                if ModelStates.MESH == objects_states_msg.type[model_idx]:
-                    if not compare_poses(objects_states_msg.pose[model_idx],
+    def _update_objects(self, message):
+        for model_idx, model_instance_name in enumerate(message.name):
+            if model_instance_name in self._model_cache:
+                if ModelStates.MESH == message.type[model_idx]:
+                    if not compare_poses(message.pose[model_idx],
                                          self._model_cache[model_instance_name].mesh_poses[0]):
                         self._model_cache[model_instance_name].operation = CollisionObject.MOVE
-                        self._model_cache[model_instance_name].mesh_poses[0] = objects_states_msg.pose[model_idx]
+                        self._model_cache[model_instance_name].mesh_poses[0] = message.pose[model_idx]
                 else:
-                    if not compare_poses(objects_states_msg.pose[model_idx],
+                    if not compare_poses(message.pose[model_idx],
                                          self._model_cache[model_instance_name].primitive_poses[0]):
                         self._model_cache[model_instance_name].operation = CollisionObject.MOVE
-                        self._model_cache[model_instance_name].primitive_poses[0] = objects_states_msg.pose[model_idx]
+                        self._model_cache[model_instance_name].primitive_poses[0] = message.pose[model_idx]
 
     def _create_collision_object_from_msg(self, message, model_idx):
         if ModelStates.MESH == message.type[model_idx]:
