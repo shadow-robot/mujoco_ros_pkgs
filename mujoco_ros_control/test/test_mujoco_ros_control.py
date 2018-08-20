@@ -87,10 +87,8 @@ class TestMujocoRosControl(TestCase):
         for idx, pose in enumerate(self.published_objects.pose):
             self.assertTrue(compare_poses(pose, list_to_pose(self.objects_test_case[self.published_objects.name[idx]]['pose'])))
 
-
 if __name__ == "__main__":
     import rostest
 
     rospy.init_node("test_mujoco_ros_control")
     rostest.rosrun(PKG, "test_mujoco_ros_control", TestMujocoRosControl)
-
