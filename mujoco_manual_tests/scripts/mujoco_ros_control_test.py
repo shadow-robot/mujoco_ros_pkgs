@@ -44,17 +44,17 @@ class MujocoRosControlTest(object):
         self.ignore_unknown_type_objects()
 
         self.objects_test_case = {'box_0': {'type': ModelStates.BOX,
-                                          'is_static': True,
-                                          'pose': [0, 0.7, 0.075, 0, 0, 0, 1]},
+                                            'is_static': True,
+                                            'pose': [0, 0.7, 0.075, 0, 0, 0, 1]},
                                   'cylinder_0': {'type': ModelStates.CYLINDER,
-                                               'is_static': True,
-                                               'pose': [0.2, 0.7, 0.045, 0, 0, 0, 1]},
+                                                 'is_static': True,
+                                                 'pose': [0.2, 0.7, 0.045, 0, 0, 0, 1]},
                                   'sphere_0': {'type': ModelStates.SPHERE,
-                                             'is_static': False,
-                                             'pose': [0.4, 0.7, 0.05, 0, 0, 0, 1]},
-                                  'box_1': {'type': ModelStates.MESH,
                                                'is_static': False,
-                                               'pose': [0.6, 0.7, 0, 0, 0, 0.707, 0.707]}}
+                                               'pose': [0.4, 0.7, 0.05, 0, 0, 0, 1]},
+                                  'box_1': {'type': ModelStates.MESH,
+                                            'is_static': False,
+                                            'pose': [0.6, 0.7, 0, 0, 0, 0.707, 0.707]}}
 
     def ignore_unknown_type_objects(self):
         for idx, object_type in enumerate(self.published_objects.type):

@@ -53,13 +53,13 @@ class Mujoco2RvizTest(object):
 
     def test_spawn_static_objects(self, timeout=10):
         self.process = subprocess.Popen(['roslaunch mujoco2rviz mujoco2rviz.launch'],
-                                         shell=True, stdout=self.devnull, stderr=subprocess.STDOUT)
+                                        shell=True, stdout=self.devnull, stderr=subprocess.STDOUT)
         return self._check_if_published_objects_match_planning_scene(self.static_objects,
                                                                      timeout)
 
     def test_spawn_all_objects(self, timeout=10):
         self.process = subprocess.Popen(['roslaunch mujoco2rviz mujoco2rviz.launch static_only:=false'],
-                                         shell=True, stdout=self.devnull, stderr=subprocess.STDOUT)
+                                        shell=True, stdout=self.devnull, stderr=subprocess.STDOUT)
         return self._check_if_published_objects_match_planning_scene(self.static_objects + self.free_objects,
                                                                      timeout)
 
