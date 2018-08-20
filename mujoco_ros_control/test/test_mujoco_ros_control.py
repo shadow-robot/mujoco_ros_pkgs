@@ -10,6 +10,7 @@ from mujoco_ros_msgs.msg import ModelStates
 
 PKG = "mujoco_ros_control"
 
+
 def list_to_pose(list):
     pose = Pose()
     pose.position.x = list[0]
@@ -46,8 +47,8 @@ class TestMujocoRosControl(TestCase):
                                                  'is_static': True,
                                                  'pose': [0.2, 0.7, 0.045, 0, 0, 0, 1]},
                                   'sphere_0': {'type': ModelStates.SPHERE,
-                                                 'is_static': False,
-                                                 'pose': [0.4, 0.7, 0.05, 0, 0, 0, 1]},
+                                                'is_static': False,
+                                                'pose': [0.4, 0.7, 0.05, 0, 0, 0, 1]},
                                   'box_1': {'type': ModelStates.MESH,
                                             'is_static': False,
                                             'pose': [0.6, 0.7, 0, 0, 0, 0.707, 0.707]}}
@@ -68,7 +69,7 @@ class TestMujocoRosControl(TestCase):
         except Exception:
             pass
         else:
-            is_publishing = True  
+            is_publishing = True
         self.assertTrue(is_publishing)
 
     def test_objects_in_message(self):
@@ -85,7 +86,8 @@ class TestMujocoRosControl(TestCase):
 
     def test_object_poses(self):
         for idx, pose in enumerate(self.published_objects.pose):
-            self.assertTrue(compare_poses(pose, list_to_pose(self.objects_test_case[self.published_objects.name[idx]]['pose'])))
+            self.assertTrue(compare_poses(
+                pose, list_to_pose(self.objects_test_case[self.published_objects.name[idx]]['pose'])))
 
 if __name__ == "__main__":
     import rostest
