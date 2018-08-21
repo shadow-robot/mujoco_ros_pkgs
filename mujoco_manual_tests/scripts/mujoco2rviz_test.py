@@ -23,7 +23,7 @@ class Mujoco2RvizTest(object):
         self.free_objects = ['box_1__link', 'sphere_0__link']
         rospy.wait_for_service('get_planning_scene')
         self.plannig_scene_service = rospy.ServiceProxy('get_planning_scene',
-                                            GetPlanningScene)
+                                                        GetPlanningScene)
 
     def _close_process(self):
         self.process.send_signal(subprocess.signal.SIGINT)
@@ -94,4 +94,3 @@ if __name__ == '__main__':
                                 'test_spawn_all_objects',
                                 'test_clean_up_all_objects']
     test_suite = ManualTestSuite(mujoco2rviz_test, ordered_test_method_list, unattended=args.unattended)
-
