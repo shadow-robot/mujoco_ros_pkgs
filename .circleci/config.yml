@@ -17,7 +17,9 @@ jobs:
       - run: chown -R $MY_USERNAME:$MY_USERNAME $CIRCLE_WORKING_DIRECTORY
       - run: chmod 755 /tmp/oneliner
       - run: gosu $MY_USERNAME /tmp/oneliner "$toolset_branch" $server_type $used_modules
-       - store_test_results:
+
+      - store_test_results:
           path: test_results
-       - store_artifacts:
+
+      - store_artifacts:
           path: code_coverage_results
