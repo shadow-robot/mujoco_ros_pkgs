@@ -158,7 +158,8 @@ bool RobotHWSim::init_sim(
     }
 
     if (hardware_interface == "EffortJointInterface" || hardware_interface == "PositionJointInterface" ||
-        hardware_interface == "VelocityJointInterface") {
+        hardware_interface == "VelocityJointInterface")
+    {
       ROS_WARN_STREAM("Deprecated syntax, please prepend 'hardware_interface/' to '" <<
                       hardware_interface << "' within the <hardwareInterface> tag in joint '" <<
                       joint_names_[j] << "'.");
