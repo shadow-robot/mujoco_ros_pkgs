@@ -653,7 +653,8 @@ void MujocoVisualizationUtils::profiler_update(void)
     // get timers: total, collision, prepare, solve, other
     int itotal = (mujoco_data_->timer[mjTIMER_STEP].duration > mujoco_data_->timer[mjTIMER_FORWARD].duration ?
                     mjTIMER_STEP : mjTIMER_FORWARD);
-    float tdata[5] = {
+    float tdata[5] =
+    {
         static_cast<float>((mujoco_data_->timer[itotal].duration/mjMAX(1, mujoco_data_->timer[itotal].number))),
         static_cast<float>((mujoco_data_->timer[mjTIMER_POS_COLLISION].duration/mjMAX(1,
                            mujoco_data_->timer[mjTIMER_POS_COLLISION].number))),
@@ -680,7 +681,8 @@ void MujocoVisualizationUtils::profiler_update(void)
     }
 
     // get sizes: nv, nbody, nefc, sqrt(nnz), ncont, iter
-    float sdata[6] = {
+    float sdata[6] =
+    {
         static_cast<float>(mujoco_model_->nv),
         static_cast<float>(mujoco_model_->nbody),
         static_cast<float>(mujoco_data_->nefc),
