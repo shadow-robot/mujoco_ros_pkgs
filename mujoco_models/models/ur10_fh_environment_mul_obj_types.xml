@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mujoco>
+	<include file="shared_options.xml"></include>
+    <asset>
+        <include file="shared_asset.xml"></include>
+        <mesh file="meshes/box/box.stl" name="box" />
+    </asset>
+	<worldbody>
+        <geom name='floor' pos='0 0 0' size='5 5 0.001' type='plane' material="mat_plane" solimp="0.99 0.99 0" solref="0.001 0.1" condim='3'/>
+        <body name='floor' pos='0 0 0'></body>
+
+        <include file="robot_ur10_fh_model.xml"></include>
+
+        <body name='box_0' pos='0.0 0.7 0.075'>
+          <geom name='box_0' type='box' size='0.025 0.05 0.075' rgba='0.5 0 0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
+        </body>
+
+        <body name='cylinder_0' pos='0.2 0.7 0.045'>
+          <geom name='cylinder_0' type='cylinder' size='0.05 0.045' rgba='0.5 0 0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
+        </body>
+
+        <body name='sphere_0' pos='0.4 0.7 0.051'>
+          <freejoint/>
+          <geom name='sphere_0' type='sphere' size='0.05' rgba='0 0.7 0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
+        </body>
+
+        <body name='box_1' pos='0.6 0.7 0.001' quat='0.707 0 0 0.707'>
+          <freejoint/>
+          <geom name='box_1' type='mesh' mesh='box' rgba='0.0 0.3 0.0 1' condim='4' friction='1.5 0.5 0.1' contype='1'/>
+        </body>
+
+
+		<light directional="true" ambient="0.2 0.2 0.2" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" castshadow="false" pos="0 0 4" dir="0 0 -1" name="light0"></light>
+	</worldbody>
+</mujoco>

@@ -272,7 +272,7 @@ std::string MujocoRosControl::geom_type_to_string(int geom_type)
       result = mujoco_ros_msgs::ModelStates::MESH;
       break;
     default:
-      result = "unknown type";
+      result = "unknown_type";
       break;
   }
   return result;
