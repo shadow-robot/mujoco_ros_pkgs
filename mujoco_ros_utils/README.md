@@ -44,7 +44,7 @@ This can be tested by running the following command:
 In this script 2 objects (finger_base_links) are defined with name and pose and pushed to an array of type RecognizedObjectsArray.</br> 
 The request is then sent to the **/mujoco/spawn_sim_environment** service and the simulation is spawned with the objects in the requested pose as shown in the picture below:
 
-![alt text](https://github.com/shadow-robot/mujoco_ros_pkgs/blob/kinetic-devel/mujoco_ros_utils/spaw_objects_example.png)
+![alt text](https://github.com/shadow-robot/mujoco_ros_pkgs/blob/kinetic-devel/mujoco_ros_utils/spawn_object_example.png)
 
 
 
