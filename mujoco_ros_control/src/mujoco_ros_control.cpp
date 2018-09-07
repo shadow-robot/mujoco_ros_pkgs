@@ -148,18 +148,28 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     }
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 
-    // home pose of the arm
-    const float initial_robot_qpos[] = {0.8, -1.726, 1.347, -1.195, -1.584, 1.830, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
     // set up the initial simulation environment
-    setup_sim_environment(initial_robot_qpos);
+    setup_sim_environment();
 }
 
-void MujocoRosControl::setup_sim_environment(const float initial_robot_qpos[])
+void MujocoRosControl::setup_sim_environment()
 {
-  for (int i=0; i < n_dof_-objects_in_scene_.size(); i++)
+  if (robot_node_handle.getParam("robot_initial_state", robot_initial_state_))
   {
-    mujoco_data->qpos[i] = initial_robot_qpos[i];
+    int index;
+    XmlRpc::XmlRpcValue::iterator i;
+    for (index = 0, i = robot_initial_state_.begin(); i != robot_initial_state_.end(); ++i, ++index)
+    {
+      mujoco_data->qpos[index] = i->second;
+    }
+  }
+  else
+  {
+    ROS_WARN("Failed to get param 'robot_initial_state'");
+    for (int i=0; i < n_dof_-objects_in_scene_.size(); i++)
+    {
+      mujoco_data->qpos[i] = 0;
+    }
   }
 
   // compute forward kinematics for new pos

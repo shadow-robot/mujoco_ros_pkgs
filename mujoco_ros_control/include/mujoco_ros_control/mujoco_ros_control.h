@@ -81,7 +81,7 @@ protected:
   std::string get_urdf(std::string param_name) const;
 
   // setup initial sim environment
-  void setup_sim_environment(const float initial_pos[]);
+  void setup_sim_environment();
 
   // parse transmissions from URDF
   bool parse_transmissions(const std::string& urdf_string);
@@ -111,6 +111,8 @@ protected:
   std::string robot_namespace_;
   std::string robot_description_param_;
   std::string robot_model_path_;
+
+  XmlRpc::XmlRpcValue robot_initial_state_;
 
   // vectors
   std::vector<int> mujoco_ids;
