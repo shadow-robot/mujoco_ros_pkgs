@@ -155,30 +155,34 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
 void MujocoRosControl::setup_sim_environment()
 {
   XmlRpc::XmlRpcValue robot_joints, robot_initial_state;
+  bool params_read_correctly = true;
+
   if (!robot_node_handle.getParam("robot_joints", robot_joints)){
     ROS_WARN("Failed to get param 'robot_joints'");
+    params_read_correctly = false;
   }
 
-  if (robot_node_handle.getParam("robot_initial_state", robot_initial_state))
+  if (params_read_correctly && robot_node_handle.getParam("robot_initial_state", robot_initial_state))
   {
-    XmlRpc::XmlRpcValue::iterator it;
-
     for (int i = 0; i < robot_joints.size(); i++)
     {
-      for (it = robot_initial_state.begin(); it != robot_initial_state.end(); ++it)
+      for (XmlRpc::XmlRpcValue::iterator it = robot_initial_state.begin(); it != robot_initial_state.end(); ++it)
       {
         if (robot_joints[i] == it->first)
         {
-          ROS_INFO_STREAM(it->first << " : " << it->second << std::endl);
           mujoco_data->qpos[i] = it->second;
         }
       }
     }
-
   }
   else
   {
     ROS_WARN("Failed to get param 'robot_initial_state'");
+    params_read_correctly = false;
+  }
+
+  if (!params_read_correctly)
+  {
     for (int i=0; i < n_dof_-objects_in_scene_.size(); i++)
     {
       mujoco_data->qpos[i] = 0;
