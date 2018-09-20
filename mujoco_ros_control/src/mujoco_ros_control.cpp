@@ -154,14 +154,27 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
 
 void MujocoRosControl::setup_sim_environment()
 {
-  if (robot_node_handle.getParam("robot_initial_state", robot_initial_state_))
+  XmlRpc::XmlRpcValue robot_joints, robot_initial_state;
+  if (!robot_node_handle.getParam("robot_joints", robot_joints)){
+    ROS_WARN("Failed to get param 'robot_joints'");
+  }
+
+  if (robot_node_handle.getParam("robot_initial_state", robot_initial_state))
   {
-    int index;
-    XmlRpc::XmlRpcValue::iterator i;
-    for (index = 0, i = robot_initial_state_.begin(); i != robot_initial_state_.end(); ++i, ++index)
+    XmlRpc::XmlRpcValue::iterator it;
+
+    for (int i = 0; i < robot_joints.size(); i++)
     {
-      mujoco_data->qpos[index] = i->second;
+      for (it = robot_initial_state.begin(); it != robot_initial_state.end(); ++it)
+      {
+        if (robot_joints[i] == it->first)
+        {
+          ROS_INFO_STREAM(it->first << " : " << it->second << std::endl);
+          mujoco_data->qpos[i] = it->second;
+        }
+      }
     }
+
   }
   else
   {

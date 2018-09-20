@@ -112,8 +112,6 @@ protected:
   std::string robot_description_param_;
   std::string robot_model_path_;
 
-  XmlRpc::XmlRpcValue robot_initial_state_;
-
   // vectors
   std::vector<int> mujoco_ids;
   std::vector<int>::iterator it;
