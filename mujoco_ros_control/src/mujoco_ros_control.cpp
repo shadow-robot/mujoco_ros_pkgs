@@ -157,7 +157,8 @@ void MujocoRosControl::setup_sim_environment()
   XmlRpc::XmlRpcValue robot_joints, robot_initial_state;
   bool params_read_correctly = true;
 
-  if (!robot_node_handle.getParam("robot_joints", robot_joints)){
+  if (!robot_node_handle.getParam("robot_joints", robot_joints))
+  {
     ROS_WARN("Failed to get param 'robot_joints'");
     params_read_correctly = false;
   }
