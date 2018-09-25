@@ -2,6 +2,6 @@
   <include file="$(find fh_robot_launch)/launch/fh_ur10_and_fh2_mujoco.launch">
     <arg name="sim" value="true"/>
     <arg name="grasp_controller" value="true" />
-    <arg name="robot_model_path" value="$(find mujoco_models)/models/ur10_fh_environment_mul_obj_types.xml"/>
+    <arg name="robot_model_path" value="$(find fh_description)/mujoco_models/ur10_fh_environment_mul_obj_types.xml"/>
   </include>
 </launch>

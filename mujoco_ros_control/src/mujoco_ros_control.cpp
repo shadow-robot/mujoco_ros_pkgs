@@ -148,18 +148,46 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     }
     ROS_INFO_NAMED("mujoco_ros_control", "Loaded mujoco_ros_control.");
 
-    // home pose of the arm
-    const float initial_robot_qpos[] = {0.8, -1.726, 1.347, -1.195, -1.584, 1.830, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
     // set up the initial simulation environment
-    setup_sim_environment(initial_robot_qpos);
+    setup_sim_environment();
 }
 
-void MujocoRosControl::setup_sim_environment(const float initial_robot_qpos[])
+void MujocoRosControl::setup_sim_environment()
 {
-  for (int i=0; i < n_dof_-objects_in_scene_.size(); i++)
+  XmlRpc::XmlRpcValue robot_joints, robot_initial_state;
+  bool params_read_correctly = true;
+
+  if (!robot_node_handle.getParam("robot_joints", robot_joints))
   {
-    mujoco_data->qpos[i] = initial_robot_qpos[i];
+    ROS_WARN("Failed to get param 'robot_joints'");
+    params_read_correctly = false;
+  }
+
+  if (params_read_correctly && robot_node_handle.getParam("robot_initial_state", robot_initial_state))
+  {
+    for (int i = 0; i < robot_joints.size(); i++)
+    {
+      for (XmlRpc::XmlRpcValue::iterator it = robot_initial_state.begin(); it != robot_initial_state.end(); ++it)
+      {
+        if (robot_joints[i] == it->first)
+        {
+          mujoco_data->qpos[i] = it->second;
+        }
+      }
+    }
+  }
+  else
+  {
+    ROS_WARN("Failed to get param 'robot_initial_state'");
+    params_read_correctly = false;
+  }
+
+  if (!params_read_correctly)
+  {
+    for (int i=0; i < n_dof_-objects_in_scene_.size(); i++)
+    {
+      mujoco_data->qpos[i] = 0;
+    }
   }
 
   // compute forward kinematics for new pos
