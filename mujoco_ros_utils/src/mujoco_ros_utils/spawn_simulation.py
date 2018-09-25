@@ -64,8 +64,9 @@ class SpawnSimulation(object):
             rospy.loginfo("Starting simulation..")
             try:
                 process = subprocess.Popen(['xterm -e roslaunch {} \
-                                            robot_model_path:={}/{}'.format(self._robot_launch_file, self._xml_config_dir,
-                                            self._generated_mujoco_env_filename)], shell=True)
+                                            robot_model_path:={}/{}'.format(self._robot_launch_file,
+                                            self._xml_config_dir, self._generated_mujoco_env_filename)],
+                                            shell=True)
             except OSError as e:
                 rospy.logerr("Could not spawn simulation")
                 process.kill()
