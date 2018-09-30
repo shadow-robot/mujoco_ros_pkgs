@@ -5,7 +5,7 @@
   <description>The mujoco2rviz package</description>
 
   <maintainer email="software@shadowrobot.com">Shadow Robot software team</maintainer>
-  <license>Private</license>
+  <license>GPL</license>
   <author email="michal@shadowrobot.com">Michal Kramarczyk</author>
 
   <buildtool_depend>catkin</buildtool_depend>
