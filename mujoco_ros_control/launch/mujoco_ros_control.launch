@@ -3,8 +3,14 @@
   <param name="/use_sim_time" value="true"/>
   <arg name="robot_model_path" default="$(find fh_description)/mujoco_models/ur10_fh_environment.xml"/>
   <arg name="robot_description_param" default="robot_description"/>
+  <arg name="debug" default="false"/>
 
-  <node name="mujoco_ros_control" pkg="mujoco_ros_control" type="mujoco_ros_control" output="screen">
+  <node unless="$(arg debug)" name="mujoco_ros_control" pkg="mujoco_ros_control" type="mujoco_ros_control" output="screen">
+    <param name="robot_model_path" value="$(arg robot_model_path)"/>
+    <param name="robot_description_param" value="$(arg robot_description_param)"/>
+  </node>
+
+  <node if="$(arg debug)" name="mujoco_ros_control" pkg="mujoco_ros_control" type="mujoco_ros_control" output="screen" launch-prefix="gdb -ex run -args">
     <param name="robot_model_path" value="$(arg robot_model_path)"/>
     <param name="robot_description_param" value="$(arg robot_description_param)"/>
   </node>

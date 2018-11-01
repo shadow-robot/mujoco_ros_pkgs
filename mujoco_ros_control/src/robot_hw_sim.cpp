@@ -46,6 +46,16 @@ bool RobotHWSim::init_sim(
 
   // resize vectors to number of DOF
   n_dof_ = mujoco_model->njnt - objects_in_scene;
+  ROS_INFO("%i robot DsOF found.", n_dof_);
+  if (n_dof_ != transmissions.size())
+  {
+    ROS_WARN("%i DsOF, but %li transmissions defined.", n_dof_, transmissions.size());
+    if (n_dof_ > transmissions.size())
+    {
+      n_dof_ = (int)transmissions.size();
+    }
+    ROS_WARN("Limiting joints to %i, but this is likely a problem.", n_dof_);
+  }
   joint_names_.resize(n_dof_);
   joint_types_.resize(n_dof_);
   joint_lower_limits_.resize(n_dof_);

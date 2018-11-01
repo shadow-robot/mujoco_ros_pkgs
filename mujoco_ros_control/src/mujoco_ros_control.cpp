@@ -130,10 +130,20 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     // check for objects
     check_objects_in_scene();
 
+    ROS_INFO("Initialising robot simulation interface...");
+    try
+    {
     if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
                                  mujoco_data, urdf_model_ptr, transmissions_, n_free_joints_))
     {
       ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot sim interface");
+      return;
+    }
+    }
+    catch (std::exception &e)
+    {
+      ROS_ERROR("Failed to initialise robot simulation interface.");
+      ROS_ERROR("%s", e.what());
       return;
     }
 
@@ -433,7 +443,7 @@ int main(int argc, char** argv)
     spinner.start();
 
     // run main loop, target real-time simulation and 60 fps rendering
-    while ( !glfwWindowShouldClose(window) )
+    while ( ros::ok() && !glfwWindowShouldClose(window) )
     {
       // advance interactive simulation for 1/60 sec
       // Assuming MuJoCo can simulate faster than real-time, which it usually can,
