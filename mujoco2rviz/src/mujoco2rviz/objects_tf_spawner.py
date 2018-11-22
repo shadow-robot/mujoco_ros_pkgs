@@ -15,7 +15,7 @@ class Mujoco2RvizTfSpawner():
         self.objects_to_poses_dict = {}
         self.supported_types = ['mesh', 'box']
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
-        rospy.Subscriber("/mujoco/model_states", ModelStates, self.model_states_cb)
+        rospy.Subscriber("/mujoco/model_states", ModelStates, self.model_states_cb, queue_size=1)
 
     def model_states_cb(self, data):
         self.process_data(data)
