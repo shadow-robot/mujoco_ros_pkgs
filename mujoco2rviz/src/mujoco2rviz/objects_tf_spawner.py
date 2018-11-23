@@ -67,7 +67,7 @@ class Mujoco2RvizTfSpawner():
                     object_height = data.size[idx].data[2] * 2
                     self.objects_to_poses_dict[data.name[idx]] = self.move_pose_alongside_intrinsic_z_axis(
                                                                     self.objects_to_poses_dict[object_name],
-                                                                                               -object_height/2)
+                                                                    -object_height/2)
 
 if __name__ == '__main__':
     rospy.init_node('mujoco_spawn_tfs')
