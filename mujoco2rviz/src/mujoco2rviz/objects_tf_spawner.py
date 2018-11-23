@@ -10,6 +10,7 @@ from mujoco_ros_msgs.msg import ModelStates
 from geometry_msgs.msg import TransformStamped
 from tf.transformations import euler_from_quaternion
 
+
 class Mujoco2RvizTfSpawner():
     def __init__(self):
         self.objects_to_poses_dict = {}
@@ -22,7 +23,7 @@ class Mujoco2RvizTfSpawner():
         for key, value in self.objects_to_poses_dict.iteritems():
             tf_to_be_published = self.object_pose_quaternion_to_tf(key, value)
             self.tf_broadcaster.sendTransform(tf_to_be_published)
-        
+
     def object_pose_quaternion_to_tf(self, object_name, object_pose, parent_frame='world'):
         tf = TransformStamped()
 
@@ -41,9 +42,9 @@ class Mujoco2RvizTfSpawner():
 
     def move_pose_alongside_intrinsic_z_axis(self, pose, distance):
         orientation_euler = euler_from_quaternion([pose.orientation.x,
-                                                          pose.orientation.y,
-                                                          pose.orientation.z,
-                                                          pose.orientation.w])
+                                                   pose.orientation.y,
+                                                   pose.orientation.z,
+                                                   pose.orientation.w])
         translation_normal_vector = [sin(orientation_euler[1]),
                                      -sin(orientation_euler[0])*cos(orientation_euler[1]),
                                      cos(orientation_euler[0])*cos(orientation_euler[1])]
@@ -62,8 +63,11 @@ class Mujoco2RvizTfSpawner():
                 self.objects_to_poses_dict[data.name[idx]] = data.pose[idx]
                 if 'box' == object_type:
                     # Move frame to the bottom of the object
-                    self.objects_to_poses_dict[data.name[idx]] = self.move_pose_alongside_intrinsic_z_axis(self.objects_to_poses_dict[data.name[idx]],
-                                                                                                                                      -data.size[idx].data[2])
+                    object_name = data.name[idx]
+                    object_height = data.size[idx].data[2] * 2
+                    self.objects_to_poses_dict[data.name[idx]] = self.move_pose_alongside_intrinsic_z_axis \
+                                                                    (self.objects_to_poses_dict[object_name],
+                                                                                                -object_height/2)
 
 if __name__ == '__main__':
     rospy.init_node('mujoco_spawn_tfs')
