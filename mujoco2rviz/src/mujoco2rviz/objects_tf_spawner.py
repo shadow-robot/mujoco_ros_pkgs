@@ -14,7 +14,7 @@ from tf.transformations import euler_from_quaternion
 class Mujoco2RvizTfSpawner():
     def __init__(self):
         self.objects_to_poses_dict = {}
-        self.supported_types = ['mesh', 'box']
+        self.supported_types = ['mesh', 'box', 'sphere', 'cylinder']
         self.tf_broadcaster = tf2_ros.TransformBroadcaster()
         rospy.Subscriber("/mujoco/model_states", ModelStates, self.model_states_cb, queue_size=1)
 
@@ -61,10 +61,16 @@ class Mujoco2RvizTfSpawner():
         for idx, object_type in enumerate(object_types):
             if object_type in self.supported_types:
                 self.objects_to_poses_dict[data.name[idx]] = data.pose[idx]
+                # Move frame to the bottom of the object
                 if 'box' == object_type:
-                    # Move frame to the bottom of the object
                     object_name = data.name[idx]
                     object_height = data.size[idx].data[2] * 2
+                    self.objects_to_poses_dict[data.name[idx]] = self.move_pose_alongside_intrinsic_z_axis(
+                                                                     self.objects_to_poses_dict[object_name],
+                                                                     -object_height/2)
+                elif 'cylinder' == object_type:
+                    object_name = data.name[idx]
+                    object_height = data.size[idx].data[1] * 2
                     self.objects_to_poses_dict[data.name[idx]] = self.move_pose_alongside_intrinsic_z_axis(
                                                                      self.objects_to_poses_dict[object_name],
                                                                      -object_height/2)
