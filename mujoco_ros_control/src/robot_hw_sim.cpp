@@ -52,7 +52,7 @@ bool RobotHWSim::init_sim(
     ROS_WARN("%i DsOF, but %li transmissions defined.", n_dof_, transmissions.size());
     if (n_dof_ > transmissions.size())
     {
-      n_dof_ = (int)transmissions.size();
+      n_dof_ = static_cast<int>(transmissions.size());
     }
     ROS_WARN("Limiting joints to %i, but this is likely a problem.", n_dof_);
   }
