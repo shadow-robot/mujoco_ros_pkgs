@@ -133,12 +133,12 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     ROS_INFO("Initialising robot simulation interface...");
     try
     {
-    if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
-                                 mujoco_data, urdf_model_ptr, transmissions_, n_free_joints_))
-    {
-      ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot sim interface");
-      return;
-    }
+      if (!robot_hw_sim_->init_sim(robot_namespace_, robot_node_handle, mujoco_model,
+                                  mujoco_data, urdf_model_ptr, transmissions_, n_free_joints_))
+      {
+        ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot sim interface");
+        return;
+      }
     }
     catch (std::exception &e)
     {
