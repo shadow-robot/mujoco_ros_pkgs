@@ -2,7 +2,8 @@
   <arg name="mesh_directory" default="$(find fh_description)/mujoco_models/meshes/"/>
   <arg name="generated_mujoco_env_filename" default="ur10_fh_environment_with_objects.xml"/>
   <arg name="base_mujoco_env_filename" default="ur10_fh_environment.xml" />
-  <arg name="robot_launch_file" default="fh_robot_launch fh_ur10_and_fh2_mujoco.launch sim:=true grasp_controller:=true scene:=false" />
+  <arg name="robot_description" default="$(find fh_2_ur10_moveit_config)/config/fh_v2_ur10_with_hand.urdf.xacro" />
+  <arg name="robot_launch_file" default="fh_robot_launch fh_ur10_and_fh2_mujoco.launch sim:=true grasp_controller:=true scene:=false robot_description:='$(arg robot_description)'" />
 
   <node name="mujoco_simulation_spawner" pkg="mujoco_ros_utils" type="spawn_simulation.py" output="screen">
     <param name="mesh_directory" value="$(arg mesh_directory)"/>
