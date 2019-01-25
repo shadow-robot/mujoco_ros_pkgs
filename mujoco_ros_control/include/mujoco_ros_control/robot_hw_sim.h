@@ -50,16 +50,84 @@ public:
     ros::NodeHandle model_nh,
     mjModel* mujoco_model, mjData *mujoco_data,
     const urdf::Model *const urdf_model,
-    std::vector<transmission_interface::TransmissionInfo> transmissions,
+    std::vector<transmission_interface::TransmissionInfo> transmissions_info,
     int objects_in_scene);
 
   virtual void read(const ros::Time& time, const ros::Duration& period);
 
   virtual void write(const ros::Time& time, const ros::Duration& period);
 
-protected:
   // Methods used to control a joint.
   enum ControlMethod {EFFORT, POSITION, POSITION_PID, VELOCITY, VELOCITY_PID};
+
+  struct JointData {
+    std::string name;
+    int type;
+    double lower_limit;
+    double upper_limit;
+    double effort_limit;
+    ControlMethod control_method;
+    control_toolbox::Pid pid_controller;
+    double position;
+    double velocity;
+    double effort;
+    double effort_command;
+    double position_command;
+    double last_position_command;
+    double velocity_command;
+    std::vector<std::string> hardware_interfaces;
+    int mujoco_joint_id;
+    int mujoco_qpos_addr;
+    int mujoco_qvel_addr;
+
+    std::string to_string(){
+      std::stringstream ss;
+      ss << "Joint " << name << " has type " << type << ", mujoco addresses " << mujoco_joint_id << ", " <<
+        mujoco_qpos_addr << ", " << mujoco_qvel_addr << ".\nJoint status: p:" << position << " v:" << velocity <<
+        " e:" << effort << "\nJoint position address: " << &position;
+      return ss.str();
+    }
+  };
+
+  struct TransmissionData {
+    std::string name;
+    std::vector<std::string> joint_names;
+    std::string to_string(){
+      std::stringstream ss;
+      ss << "Transmission " << name << " has " << joint_names.size() << " joints:";
+      for (auto& joint_name : joint_names)
+      {
+        ss << "\n" << joint_name;
+      }
+      return ss.str();
+    }
+  };
+
+  struct MujocoJointData {
+    int id;
+    int qpos_addr;
+    int qvel_addr;
+    int type;
+
+    std::string to_string(){
+      std::stringstream ss;
+      ss << "Mujoco Joint has type " << type << ", mujoco addresses " << id << ", " <<
+        qpos_addr << ", " << qvel_addr;
+      return ss.str();
+    }
+  };
+
+  struct MujocoActuatorData {
+    int id;
+
+    std::string to_string(){
+      std::stringstream ss;
+      ss << "Mujoco Actuator has mujoco address " << id << ".";
+      return ss.str();
+    }
+  };
+
+protected:
 
   // Register the limits of the joint specified by joint_name and joint_handle. The limits are
   // retrieved from joint_limit_nh. If urdf_model is not NULL, limits are retrieved from it also.
@@ -71,6 +139,8 @@ protected:
                              const urdf::Model *const urdf_model,
                              int *const joint_type, double *const lower_limit,
                              double *const upper_limit, double *const effort_limit);
+  
+  static bool string_ends_with(std::string const & value, std::string const & ending);
 
   unsigned int n_dof_;
 
@@ -88,21 +158,10 @@ protected:
   joint_limits_interface::VelocityJointSaturationInterface vj_sat_interface_;
   joint_limits_interface::VelocityJointSoftLimitsInterface vj_limits_interface_;
 
-  // vectors
-  std::vector<std::string> joint_names_;
-  std::vector<int> joint_types_;
-  std::vector<double> joint_lower_limits_;
-  std::vector<double> joint_upper_limits_;
-  std::vector<double> joint_effort_limits_;
-  std::vector<ControlMethod> joint_control_methods_;
-  std::vector<control_toolbox::Pid> pid_controllers_;
-  std::vector<double> joint_position_;
-  std::vector<double> joint_velocity_;
-  std::vector<double> joint_effort_;
-  std::vector<double> joint_effort_command_;
-  std::vector<double> joint_position_command_;
-  std::vector<double> last_joint_position_command_;
-  std::vector<double> joint_velocity_command_;
+  std::vector<TransmissionData> transmissions_;
+  std::map<std::string, JointData> joints_;
+  std::map<std::string, MujocoJointData> mujoco_joints_;
+  std::map<std::string, MujocoActuatorData> mujoco_actuators_;
 
   // mujoco elements
   mjModel* mujoco_model_;

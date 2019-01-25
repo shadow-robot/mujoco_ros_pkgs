@@ -1,7 +1,7 @@
 <launch>
   <!-- This launch file launches mujoco_ros_control node -->
   <param name="/use_sim_time" value="true"/>
-  <arg name="robot_model_path" default="$(find fh_description)/mujoco_models/ur10_fh_environment.xml"/>
+  <arg name="robot_model_path"/>
   <arg name="robot_description_param" default="robot_description"/>
   <arg name="debug" default="false"/>
 
