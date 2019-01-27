@@ -51,7 +51,8 @@ bool RobotHWSim::init_sim(
   ROS_INFO("%i degrees of freedom (qvel) found.", mujoco_model_->nv);
   ROS_INFO("%i actuators/controls (ctrl) found.", mujoco_model_->nu);
   ROS_INFO("%i actuation states (act) found.", mujoco_model_->na);
-  for (int mujoco_joint_id = 0; mujoco_joint_id < mujoco_model_->njnt; mujoco_joint_id++)
+  ROS_INFO("%i joints (njnt) found.", mujoco_model_->njnt);
+  for (int mujoco_joint_id = 0; mujoco_joint_id < n_dof_; mujoco_joint_id++)
   {
     std::string joint_name = mj_id2name(mujoco_model_, mjOBJ_JOINT, mujoco_joint_id);
     MujocoJointData mj_joint_data;
@@ -229,77 +230,6 @@ bool RobotHWSim::init_sim(
 
 void RobotHWSim::read(const ros::Time& time, const ros::Duration& period)
 {
-  // fill up joint_positions vector with current position to update joint state controller
-  // get current state of simulation
-  // for (auto& transmission : transmissions_)
-  // {
-  //   if (string_ends_with(transmission.name, "rh_ffmiddle_transmission"))
-  //   {
-  //     ROS_INFO_THROTTLE(1, "Reading transmission:\n%s", transmission.to_string().c_str());
-  //   }
-  //   if (transmission.joints.empty())
-  //   {
-  //     continue;
-  //   }
-  //   else if (transmission.joints.size() == 1)
-  //   {
-  //     // ROS_DEBUG_THROTTLE(1, "Reading transmission '%s', which has %i joints.", transmission.name.c_str(), 1);
-  //     JointData& joint = transmission.joints.back();
-  //     // ROS_DEBUG_THROTTLE(1, "Original joint %s position %lf, velocity %lf, effort %lf", joint.name.c_str(), joint.position, joint.velocity, joint.effort);
-  //     if (joint.type == urdf::Joint::PRISMATIC)
-  //     {
-  //       joint.position = mujoco_data_->qpos[joint.mujoco_qpos_addr];
-  //     }
-  //     else
-  //     {
-  //       joint.position += angles::shortest_angular_distance(joint.position, mujoco_data_->qpos[joint.mujoco_qpos_addr]);
-  //     }
-  //     joint.velocity = mujoco_data_->qvel[joint.mujoco_qvel_addr];
-  //     joint.effort = mujoco_data_->qfrc_applied[joint.mujoco_qvel_addr];
-  //     // ROS_DEBUG_THROTTLE(1, "Reading joint %s gave position %lf, velocity %lf, effort %lf", joint.name.c_str(), joint.position, joint.velocity, joint.effort);
-  //   }
-  //   else
-  //   {
-  //     // ROS_DEBUG_THROTTLE(1, "Reading transmission '%s', which has %lu joints.", transmission.name.c_str(), transmission.joints.size());
-  //     double total_effort = 0.0;
-  //     double total_position = 0.0;
-  //     double total_velocity = 0.0;
-  //     int num_joints = transmission.joints.size();
-  //     for (auto& joint : transmission.joints)
-  //     {
-  //       total_effort += mujoco_data_->qfrc_applied[joint.mujoco_qvel_addr];
-  //       total_position += mujoco_data_->qpos[joint.mujoco_qpos_addr];
-  //       total_velocity += mujoco_data_->qvel[joint.mujoco_qvel_addr];
-  //       ROS_DEBUG_THROTTLE(1, "Effort: %lf", total_effort);
-  //     }
-  //     double average_effort = total_effort / num_joints;
-  //     double average_position = total_position / num_joints;
-  //     double average_velocity = total_velocity / num_joints;
-  //     ROS_DEBUG_THROTTLE(1, "Effort: %lf, num joints: %i", total_effort, num_joints);
-  //     for (auto& joint : transmission.joints)
-  //     {
-  //       if (joint.type == urdf::Joint::PRISMATIC)
-  //       {
-  //         // ROS_DEBUG_THROTTLE(1, "Prismatic joint type.");
-  //         joint.position = mujoco_data_->qpos[joint.mujoco_qpos_addr];
-  //       }
-  //       else
-  //       {
-  //         // ROS_DEBUG_THROTTLE(1, "Normal joint type.");
-  //         joint.position += angles::shortest_angular_distance(joint.position, mujoco_data_->qpos[joint.mujoco_qpos_addr]);
-  //         // joint.position += angles::shortest_angular_distance(joint.position, average_position);
-  //       }
-  //       joint.velocity = average_velocity;
-  //       // joint.effort = average_effort;
-  //       joint.effort = total_effort;
-  //       ROS_DEBUG_THROTTLE(1, "Effort: %lf.", joint.effort);
-  //     }
-  //   }
-  //   if (string_ends_with(transmission.name, "rh_ffmiddle_transmission"))
-  //   {
-  //     ROS_INFO_THROTTLE(1, "Read transmission:\n%s", transmission.to_string().c_str());
-  //   }
-  // }
   for (auto& joint_item : joints_)
   {
     JointData& joint = joint_item.second;
@@ -356,6 +286,32 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
                             actuator.first.c_str(), mujoco_data_->ctrl[actuator.second.id]);
           break;
         }
+
+        case POSITION:
+          mujoco_data_->ctrl[actuator.second.id] = joint_1.position_command + joint_2.position_command;
+          break;
+
+        case POSITION_PID:
+        {
+          mujoco_data_->ctrl[actuator.second.id] = 
+            clamp(joint_1.pid_controller.computeCommand(joint_1.position_command - joint_1.position, period),
+                  -joint_1.effort_limit, joint_1.effort_limit) + 
+            clamp(joint_2.pid_controller.computeCommand(joint_2.position_command - joint_2.position, period),
+                  -joint_2.effort_limit, joint_2.effort_limit);
+          break;
+        }
+
+        case VELOCITY:
+          mujoco_data_->ctrl[actuator.second.id] = joint_1.velocity_command + joint_2.velocity_command;
+          break;
+
+        case VELOCITY_PID:
+          mujoco_data_->ctrl[actuator.second.id] =
+            clamp(joint_1.pid_controller.computeCommand(joint_1.velocity_command - joint_1.velocity, period),
+                  -joint_1.effort_limit, joint_1.effort_limit) +
+            clamp(joint_2.pid_controller.computeCommand(joint_2.velocity_command - joint_2.velocity, period),
+                  -joint_2.effort_limit, joint_2.effort_limit);
+          break;
       }
       continue;
     }
@@ -407,98 +363,6 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
       }
     }
   }
-
-  // for (auto& transmission : transmissions_)
-  // {
-  //   if (transmission.joints.empty())
-  //   {
-  //     continue;
-  //   }
-  //   else if (transmission.joints.size() == 1)
-  //   {
-  //     JointData& joint = transmission.joints.back();
-  //     switch (joint.control_method)
-  //     {
-  //       case EFFORT:
-  //       {
-  //         mujoco_data_->ctrl[joint.mujoco_qvel_addr] = joint.effort_command;
-  //       }
-  //       break;
-
-  //       case POSITION:
-  //       {
-  //         mujoco_data_->ctrl[joint.mujoco_qvel_addr] = joint.position_command;
-  //       }
-  //       break;
-
-  //       case POSITION_PID:
-  //       {
-  //         double error;
-
-  //         error = joint.position_command - joint.position;
-  //         const double effort_limit = joint.effort_limit;
-  //         const double effort = clamp(joint.pid_controller.computeCommand(error, period),
-  //                                     -effort_limit, effort_limit);
-  //         mujoco_data_->ctrl[joint.mujoco_qvel_addr] = effort;
-  //       }
-  //       break;
-
-  //       case VELOCITY:
-  //         mujoco_data_->ctrl[joint.mujoco_qvel_addr] = joint.velocity_command;
-  //         break;
-
-  //       case VELOCITY_PID:
-  //         double error;
-  //         error = joint.velocity_command - joint.velocity;
-  //         const double effort_limit = joint.effort_limit;
-  //         const double effort = clamp(joint.pid_controller.computeCommand(error, period),
-  //                                     -effort_limit, effort_limit);
-  //         mujoco_data_->ctrl[joint.mujoco_qvel_addr] = effort;
-  //         break;
-  //     }
-  //   }
-  //   else
-  //   {
-  //     continue;
-  //     int num_joints = transmission.joints.size();
-  //     switch (transmission.joints.front().control_method)
-  //     {
-  //       case EFFORT:
-  //       {
-  //         double total_effort;
-  //         for (auto& joint : transmission.joints)
-  //         {
-  //           total_effort += joint.effort_command;
-  //         }
-  //         double shared_effort = total_effort / num_joints;
-  //         for (auto& joint : transmission.joints)
-  //         {
-  //           mujoco_data_->ctrl[joint.mujoco_qvel_addr] = total_effort;
-  //           // mujoco_data_->ctrl[joint.mujoco_qvel_addr] = joint.effort_command;
-  //         }
-  //       }
-  //       break;
-
-  //       case POSITION:
-  //       {
-  //         for (auto& joint : transmission.joints)
-  //         {
-  //           mujoco_data_->ctrl[joint.mujoco_qvel_addr] = joint.position_command / num_joints;
-  //         }
-  //       }
-  //       break;
-
-  //       case VELOCITY:
-  //       {
-  //         for (auto& joint : transmission.joints)
-  //         {
-  //           mujoco_data_->ctrl[joint.mujoco_qvel_addr] = joint.velocity_command / num_joints;
-  //         }
-  //       }
-  //       break;
-  //     }
-  //   }
-  // }
 }
 
 // Register the limits of the joint specified by joint_name and joint_handle. The limits are

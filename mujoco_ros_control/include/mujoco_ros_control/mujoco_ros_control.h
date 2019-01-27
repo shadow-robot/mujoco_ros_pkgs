@@ -58,7 +58,7 @@ public:
   virtual ~MujocoRosControl();
 
   // initialize params and controller manager
-  void init(ros::NodeHandle &nodehandle);
+  bool init(ros::NodeHandle &nodehandle);
 
   // step update function
   void update();
