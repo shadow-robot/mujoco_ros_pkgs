@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   joint_limits_interface
   urdf
   mujoco_ros_msgs
+  roslint
 )
 
 catkin_package(
@@ -42,6 +43,8 @@ include_directories( include
  ${catkin_INCLUDE_DIRS}
  /home/user/mjpro150/include
 )
+
+roslint_cpp()
 
 add_library(robot_hw_sim src/robot_hw_sim.cpp)
 target_link_libraries(robot_hw_sim ${catkin_LIBRARIES})

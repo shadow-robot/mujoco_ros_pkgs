@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <vector>
 #include <limits>
+#include <utility>
 
 namespace
 {
@@ -233,7 +234,7 @@ void RobotHWSim::read(const ros::Time& time, const ros::Duration& period)
   for (auto& joint_item : joints_)
   {
     JointData& joint = joint_item.second;
-    if(string_ends_with(joint.name, "FJ1") || string_ends_with(joint.name, "FJ2"))
+    if (string_ends_with(joint.name, "FJ1") || string_ends_with(joint.name, "FJ2"))
     {
       std::string actuator_name = joint.name;
       actuator_name[actuator_name.size() - 1] = '0';
@@ -281,7 +282,8 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
         case EFFORT:
         {
           mujoco_data_->ctrl[actuator.second.id] = joint_1.effort_command + joint_2.effort_command;;
-          ROS_INFO_THROTTLE(1, "Received effort commands %lf and %lf for joints %s and %s respectively; set tendon %s effort to %lf.",
+          ROS_INFO_THROTTLE(1, "Received effort commands %lf and %lf for joints %s and %s respectively; "
+                            "set tendon %s effort to %lf.",
                             joint_1.effort_command, joint_2.effort_command, joint_1.name.c_str(), joint_2.name.c_str(),
                             actuator.first.c_str(), mujoco_data_->ctrl[actuator.second.id]);
           break;
@@ -293,9 +295,9 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
 
         case POSITION_PID:
         {
-          mujoco_data_->ctrl[actuator.second.id] = 
+          mujoco_data_->ctrl[actuator.second.id] =
             clamp(joint_1.pid_controller.computeCommand(joint_1.position_command - joint_1.position, period),
-                  -joint_1.effort_limit, joint_1.effort_limit) + 
+                  -joint_1.effort_limit, joint_1.effort_limit) +
             clamp(joint_2.pid_controller.computeCommand(joint_2.position_command - joint_2.position, period),
                   -joint_2.effort_limit, joint_2.effort_limit);
           break;

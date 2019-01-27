@@ -19,6 +19,7 @@
   <depend>joint_limits_interface</depend>
   <depend>mujoco_ros_msgs</depend>
   <depend>urdf</depend>
+  <depend>roslint</depend>
 
   <export>
     <mujoco_ros_control plugin="${prefix}/robot_hw_sim_plugin.xml"/>

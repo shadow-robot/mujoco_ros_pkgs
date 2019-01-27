@@ -33,6 +33,7 @@
 // URDF
 #include <urdf/model.h>
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -60,7 +61,8 @@ public:
   // Methods used to control a joint.
   enum ControlMethod {EFFORT, POSITION, POSITION_PID, VELOCITY, VELOCITY_PID};
 
-  struct JointData {
+  struct JointData
+  {
     std::string name;
     int type;
     double lower_limit;
@@ -80,7 +82,8 @@ public:
     int mujoco_qpos_addr;
     int mujoco_qvel_addr;
 
-    std::string to_string(){
+    std::string to_string()
+    {
       std::stringstream ss;
       ss << "Joint " << name << " has type " << type << ", mujoco addresses " << mujoco_joint_id << ", " <<
         mujoco_qpos_addr << ", " << mujoco_qvel_addr << ".\nJoint status: p:" << position << " v:" << velocity <<
@@ -89,10 +92,12 @@ public:
     }
   };
 
-  struct TransmissionData {
+  struct TransmissionData
+  {
     std::string name;
     std::vector<std::string> joint_names;
-    std::string to_string(){
+    std::string to_string()
+    {
       std::stringstream ss;
       ss << "Transmission " << name << " has " << joint_names.size() << " joints:";
       for (auto& joint_name : joint_names)
@@ -103,13 +108,15 @@ public:
     }
   };
 
-  struct MujocoJointData {
+  struct MujocoJointData
+  {
     int id;
     int qpos_addr;
     int qvel_addr;
     int type;
 
-    std::string to_string(){
+    std::string to_string()
+    {
       std::stringstream ss;
       ss << "Mujoco Joint has type " << type << ", mujoco addresses " << id << ", " <<
         qpos_addr << ", " << qvel_addr;
@@ -117,10 +124,12 @@ public:
     }
   };
 
-  struct MujocoActuatorData {
+  struct MujocoActuatorData
+  {
     int id;
 
-    std::string to_string(){
+    std::string to_string()
+    {
       std::stringstream ss;
       ss << "Mujoco Actuator has mujoco address " << id << ".";
       return ss.str();
@@ -128,7 +137,6 @@ public:
   };
 
 protected:
-
   // Register the limits of the joint specified by joint_name and joint_handle. The limits are
   // retrieved from joint_limit_nh. If urdf_model is not NULL, limits are retrieved from it also.
   // Return the joint's type, lower position limit, upper position limit, and effort limit.
@@ -139,7 +147,7 @@ protected:
                              const urdf::Model *const urdf_model,
                              int *const joint_type, double *const lower_limit,
                              double *const upper_limit, double *const effort_limit);
-  
+
   static bool string_ends_with(std::string const & value, std::string const & ending);
 
   unsigned int n_dof_;
