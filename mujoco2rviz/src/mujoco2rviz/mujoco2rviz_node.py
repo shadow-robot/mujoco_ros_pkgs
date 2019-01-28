@@ -11,6 +11,8 @@ from moveit_msgs.msg import CollisionObject
 from mujoco_ros_msgs.msg import ModelStates
 from shape_msgs.msg import SolidPrimitive
 from sr_utilities_common.shutdown_handler import ShutdownHandler
+from moveit_msgs.msg import PlanningSceneComponents
+from moveit_msgs.srv import GetPlanningScene
 from mujoco2rviz.utilities import compare_poses, stl_to_mesh, get_object_mesh_path, get_object_name_from_instance
 
 
@@ -56,8 +58,18 @@ class Mujoco2Rviz():
                                                                                                     model_idx)
                     if model_instance_name in self._ignored_models:
                         self._ignored_models.remove(model_instance_name)
+
+                    object_in_planning_scene = False
+                    planning_scene_check_attempts = 0
+                    while not object_in_planning_scene:
+                        object_in_planning_scene = self._check_if_object_in_planning_scene(model_instance_name)
+                        if not object_in_planning_scene:
+                            if planning_scene_check_attempts > 2:
+                                raise RuntimeError
+                            rospy.sleep(1)
+                            planning_scene_check_attempts += 1
                     rospy.loginfo("Added object {} to rviz".format(model_instance_name))
-                except (TypeError, IOError) as e:
+                except (TypeError, IOError, RuntimeError) as e:
                     if model_instance_name not in self._ignored_models:
                         self._ignored_models.append(model_instance_name)
                         rospy.logwarn("Failed to add {} collision object: {}".format(model_instance_name, e))
@@ -120,6 +132,24 @@ class Mujoco2Rviz():
         collision_object.id = '{}__link'.format(model_instance_name)
         collision_object.operation = CollisionObject.ADD
         return collision_object
+
+    def _get_all_collision_objects(self):
+        rospy.wait_for_service('/get_planning_scene', 10.0)
+        plannig_scene_service = rospy.ServiceProxy('get_planning_scene',
+                                                GetPlanningScene)
+        collision_object_names = []
+        planning_scene_request = PlanningSceneComponents()
+        planning_scene_request.components = PlanningSceneComponents.WORLD_OBJECT_NAMES
+        planning_scene = plannig_scene_service(planning_scene_request)
+        for collision_object in planning_scene.scene.world.collision_objects:
+            collision_object_names.append(collision_object.id)
+        return collision_object_names
+
+    def _check_if_object_in_planning_scene(self, object_name):
+        all_collision_objects = self._get_all_collision_objects()
+        if '{}__link'.format(object_name) in all_collision_objects:
+            return True
+        return False
 
 if __name__ == '__main__':
     rospy.init_node('mujoco_to_rviz', anonymous=True)
