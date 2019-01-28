@@ -58,16 +58,7 @@ class Mujoco2Rviz():
                                                                                                     model_idx)
                     if model_instance_name in self._ignored_models:
                         self._ignored_models.remove(model_instance_name)
-
-                    object_in_planning_scene = False
-                    planning_scene_check_attempts = 0
-                    while not object_in_planning_scene:
-                        object_in_planning_scene = self._check_if_object_in_planning_scene(model_instance_name)
-                        if not object_in_planning_scene:
-                            if planning_scene_check_attempts > 2:
-                                raise RuntimeError
-                            rospy.sleep(1)
-                            planning_scene_check_attempts += 1
+                    self._wait_until_object_in_planning_scene(model_instance_name)
                     rospy.loginfo("Added object {} to rviz".format(model_instance_name))
                 except (TypeError, IOError, RuntimeError) as e:
                     if model_instance_name not in self._ignored_models:
@@ -150,6 +141,17 @@ class Mujoco2Rviz():
         if '{}__link'.format(object_name) in all_collision_objects:
             return True
         return False
+
+    def _wait_until_object_in_planning_scene(self, object_name, allowed_check_attempts=5):
+        object_in_planning_scene = False
+        planning_scene_check_attempts = 0
+        while not object_in_planning_scene:
+            object_in_planning_scene = self._check_if_object_in_planning_scene(object_name)
+            if not object_in_planning_scene:
+                if planning_scene_check_attempts > allowed_check_attempts - 1:
+                    raise RuntimeError
+                rospy.sleep(1)
+                planning_scene_check_attempts += 1
 
 if __name__ == '__main__':
     rospy.init_node('mujoco_to_rviz', anonymous=True)
