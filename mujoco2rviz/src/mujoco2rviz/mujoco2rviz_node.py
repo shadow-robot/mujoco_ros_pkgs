@@ -127,7 +127,7 @@ class Mujoco2Rviz():
     def _get_all_collision_objects(self):
         rospy.wait_for_service('/get_planning_scene', 10.0)
         plannig_scene_service = rospy.ServiceProxy('get_planning_scene',
-                                                GetPlanningScene)
+                                                   GetPlanningScene)
         collision_object_names = []
         planning_scene_request = PlanningSceneComponents()
         planning_scene_request.components = PlanningSceneComponents.WORLD_OBJECT_NAMES
