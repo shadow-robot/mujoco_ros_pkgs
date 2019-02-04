@@ -4,14 +4,17 @@
   <arg name="robot_model_path"/>
   <arg name="robot_description_param" default="robot_description"/>
   <arg name="debug" default="false"/>
+  <arg name="key_path" default="/home/user/mjpro150/bin/mjkey.txt"/>
 
   <node unless="$(arg debug)" name="mujoco_ros_control" pkg="mujoco_ros_control" type="mujoco_ros_control" output="screen">
     <param name="robot_model_path" value="$(arg robot_model_path)"/>
     <param name="robot_description_param" value="$(arg robot_description_param)"/>
+    <param name="key_path" value="$(arg key_path)"/>
   </node>
 
   <node if="$(arg debug)" name="mujoco_ros_control" pkg="mujoco_ros_control" type="mujoco_ros_control" output="screen" launch-prefix="gdb -ex run -args">
     <param name="robot_model_path" value="$(arg robot_model_path)"/>
     <param name="robot_description_param" value="$(arg robot_description_param)"/>
+    <param name="key_path" value="$(arg key_path)"/>
   </node>
 </launch>

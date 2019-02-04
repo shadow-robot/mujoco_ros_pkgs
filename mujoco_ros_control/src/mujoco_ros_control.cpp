@@ -42,8 +42,17 @@ bool MujocoRosControl::init(ros::NodeHandle &nodehandle)
         return false;
     }
 
+    if (nodehandle.getParam("mujoco_ros_control/key_path", key_path_))
+    {
+      ROS_INFO("Got param activation key path: %s", key_path_.c_str());
+    }
+    else
+    {
+      ROS_ERROR("Failed to get param 'key_path', attempting activation with default ('%s')", key_path_.c_str());
+    }
+
     // activation license mujoco
-    mj_activate("/home/user/mjpro150/bin/mjkey.txt");
+    mj_activate(key_path_.c_str());
 
     // publish clock for simulated time
     pub_clock_ = nodehandle.advertise<rosgraph_msgs::Clock>("/clock", 10);
