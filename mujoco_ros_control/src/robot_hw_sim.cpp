@@ -47,12 +47,12 @@ bool RobotHWSim::init_sim(
 
   // resize vectors to number of DOF
   n_dof_ = mujoco_model_->njnt - objects_in_scene;
-  ROS_INFO("%i robot DsOF found.", n_dof_);
-  ROS_INFO("%i generalized coordinates (qpos) found.", mujoco_model_->nq);
-  ROS_INFO("%i degrees of freedom (qvel) found.", mujoco_model_->nv);
+  ROS_INFO("%i robot degrees of freedom found.", n_dof_);
+  ROS_DEBUG("%i generalized coordinates (qpos) found.", mujoco_model_->nq);
+  ROS_DEBUG("%i degrees of freedom (qvel) found.", mujoco_model_->nv);
   ROS_INFO("%i actuators/controls (ctrl) found.", mujoco_model_->nu);
-  ROS_INFO("%i actuation states (act) found.", mujoco_model_->na);
-  ROS_INFO("%i joints (njnt) found.", mujoco_model_->njnt);
+  ROS_DEBUG("%i actuation states (act) found.", mujoco_model_->na);
+  ROS_DEBUG("%i joints (njnt) found.", mujoco_model_->njnt);
   for (int mujoco_joint_id = 0; mujoco_joint_id < n_dof_; mujoco_joint_id++)
   {
     std::string joint_name = mj_id2name(mujoco_model_, mjOBJ_JOINT, mujoco_joint_id);
@@ -65,7 +65,7 @@ bool RobotHWSim::init_sim(
   }
   for (auto& mujoco_joint : mujoco_joints_)
   {
-    ROS_INFO("%s: %s", mujoco_joint.first.c_str(), mujoco_joint.second.to_string().c_str());
+    ROS_DEBUG("%s: %s", mujoco_joint.first.c_str(), mujoco_joint.second.to_string().c_str());
   }
   for (int mujoco_actuator_id = 0; mujoco_actuator_id < mujoco_model_->nu; mujoco_actuator_id++)
   {
@@ -76,7 +76,7 @@ bool RobotHWSim::init_sim(
   }
   for (auto& mujoco_actuator : mujoco_actuators_)
   {
-    ROS_INFO("%s: %s", mujoco_actuator.first.c_str(), mujoco_actuator.second.to_string().c_str());
+    ROS_DEBUG("%s: %s", mujoco_actuator.first.c_str(), mujoco_actuator.second.to_string().c_str());
   }
   for (auto& transmission_info : transmissions_info)
   {
@@ -90,8 +90,6 @@ bool RobotHWSim::init_sim(
       joint.name = joint_info.name_;
       transmission.joint_names.push_back(joint.name);
       joint.mujoco_joint_id = mj_name2id(mujoco_model_, mjOBJ_JOINT, joint.name.c_str());
-      ROS_WARN_ONCE("%i actuators/controls (ctrl) found.", mujoco_model_->nu);
-      ROS_WARN_ONCE("%i actuation states (act) found.", mujoco_model_->na);
       joint.mujoco_qpos_addr = mujoco_model_->jnt_qposadr[joint.mujoco_joint_id];
       joint.mujoco_qvel_addr = mujoco_model_->jnt_dofadr[joint.mujoco_joint_id];
       if (joint.mujoco_joint_id == -1)
@@ -147,7 +145,7 @@ bool RobotHWSim::init_sim(
                              joint.hardware_interfaces.front() << "'.");
 
       // Create joint state interface for all joints
-      ROS_INFO("Registered joint %s with position address %p.", joint.name.c_str(), &joint.position);
+      ROS_DEBUG("Registered joint %s with position address %p.", joint.name.c_str(), &joint.position);
       js_interface_.registerHandle(hardware_interface::JointStateHandle(
           joint.name, &joint.position, &joint.velocity, &joint.effort));
 
@@ -217,7 +215,7 @@ bool RobotHWSim::init_sim(
       ROS_WARN_STREAM_NAMED("robot_hw_sim", "Transmission " << transmission.name
         << " has no associated joints.");
     }
-    ROS_INFO("%s", transmission.to_string().c_str());
+    ROS_DEBUG("%s", transmission.to_string().c_str());
   }
 
   // Register interfaces
@@ -281,11 +279,7 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
       {
         case EFFORT:
         {
-          mujoco_data_->ctrl[actuator.second.id] = joint_1.effort_command + joint_2.effort_command;;
-          ROS_INFO_THROTTLE(1, "Received effort commands %lf and %lf for joints %s and %s respectively; "
-                            "set tendon %s effort to %lf.",
-                            joint_1.effort_command, joint_2.effort_command, joint_1.name.c_str(), joint_2.name.c_str(),
-                            actuator.first.c_str(), mujoco_data_->ctrl[actuator.second.id]);
+          mujoco_data_->ctrl[actuator.second.id] = joint_1.effort_command + joint_2.effort_command;
           break;
         }
 
