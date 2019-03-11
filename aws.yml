@@ -6,7 +6,7 @@ settings:
     release: kinetic
   docker:
     image: shadowrobot/build-tools
-    tag: xenial-kinetic
+    tag: xenial-kinetic-mujoco
   template_project_name: template_unit_tests_and_code_coverage
   toolset:
     modules:
