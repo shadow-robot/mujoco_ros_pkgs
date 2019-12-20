@@ -1,10 +1,22 @@
 /*
- * Copyright (c) 2018, Shadow Robot Company, All rights reserved.
- *
- * @file   mujoco_ros_control.h
- * @author Giuseppe Barbieri <giuseppe@shadowrobot.com>
- * @brief  Node to allow ros_control hardware interfaces to be plugged into mujoco
- **/
+* Copyright 2018 Shadow Robot Company Ltd.
+*
+* This program is free software: you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the Free
+* Software Foundation version 2 of the License.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*
+* @file   mujoco_ros_control.h
+* @author Giuseppe Barbieri <giuseppe@shadowrobot.com>
+* @brief  Node to allow ros_control hardware interfaces to be plugged into mujoco
+**/
 
 #ifndef MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H
 #define MUJOCO_ROS_CONTROL_MUJOCO_ROS_CONTROL_H
@@ -58,7 +70,7 @@ public:
   virtual ~MujocoRosControl();
 
   // initialize params and controller manager
-  void init(ros::NodeHandle &nodehandle);
+  bool init(ros::NodeHandle &nodehandle);
 
   // step update function
   void update();
@@ -111,6 +123,7 @@ protected:
   std::string robot_namespace_;
   std::string robot_description_param_;
   std::string robot_model_path_;
+  std::string key_path_ = "/home/user/mjpro150/bin/mjkey.txt";
 
   // vectors
   std::vector<int> mujoco_ids;

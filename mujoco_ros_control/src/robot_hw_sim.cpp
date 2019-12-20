@@ -1,10 +1,22 @@
 /*
- * Copyright (c) 2018, Shadow Robot Company, All rights reserved.
- *
- * @file   robot_hw_sim.cpp
- * @author Giuseppe Barbieri <giuseppe@shadowrobot.com>
- * @brief  Hardware interface for simulated robot in Mujoco
- **/
+* Copyright 2018 Shadow Robot Company Ltd.
+*
+* This program is free software: you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the Free
+* Software Foundation version 2 of the License.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*
+* @file   robot_hw_sim.cpp
+* @author Giuseppe Barbieri <giuseppe@shadowrobot.com>
+* @brief  Hardware interface for simulated robot in Mujoco
+**/
 
 #include <mujoco_ros_control/robot_hw_sim.h>
 #include <urdf/model.h>
@@ -12,6 +24,7 @@
 #include <algorithm>
 #include <vector>
 #include <limits>
+#include <utility>
 
 namespace
 {
@@ -35,7 +48,7 @@ bool RobotHWSim::init_sim(
     ros::NodeHandle robot_nh,
     mjModel* mujoco_model, mjData* mujoco_data,
     const urdf::Model *const urdf_model,
-    std::vector<transmission_interface::TransmissionInfo> transmissions,
+    std::vector<transmission_interface::TransmissionInfo> transmissions_info,
     int objects_in_scene)
 {
   // save references
@@ -45,164 +58,178 @@ bool RobotHWSim::init_sim(
   const ros::NodeHandle joint_limit_nh(robot_nh);
 
   // resize vectors to number of DOF
-  n_dof_ = mujoco_model->njnt - objects_in_scene;
-  ROS_INFO("%i robot DsOF found.", n_dof_);
-  if (n_dof_ != transmissions.size())
+  n_dof_ = mujoco_model_->njnt - objects_in_scene;
+  ROS_INFO("%i robot degrees of freedom found.", n_dof_);
+  ROS_DEBUG("%i generalized coordinates (qpos) found.", mujoco_model_->nq);
+  ROS_DEBUG("%i degrees of freedom (qvel) found.", mujoco_model_->nv);
+  ROS_INFO("%i actuators/controls (ctrl) found.", mujoco_model_->nu);
+  ROS_DEBUG("%i actuation states (act) found.", mujoco_model_->na);
+  ROS_DEBUG("%i joints (njnt) found.", mujoco_model_->njnt);
+  for (int mujoco_joint_id = 0; mujoco_joint_id < n_dof_; mujoco_joint_id++)
   {
-    ROS_WARN("%i DsOF, but %li transmissions defined.", n_dof_, transmissions.size());
-    if (n_dof_ > transmissions.size())
-    {
-      n_dof_ = static_cast<int>(transmissions.size());
-    }
-    ROS_WARN("Limiting joints to %i, but this is likely a problem.", n_dof_);
+    std::string joint_name = mj_id2name(mujoco_model_, mjOBJ_JOINT, mujoco_joint_id);
+    MujocoJointData mj_joint_data;
+    mj_joint_data.id = mujoco_joint_id;
+    mj_joint_data.qpos_addr = mujoco_model_->jnt_qposadr[mujoco_joint_id];
+    mj_joint_data.qvel_addr = mujoco_model_->jnt_dofadr[mujoco_joint_id];
+    mj_joint_data.type = mujoco_model_->jnt_type[mujoco_joint_id];
+    mujoco_joints_.insert(std::pair<std::string, MujocoJointData>(joint_name, mj_joint_data));
   }
-  joint_names_.resize(n_dof_);
-  joint_types_.resize(n_dof_);
-  joint_lower_limits_.resize(n_dof_);
-  joint_upper_limits_.resize(n_dof_);
-  joint_effort_limits_.resize(n_dof_);
-  joint_control_methods_.resize(n_dof_);
-  pid_controllers_.resize(n_dof_);
-  joint_position_.resize(n_dof_);
-  joint_velocity_.resize(n_dof_);
-  joint_effort_.resize(n_dof_);
-  joint_effort_command_.resize(n_dof_);
-  joint_position_command_.resize(n_dof_);
-  joint_velocity_command_.resize(n_dof_);
-
-  // Initialize values
-  for (unsigned int j = 0; j < n_dof_; j++)
+  for (auto& mujoco_joint : mujoco_joints_)
   {
-    // Check that this transmission has one joint
-    if (transmissions[j].joints_.size() == 0)
-    {
-      ROS_WARN_STREAM_NAMED("robot_hw_sim", "Transmission " << transmissions[j].name_
-        << " has no associated joints.");
-      continue;
-    }
-    else if (transmissions[j].joints_.size() > 1)
-    {
-      ROS_WARN_STREAM_NAMED("robot_hw_sim", "Transmission " << transmissions[j].name_
-        << " has more than one joint. Currently the default robot hardware simulation "
-        << " interface only supports one.");
-      continue;
-    }
-
-    std::vector<std::string> joint_interfaces = transmissions[j].joints_[0].hardware_interfaces_;
-    if (joint_interfaces.empty() &&
-        !(transmissions[j].actuators_.empty()) &&
-        !(transmissions[j].actuators_[0].hardware_interfaces_.empty()))
-    {
-      joint_interfaces = transmissions[j].actuators_[0].hardware_interfaces_;
-      ROS_WARN_STREAM_NAMED("robot_hw_sim", "The <hardware_interface> element of tranmission " <<
-        transmissions[j].name_ << " should be nested inside the <joint> element, not <actuator>. " <<
-        "The transmission will be properly loaded, but please update " <<
-        "your robot model to remain compatible with future versions of the plugin.");
-    }
-    if (joint_interfaces.empty())
-    {
-      ROS_WARN_STREAM_NAMED("robot_hw_sim", "Joint " << transmissions[j].joints_[0].name_ <<
-        " of transmission " << transmissions[j].name_ << " does not specify any hardware interface. " <<
-        "Not adding it to the robot hardware simulation.");
-      continue;
-    }
-    else if (joint_interfaces.size() > 1)
-    {
-      ROS_WARN_STREAM_NAMED("robot_hw_sim", "Joint " << transmissions[j].joints_[0].name_ <<
-        " of transmission " << transmissions[j].name_ << " specifies multiple hardware interfaces. " <<
-        "Currently the robot hardware simulation interface only supports one. Using the first entry");
-    }
-
-    // Add data from transmission
-    joint_names_[j] = transmissions[j].joints_[0].name_;
-    joint_position_[j] = 1.0;
-    joint_velocity_[j] = 0.0;
-    joint_effort_[j] = 1.0;  // N/m for continuous joints
-    joint_effort_command_[j] = 0.0;
-    joint_position_command_[j] = 0.0;
-    joint_velocity_command_[j] = 0.0;
-
-    const std::string& hardware_interface = joint_interfaces.front();
-
-    // Debug
-    ROS_DEBUG_STREAM_NAMED("robot_hw_sim", "Loading joint '" << joint_names_[j]
-      << "' of type '" << hardware_interface << "'");
-
-    // Create joint state interface for all joints
-    js_interface_.registerHandle(hardware_interface::JointStateHandle(
-        joint_names_[j], &joint_position_[j], &joint_velocity_[j], &joint_effort_[j]));
-
-    // Decide what kind of command interface this actuator/joint has
-    hardware_interface::JointHandle joint_handle;
-    if (hardware_interface == "EffortJointInterface" || hardware_interface == "hardware_interface/EffortJointInterface")
-    {
-      // Create effort joint interface
-      joint_control_methods_[j] = EFFORT;
-      joint_handle = hardware_interface::JointHandle(js_interface_.getHandle(joint_names_[j]),
-                                                     &joint_effort_command_[j]);
-      ej_interface_.registerHandle(joint_handle);
-    }
-    else if (hardware_interface == "PositionJointInterface" ||
-             hardware_interface == "hardware_interface/PositionJointInterface")
-    {
-      // Create position joint interface
-      joint_control_methods_[j] = POSITION;
-      joint_handle = hardware_interface::JointHandle(js_interface_.getHandle(joint_names_[j]),
-                                                     &joint_position_command_[j]);
-      pj_interface_.registerHandle(joint_handle);
-    }
-    else if (hardware_interface == "VelocityJointInterface" ||
-             hardware_interface == "hardware_interface/VelocityJointInterface")
-    {
-      // Create velocity joint interface
-      joint_control_methods_[j] = VELOCITY;
-      joint_handle = hardware_interface::JointHandle(js_interface_.getHandle(joint_names_[j]),
-                                                     &joint_velocity_command_[j]);
-      vj_interface_.registerHandle(joint_handle);
-    }
-    else
-    {
-      ROS_FATAL_STREAM_NAMED("default_robot_hw_sim", "No matching hardware interface found for '"
-        << hardware_interface << "' while loading interfaces for " << joint_names_[j]);
-      return false;
-    }
-
-    if (hardware_interface == "EffortJointInterface" || hardware_interface == "PositionJointInterface" ||
-        hardware_interface == "VelocityJointInterface")
-    {
-      ROS_WARN_STREAM("Deprecated syntax, please prepend 'hardware_interface/' to '" <<
-                      hardware_interface << "' within the <hardwareInterface> tag in joint '" <<
-                      joint_names_[j] << "'.");
-    }
-
-  register_joint_limits(joint_names_[j], joint_handle, joint_control_methods_[j],
-                        joint_limit_nh, urdf_model,
-                        &joint_types_[j], &joint_lower_limits_[j], &joint_upper_limits_[j],
-                        &joint_effort_limits_[j]);
-
-  if (joint_control_methods_[j] != EFFORT)
+    ROS_DEBUG("%s: %s", mujoco_joint.first.c_str(), mujoco_joint.second.to_string().c_str());
+  }
+  for (int mujoco_actuator_id = 0; mujoco_actuator_id < mujoco_model_->nu; mujoco_actuator_id++)
   {
-    // Initialize the PID controller. If no PID gain values are found
-    const ros::NodeHandle nh(robot_nh, "/mujoco_ros_control/pid_gains/" +
-                             joint_names_[j]);
-    if (pid_controllers_[j].init(nh, true))
+    std::string actuator_name = mj_id2name(mujoco_model_, mjOBJ_ACTUATOR, mujoco_actuator_id);
+    MujocoActuatorData mj_actuator_data;
+    mj_actuator_data.id = mujoco_actuator_id;
+    mujoco_actuators_.insert(std::pair<std::string, MujocoActuatorData>(actuator_name, mj_actuator_data));
+  }
+  for (auto& mujoco_actuator : mujoco_actuators_)
+  {
+    ROS_DEBUG("%s: %s", mujoco_actuator.first.c_str(), mujoco_actuator.second.to_string().c_str());
+  }
+  for (auto& transmission_info : transmissions_info)
+  {
+    transmissions_.push_back(TransmissionData());
+    TransmissionData& transmission = transmissions_.back();
+    transmission.name = transmission_info.name_;
+    for (auto& joint_info : transmission_info.joints_)
     {
-      switch (joint_control_methods_[j])
+      joints_.insert(std::pair<std::string, JointData>(joint_info.name_, JointData()));
+      JointData& joint = joints_.at(joint_info.name_);
+      joint.name = joint_info.name_;
+      transmission.joint_names.push_back(joint.name);
+      joint.mujoco_joint_id = mj_name2id(mujoco_model_, mjOBJ_JOINT, joint.name.c_str());
+      joint.mujoco_qpos_addr = mujoco_model_->jnt_qposadr[joint.mujoco_joint_id];
+      joint.mujoco_qvel_addr = mujoco_model_->jnt_dofadr[joint.mujoco_joint_id];
+      if (joint.mujoco_joint_id == -1)
       {
-        case POSITION:
-          joint_control_methods_[j] = POSITION_PID;
-          break;
-        case VELOCITY:
-          joint_control_methods_[j] = VELOCITY_PID;
-          break;
+        ROS_WARN("Joint %s not found in Mujoco model!", joint.name.c_str());
+      }
+      joint.position = 1.0;
+      joint.velocity = 0.0;
+      joint.effort = 1.0;  // N/m for continuous joints
+      joint.effort_command = 0.0;
+      joint.position_command = 0.0;
+      joint.velocity_command = 0.0;
+      joint.hardware_interfaces = joint_info.hardware_interfaces_;
+
+      if (joint.hardware_interfaces.empty())
+      {
+        ROS_WARN_STREAM_NAMED("robot_hw_sim", "Joint " << joint.name <<
+          " of transmission " << transmission_info.name_ << " does not specify any hardware interface. " <<
+          "Not adding it to the robot hardware simulation.");
+      }
+      else if (joint.hardware_interfaces.size() > 1)
+      {
+      ROS_WARN_STREAM_NAMED("robot_hw_sim", "Joint " << joint_info.name_ <<
+        " of transmission " << transmission_info.name_ << " specifies multiple hardware interfaces. " <<
+        "Currently the robot hardware simulation interface only supports one. Using the first entry");
+      }
+
+      if (joint.hardware_interfaces.front() == "EffortJointInterface" ||
+          joint.hardware_interfaces.front() == "PositionJointInterface" ||
+          joint.hardware_interfaces.front() == "VelocityJointInterface")
+      {
+        ROS_WARN_STREAM("Deprecated syntax, please prepend 'hardware_interface/' to '" <<
+                        joint.hardware_interfaces.front() << "' within the <hardwareInterface> tag in joint '" <<
+                        joint.name << "'.");
+        joint.hardware_interfaces.front().insert(0, "hardware_interface/");
+      }
+      if (!transmission_info.actuators_[0].hardware_interfaces_.empty())
+      {
+        ROS_WARN_STREAM_NAMED("robot_hw_sim", "The <hardware_interface> element of tranmission " <<
+          transmission.name << " should be nested inside the <joint> element, not <actuator>. " <<
+          "The transmission will not be loaded.");
       }
     }
-    else
-    {
-      mujoco_data_->ctrl[j] = joint_effort_limits_[j];
-    }
   }
-}
+  for (auto& transmission : transmissions_)
+  {
+    for (auto& joint_name : transmission.joint_names)
+    {
+      JointData& joint = joints_.at(joint_name);
+
+      // Debug
+      ROS_DEBUG_STREAM_NAMED("robot_hw_sim", "Loading joint '" << joint.name << "' of type '" <<
+                             joint.hardware_interfaces.front() << "'.");
+
+      // Create joint state interface for all joints
+      ROS_DEBUG("Registered joint %s with position address %p.", joint.name.c_str(), &joint.position);
+      js_interface_.registerHandle(hardware_interface::JointStateHandle(
+          joint.name, &joint.position, &joint.velocity, &joint.effort));
+
+      // Decide what kind of command interface this actuator/joint has
+      hardware_interface::JointHandle joint_handle;
+      if (joint.hardware_interfaces.front() == "hardware_interface/EffortJointInterface")
+      {
+        // Create effort joint interface
+        joint.control_method = EFFORT;
+        joint_handle = hardware_interface::JointHandle(js_interface_.getHandle(joint.name),
+                                                      &joint.effort_command);
+        ej_interface_.registerHandle(joint_handle);
+      }
+      else if (joint.hardware_interfaces.front() == "hardware_interface/PositionJointInterface")
+      {
+        // Create position joint interface
+        joint.control_method = POSITION;
+        joint_handle = hardware_interface::JointHandle(js_interface_.getHandle(joint.name),
+                                                      &joint.position_command);
+        pj_interface_.registerHandle(joint_handle);
+      }
+      else if (joint.hardware_interfaces.front() == "hardware_interface/VelocityJointInterface")
+      {
+        // Create velocity joint interface
+        joint.control_method = VELOCITY;
+        joint_handle = hardware_interface::JointHandle(js_interface_.getHandle(joint.name),
+                                                      &joint.velocity_command);
+        vj_interface_.registerHandle(joint_handle);
+      }
+      else
+      {
+        ROS_FATAL_STREAM_NAMED("default_robot_hw_sim", "No matching hardware interface found for '"
+          << joint.hardware_interfaces.front() << "' while loading interfaces for " << joint.name);
+        return false;
+      }
+
+      register_joint_limits(joint.name, joint_handle, joint.control_method,
+                            joint_limit_nh, urdf_model,
+                            &joint.type, &joint.lower_limit, &joint.upper_limit,
+                            &joint.effort_limit);
+
+      if (joint.control_method != EFFORT)
+      {
+        // Initialize the PID controller. If no PID gain values are found
+        const ros::NodeHandle nh(robot_nh, "/mujoco_ros_control/pid_gains/" +
+                                joint.name);
+        if (joint.pid_controller.init(nh, true))
+        {
+          switch (joint.control_method)
+          {
+            case POSITION:
+              joint.control_method = POSITION_PID;
+              break;
+            case VELOCITY:
+              joint.control_method = VELOCITY_PID;
+              break;
+          }
+        }
+        else
+        {
+          mujoco_data_->ctrl[joint.mujoco_qvel_addr] = joint.effort_limit;
+        }
+      }
+    }
+    if (transmission.joint_names.size() == 0)
+    {
+      ROS_WARN_STREAM_NAMED("robot_hw_sim", "Transmission " << transmission.name
+        << " has no associated joints.");
+    }
+    ROS_DEBUG("%s", transmission.to_string().c_str());
+  }
+
   // Register interfaces
   registerInterface(&js_interface_);
   registerInterface(&ej_interface_);
@@ -214,24 +241,29 @@ bool RobotHWSim::init_sim(
 
 void RobotHWSim::read(const ros::Time& time, const ros::Duration& period)
 {
-  // fill up joint_positions vector with current position to update joint state controller
-  // get current state of simulation
-  for (unsigned int j = 0; j < n_dof_; j++)
+  for (auto& joint_item : joints_)
   {
-    double position;
-    position = mujoco_data_->qpos[j];
-
-    if (joint_types_[j] == urdf::Joint::PRISMATIC)
+    JointData& joint = joint_item.second;
+    if (string_ends_with(joint.name, "FJ1") || string_ends_with(joint.name, "FJ2"))
     {
-      joint_position_[j] = position;
+      std::string actuator_name = joint.name;
+      actuator_name[actuator_name.size() - 1] = '0';
+      MujocoActuatorData& actuator = mujoco_actuators_.at(actuator_name);
+      joint.effort = mujoco_data_->qfrc_actuator[actuator.id]/2;
     }
     else
     {
-      joint_position_[j] += angles::shortest_angular_distance(joint_position_[j],
-                            position);
+      joint.effort = mujoco_data_->qfrc_applied[joint.mujoco_qvel_addr];
     }
-    joint_velocity_[j] = mujoco_data_->qvel[j];
-    joint_effort_[j] = mujoco_data_->qfrc_applied[j];
+    if (joint.type == urdf::Joint::PRISMATIC)
+    {
+      joint.position = mujoco_data_->qpos[joint.mujoco_qpos_addr];
+    }
+    else
+    {
+      joint.position += angles::shortest_angular_distance(joint.position, mujoco_data_->qpos[joint.mujoco_qpos_addr]);
+    }
+    joint.velocity = mujoco_data_->qvel[joint.mujoco_qvel_addr];
   }
 }
 
@@ -245,46 +277,98 @@ void RobotHWSim::write(const ros::Time& time, const ros::Duration& period)
   vj_sat_interface_.enforceLimits(period);
   vj_limits_interface_.enforceLimits(period);
 
-  for (unsigned int j = 0; j < n_dof_; j++)
+  for (auto& actuator : mujoco_actuators_)
   {
-    switch (joint_control_methods_[j])
+    if (string_ends_with(actuator.first, "FJ0"))
     {
-      case EFFORT:
+      std::string joint_1_name = actuator.first;
+      std::string joint_2_name = actuator.first;
+      joint_1_name[joint_1_name.size() - 1] = '1';
+      joint_2_name[joint_2_name.size() - 1] = '2';
+      JointData& joint_1 = joints_.at(joint_1_name);
+      JointData& joint_2 = joints_.at(joint_2_name);
+      switch (joint_1.control_method)
       {
-        mujoco_data_->ctrl[j] = joint_effort_command_[j];
-      }
-      break;
+        case EFFORT:
+        {
+          mujoco_data_->ctrl[actuator.second.id] = joint_1.effort_command + joint_2.effort_command;
+          break;
+        }
 
-      case POSITION:
+        case POSITION:
+          mujoco_data_->ctrl[actuator.second.id] = joint_1.position_command + joint_2.position_command;
+          break;
+
+        case POSITION_PID:
+        {
+          mujoco_data_->ctrl[actuator.second.id] =
+            clamp(joint_1.pid_controller.computeCommand(joint_1.position_command - joint_1.position, period),
+                  -joint_1.effort_limit, joint_1.effort_limit) +
+            clamp(joint_2.pid_controller.computeCommand(joint_2.position_command - joint_2.position, period),
+                  -joint_2.effort_limit, joint_2.effort_limit);
+          break;
+        }
+
+        case VELOCITY:
+          mujoco_data_->ctrl[actuator.second.id] = joint_1.velocity_command + joint_2.velocity_command;
+          break;
+
+        case VELOCITY_PID:
+          mujoco_data_->ctrl[actuator.second.id] =
+            clamp(joint_1.pid_controller.computeCommand(joint_1.velocity_command - joint_1.velocity, period),
+                  -joint_1.effort_limit, joint_1.effort_limit) +
+            clamp(joint_2.pid_controller.computeCommand(joint_2.velocity_command - joint_2.velocity, period),
+                  -joint_2.effort_limit, joint_2.effort_limit);
+          break;
+      }
+      continue;
+    }
+    for (auto& joint_item : joints_)
+    {
+      JointData& joint = joint_item.second;
+      if ( actuator.first == joint.name)
       {
-        mujoco_data_->ctrl[j] = joint_position_command_[j];
+        switch (joint.control_method)
+        {
+          case EFFORT:
+          {
+            mujoco_data_->ctrl[actuator.second.id] = joint.effort_command;
+          }
+          break;
+
+          case POSITION:
+          {
+            mujoco_data_->ctrl[actuator.second.id] = joint.position_command;
+          }
+          break;
+
+          case POSITION_PID:
+          {
+            double error;
+
+            error = joint.position_command - joint.position;
+            const double effort_limit = joint.effort_limit;
+            const double effort = clamp(joint.pid_controller.computeCommand(error, period),
+                                        -effort_limit, effort_limit);
+            mujoco_data_->ctrl[actuator.second.id] = effort;
+          }
+          break;
+
+          case VELOCITY:
+            mujoco_data_->ctrl[actuator.second.id] = joint.velocity_command;
+            break;
+
+          case VELOCITY_PID:
+            double error;
+            error = joint.velocity_command - joint.velocity;
+            const double effort_limit = joint.effort_limit;
+            const double effort = clamp(joint.pid_controller.computeCommand(error, period),
+                                        -effort_limit, effort_limit);
+            mujoco_data_->ctrl[actuator.second.id] = effort;
+            break;
+        }
+        continue;
       }
-      break;
-
-      case POSITION_PID:
-      {
-        double error;
-
-        error = joint_position_command_[j] - joint_position_[j];
-        const double effort_limit = joint_effort_limits_[j];
-        const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
-                                    -effort_limit, effort_limit);
-        mujoco_data_->ctrl[j] = effort;
-      }
-      break;
-
-      case VELOCITY:
-        mujoco_data_->ctrl[j] = joint_velocity_command_[j];
-        break;
-
-      case VELOCITY_PID:
-        double error;
-        error = joint_velocity_command_[j] - joint_velocity_[j];
-        const double effort_limit = joint_effort_limits_[j];
-        const double effort = clamp(pid_controllers_[j].computeCommand(error, period),
-                                    -effort_limit, effort_limit);
-        mujoco_data_->ctrl[j] = effort;
-        break;
     }
   }
 }
@@ -410,6 +494,13 @@ void RobotHWSim::register_joint_limits(const std::string& joint_name,
     }
   }
 }
+
+bool RobotHWSim::string_ends_with(std::string const & value, std::string const & ending)
+{
+    if (ending.size() > value.size()) return false;
+    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}
+
 }  // namespace mujoco_ros_control
 
 PLUGINLIB_EXPORT_CLASS(mujoco_ros_control::RobotHWSim, mujoco_ros_control::RobotHWSimPlugin)

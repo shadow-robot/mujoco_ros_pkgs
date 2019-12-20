@@ -1,10 +1,22 @@
 /*
- * Copyright (c) 2018, Shadow Robot Company, All rights reserved.
- *
- * @file   mujoco_ros_control.cpp
- * @author Giuseppe Barbieri <giuseppe@shadowrobot.com>
- * @brief  Hardware interface for simulated robot in Mujoco
- **/
+* Copyright 2018 Shadow Robot Company Ltd.
+*
+* This program is free software: you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the Free
+* Software Foundation version 2 of the License.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*
+* @file   mujoco_ros_control.cpp
+* @author Giuseppe Barbieri <giuseppe@shadowrobot.com>
+* @brief  Hardware interface for simulated robot in Mujoco
+**/
 
 
 #include <boost/bind.hpp>
@@ -33,17 +45,26 @@ MujocoRosControl::~MujocoRosControl()
   mj_deactivate();
 }
 
-void MujocoRosControl::init(ros::NodeHandle &nodehandle)
+bool MujocoRosControl::init(ros::NodeHandle &nodehandle)
 {
       // Check that ROS has been initialized
     if (!ros::isInitialized())
     {
         ROS_FATAL_STREAM_NAMED("mujoco_ros_control", "Unable to initialize Mujoco node.");
-        return;
+        return false;
+    }
+
+    if (nodehandle.getParam("mujoco_ros_control/key_path", key_path_))
+    {
+      ROS_INFO("Got param activation key path: %s", key_path_.c_str());
+    }
+    else
+    {
+      ROS_ERROR("Failed to get param 'key_path', attempting activation with default ('%s')", key_path_.c_str());
     }
 
     // activation license mujoco
-    mj_activate("/home/user/mjpro150/bin/mjkey.txt");
+    mj_activate(key_path_.c_str());
 
     // publish clock for simulated time
     pub_clock_ = nodehandle.advertise<rosgraph_msgs::Clock>("/clock", 10);
@@ -68,7 +89,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     if (!parse_transmissions(urdf_string))
     {
       ROS_ERROR_NAMED("mujoco_ros_control", "Error parsing URDF in mujoco_ros_control node, node not active.\n");
-      return;
+      return false;
     }
 
     if (nodehandle.getParam("mujoco_ros_control/robot_model_path", robot_model_path_))
@@ -87,7 +108,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     if (!mujoco_model)
     {
       printf("Could not load mujoco model with error: %s.\n", error);
-      return;
+      return false;
     }
 
     // create mjData corresponding to mjModel
@@ -95,7 +116,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
     if (!mujoco_data)
     {
       printf("Could not create mujoco data from model.\n");
-      return;
+      return false;
     }
 
     // check number of dofs
@@ -137,14 +158,14 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
                                   mujoco_data, urdf_model_ptr, transmissions_, n_free_joints_))
       {
         ROS_FATAL_NAMED("mujoco_ros_control", "Could not initialize robot sim interface");
-        return;
+        return false;
       }
     }
     catch (std::exception &e)
     {
       ROS_ERROR("Failed to initialise robot simulation interface.");
       ROS_ERROR("%s", e.what());
-      return;
+      return false;
     }
 
     // create the controller manager
@@ -160,6 +181,7 @@ void MujocoRosControl::init(ros::NodeHandle &nodehandle)
 
     // set up the initial simulation environment
     setup_sim_environment();
+    return true;
 }
 
 void MujocoRosControl::setup_sim_environment()
@@ -421,7 +443,11 @@ int main(int argc, char** argv)
         mujoco_ros_control::MujocoVisualizationUtils::getInstance();
 
     // initialize mujoco stuff
-    mujoco_ros_control.init(nh_);
+    if (!mujoco_ros_control.init(nh_))
+    {
+      ROS_ERROR("Could not initialise mujoco.");
+      return 1;
+    }
 
     // init GLFW
     if ( !glfwInit() )
