@@ -5,3 +5,4 @@ find_package(catkin REQUIRED COMPONENTS
   mujoco_ros_msgs
 )
 catkin_python_setup()
+catkin_package()
