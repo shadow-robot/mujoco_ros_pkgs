@@ -34,7 +34,7 @@ catkin_package(
     joint_limits_interface
     urdf
   INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME} robot_hw_sim
+  LIBRARIES robot_hw_sim
 )
 
 ## Specify additional locations of header files
