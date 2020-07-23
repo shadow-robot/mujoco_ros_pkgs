@@ -9,7 +9,6 @@ find_package(GLEW REQUIRED)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(urdfdom_headers REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -36,8 +35,6 @@ catkin_package(
     transmission_interface
     joint_limits_interface
     urdf
-  DEPENDS
-    urdfdom_headers
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} robot_hw_sim
 )
@@ -47,7 +44,6 @@ include_directories( include
  ${Boost_INCLUDE_DIR}
  ${catkin_INCLUDE_DIRS}
  /home/user/mjpro150/include
- ${urdfdom_headers_INCLUDE_DIRS}
 )
 
 roslint_cpp()
@@ -60,4 +56,4 @@ target_link_libraries(visualization_utils ${catkin_LIBRARIES})
 
 ## Declare a C++ library
 add_executable(mujoco_ros_control src/mujoco_ros_control.cpp)
-target_link_libraries(mujoco_ros_control ${catkin_LIBRARIES} /home/user/mjpro150/bin/libmujoco150.so robot_hw_sim visualization_utils GLEW glut X11 GL GLU)
+target_link_libraries(mujoco_ros_control ${catkin_LIBRARIES} glfw /home/user/mjpro150/bin/libmujoco150.so robot_hw_sim visualization_utils GLEW glut X11 GL GLU)
