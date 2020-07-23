@@ -8,6 +8,8 @@ add_compile_options(-std=c++11)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+find_package(urdfdom_headers REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
@@ -20,7 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
   mujoco_ros_msgs
   roslint
-  urdfdom_headers
 )
 
 catkin_package(
@@ -34,6 +35,7 @@ catkin_package(
     transmission_interface
     joint_limits_interface
     urdf
+    urdfdom_headers
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} robot_hw_sim
 )
@@ -43,7 +45,7 @@ include_directories( include
  ${Boost_INCLUDE_DIR}
  ${catkin_INCLUDE_DIRS}
  /home/user/mjpro150/include
- ${urdfdom_headers_INCLUDE_DIRS})
+ ${urdfdom_headers_INCLUDE_DIRS}
 )
 
 roslint_cpp()
