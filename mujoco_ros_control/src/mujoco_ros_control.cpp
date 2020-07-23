@@ -142,7 +142,7 @@ bool MujocoRosControl::init(ros::NodeHandle &nodehandle)
     // get robot links from urdf
     std::map<std::string, urdf::LinkSharedPtr> robot_links;
     robot_links = urdf_model_ptr->links_;
-    std::map<std::string, boost::shared_ptr<urdf::Link> >::iterator it;
+    std::map<std::string, urdf::LinkSharedPtr> >::iterator it;
     for (it = robot_links.begin(); it != robot_links.end(); ++it)
     {
       robot_link_names_.push_back(it->first);
