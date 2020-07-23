@@ -4,6 +4,7 @@ project(mujoco_ros_control)
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
+find_package(GLEW REQUIRED)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -59,4 +60,4 @@ target_link_libraries(visualization_utils ${catkin_LIBRARIES})
 
 ## Declare a C++ library
 add_executable(mujoco_ros_control src/mujoco_ros_control.cpp)
-target_link_libraries(mujoco_ros_control ${catkin_LIBRARIES} glfw /home/user/mjpro150/bin/libmujoco150.so robot_hw_sim visualization_utils GLEW glut X11 GL GLU)
+target_link_libraries(mujoco_ros_control ${catkin_LIBRARIES} GLEW::GLEW /home/user/mjpro150/bin/libmujoco150.so robot_hw_sim visualization_utils GLEW glut X11 GL GLU)
