@@ -35,6 +35,7 @@ catkin_package(
     transmission_interface
     joint_limits_interface
     urdf
+  DEPENDS
     urdfdom_headers
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME} robot_hw_sim
