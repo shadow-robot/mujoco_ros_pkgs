@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
   mujoco_ros_msgs
   roslint
+  urdfdom_headers
 )
 
 catkin_package(
@@ -42,6 +43,7 @@ include_directories( include
  ${Boost_INCLUDE_DIR}
  ${catkin_INCLUDE_DIRS}
  /home/user/mjpro150/include
+ ${urdfdom_headers_INCLUDE_DIRS})
 )
 
 roslint_cpp()
