@@ -27,6 +27,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <memory>
 
 namespace mujoco_ros_control
 {
@@ -140,9 +141,9 @@ bool MujocoRosControl::init(ros::NodeHandle &nodehandle)
     const urdf::Model *const urdf_model_ptr = urdf_model.initString(urdf_string) ? &urdf_model : NULL;
 
     // get robot links from urdf
-    std::map<std::string, boost::shared_ptr<urdf::Link> > robot_links;
+    std::map<std::string, std::shared_ptr<urdf::Link> > robot_links;
     robot_links = urdf_model_ptr->links_;
-    std::map<std::string, boost::shared_ptr<urdf::Link> >::iterator it;
+    std::map<std::string, std::shared_ptr<urdf::Link> >::iterator it;
     for (it = robot_links.begin(); it != robot_links.end(); ++it)
     {
       robot_link_names_.push_back(it->first);
